@@ -65,8 +65,10 @@ GitHub runs `npm test` and the server tests on every push before it publishes th
 - Every change: bump the last number (`0.9.3` -> `0.9.4`). A bigger new feature: bump the middle number and reset the last (`0.9.4` -> `0.10.0`).
 - Add one line at the top of `CHANGELOG.md`: `- 0.9.4 (2026-10-30): R7 free try now 35% (asked by finance).`
 - Commit message: `0.9.4: <what changed>` + the attribution lines the session asks for. Then `git push`.
-- Release candidate before the feature freeze (22 Nov): `STAGE = 'RC'`. Market-day version: `VERSION = '1.0.0'`, `STAGE = 'FINAL'` (the badge goes away), tag `v1.0.0` and also `market-day`.
-- To build a Windows ZIP: push a tag `vX.Y.Z` (`git tag v0.9.4 && git push origin v0.9.4`). The "Build the Windows ZIP" workflow attaches `SantaTUS-Windows.zip` to a GitHub release.
+- Release candidate before the feature freeze (22 Nov): `STAGE = 'RC'`. Market-day version: `VERSION = '1.0.0'`, `STAGE = 'FINAL'` (the badge goes away), then a release (below).
+- To build a Windows ZIP: `gh workflow run windows-zip.yml --ref main -f release=true` (pushing tags is blocked from Claude's
+  workspace). It builds and tests the ZIP on Windows and makes the release `v<VERSION>` with `SantaTUS-Windows.zip`.
+  Without `-f release=true` it only builds (download from the run's artifacts).
 
 ## Test link
 

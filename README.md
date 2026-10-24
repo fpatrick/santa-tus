@@ -42,4 +42,4 @@ npm run test:flow      # full browser test (needs Playwright + Chromium)
 npm run serve          # run the server locally, then open http://127.0.0.1:8765
 ```
 
-Every push to `main` runs the tests and updates the test link. A tag `vX.Y.Z` builds the Windows ZIP.
+Every push to `main` runs the tests and updates the test link. The "Build the Windows ZIP" workflow (started by hand) builds and tests the ZIP on Windows and makes a release.

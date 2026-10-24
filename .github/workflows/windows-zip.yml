@@ -1,5 +1,6 @@
 # Builds SantaTUS-Windows.zip on a real Windows machine and tests it there (W1, W2, W9, T28).
-# Runs for every tag "v*" (it then makes a GitHub release with the ZIP) or by hand from the Actions tab.
+# Runs for every tag "v*", or by hand: gh workflow run windows-zip.yml -f release=true
+# With a tag or release=true it makes a GitHub release "v<VERSION>" (from src/version.js) with the ZIP.
 name: Build the Windows ZIP
 
 on:
@@ -11,6 +12,10 @@ on:
         description: "Embeddable Python version (empty = newest 3.13.x)"
         required: false
         default: ""
+      release:
+        description: "Make a GitHub release with the ZIP"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -85,8 +90,15 @@ jobs:
           name: SantaTUS-Windows
           path: SantaTUS-Windows.zip
 
-      - name: Make a GitHub release (tags only)
-        if: startsWith(github.ref, 'refs/tags/')
+      - name: Make a GitHub release
+        if: startsWith(github.ref, 'refs/tags/') || github.event.inputs.release == 'true'
+        shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${{ github.ref_name }}" SantaTUS-Windows.zip --title "Santa TUS ${{ github.ref_name }}" --notes "Windows ZIP. Unzip, then double-click 'Start Santa TUS'. See docs/INSTALL.md." --prerelease
+        run: |
+          $js = Get-Content src/version.js -Raw
+          $ver = [regex]::Match($js, "VERSION = '([^']+)'").Groups[1].Value
+          $stage = [regex]::Match($js, "STAGE = '([^']+)'").Groups[1].Value
+          $tag = "v$ver"
+          $pre = if ($stage -ne 'FINAL') { '--prerelease' } else { '--latest' }
+          gh release create $tag SantaTUS-Windows.zip --target $env:GITHUB_SHA --title "Santa TUS $stage $tag" --notes "Windows ZIP. Unzip, then double-click 'Start Santa TUS'. See docs/INSTALL.md." $pre
