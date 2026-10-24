@@ -25,6 +25,9 @@ export function initSound() {
   return true;
 }
 
+// For music.js: the same audio context, output and noise.
+export function getAudio() { return ctx ? { ctx, master, noiseBuf } : null; }
+
 export function unlockSound() {
   if (ctx && ctx.state !== 'running') ctx.resume().catch(() => {});
 }

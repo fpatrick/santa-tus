@@ -17,11 +17,13 @@ import { initSound, unlockSound, sfx, setMuted, isMuted, soundState } from './so
 import * as screens from './screens.js';
 import { staffPanel, drawScreen } from './staff.js';
 import { runPayment, flightHooks } from './flow.js';
+import { music } from './music.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const app = { scene: 'blank', test: false, flowActive: false, ledgers: {}, hud: null, freshPid: null, endFlight: () => {} };
 window.santa = app; // for the browser flow test (tests/flow_check.py)
+app.music = music;
 
 // ---------- stage scaling ----------
 function fit() {
@@ -71,14 +73,13 @@ function banners() {
 }
 
 // ---------- scenes and the loop ----------
-app.setScene = (name) => { app.scene = name; if (name === 'attract') app.attract.reset(); };
+app.setScene = (name) => { app.scene = name; if (name === 'attract') { app.attract.reset(); music.menu(); } };
 app.waitFlight = () => new Promise((resolve) => {
   app.flightWaiting = true;
   app.endFlight = (r) => { app.endFlight = () => {}; app.flightWaiting = false; resolve(r); };
 });
 
 let last = performance.now();
-let jingleT = 0;
 function loop(now) {
   const dt = Math.min(0.05, (now - last) / 1000);
   last = now;
@@ -86,8 +87,6 @@ function loop(now) {
   if (app.scene === 'attract') {
     app.attract.update(dt);
     app.attract.render(ctx, dt);
-    jingleT += dt;
-    if (jingleT > CONFIG.sound.jingleEvery && !screens.isOpen()) { jingleT = 0; sfx.jingle(); }
   } else if (app.scene === 'flight') {
     app.flight.update(dt);
     app.flight.render(ctx, dt, app.hud);
@@ -95,6 +94,7 @@ function loop(now) {
     app.wheel.update(dt);
     app.wheel.render(ctx, dt, now / 1000);
   }
+  if (app.flight) music.update(app.flight.dist);
   fx.updateFx(dt);
   fx.renderFx();
   app.board.tick(dt);

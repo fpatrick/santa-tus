@@ -7,6 +7,7 @@ import { displayName, rankFor, fmtTickets } from './ledger.js';
 import * as screens from './screens.js';
 import * as fx from './fx.js';
 import { sfx } from './sound.js';
+import { music } from './music.js';
 
 const TH = CONFIG.thresholds;
 const MILESTONE_TIER = { 10: 1, 20: 2, 30: 3, 40: 3, 50: 4 };
@@ -14,6 +15,7 @@ const MILESTONE_TIER = { 10: 1, 20: 2, 30: 3, 40: 3, 50: 4 };
 // app: { led(name), commit(name, body), flight, wheel, setScene(name), refresh() }
 export async function runPayment(app, name, p) {
   app.flowActive = true;
+  music.lobby(); // soft Jingle Bells under every screen of the payment
   try {
     for (let guard = 0; guard < 200; guard++) {
       if (p.status !== 'open') return; // undone from the staff panel
@@ -45,6 +47,7 @@ async function flyOnce(app, name, p) {
     app.flight.reset();
     app.hud = { triesLeft: R.triesLeft(p), best: p.best, restarts };
     app.setScene('flight');
+    music.lobby();
     const res = await app.waitFlight();
     if (res.aborted || p.status !== 'open') return;
     if (!res.beat && R.isFreeRestart(res.pillars, restarts, CONFIG)) {
@@ -54,6 +57,7 @@ async function flyOnce(app, name, p) {
       continue;
     }
     await app.commit(name, R.tryBody(p, res.pillars, restarts));
+    music.lobby();
     if (res.beat) {
       await screens.message(CONFIG.text.beat, [`ALL ${TH.beat} CHIMNEYS!`], { secs: CONFIG.timing.tryOver + 1, cls: 'gold' });
     } else {
@@ -87,12 +91,14 @@ async function spinWheel(app, name, p) {
   const ev = await app.commit(name, R.wheelBody(p, app.led(name), CONFIG));
   const outcome = CONFIG.wheel.outcomes.find((o) => o.id === ev.result);
   app.setScene('wheel');
+  music.duck(true);
   await app.wheel.spin(outcome);
   const lines = [];
   if (ev.tickets.length) lines.push(`TICKETS ${fmtTickets(ev.tickets)}`);
   if (ev.cash) lines.push('STAFF WILL PAY YOU AT THE END');
   if (ev.freeTry) lines.push('ONE MORE TRY!');
   await screens.message(outcome.label, lines, { secs: CONFIG.timing.awardShow, cls: 'gold' });
+  music.duck(false);
 }
 
 // S8 / R5
@@ -120,6 +126,7 @@ async function askNick(app, name, p) {
 // Effects while flying: points, new levels and milestone celebrations.
 export function flightHooks(app) {
   return {
+    onStart: (course) => music.flight(course), // Jingle Bells from the first click, timed to the chimneys
     onFlap: (x, y) => { sfx.flap(); fx.burst(x - 40, y + 10, { count: 4, colors: ['#ffd23f', '#f4f7ff'], speed: 160, size: 5, gravity: 200, life: 0.5, kind: 'star', angle: Math.PI, spread: 1.2 }); },
     onScore: (n) => {
       sfx.point(Math.ceil(n / 10));
@@ -131,12 +138,14 @@ export function flightHooks(app) {
     },
     onLevel: (lv) => { sfx.level(lv.n); fx.popText(`LEVEL ${lv.n} ${lv.name}`, { x: 640, y: 420, size: 64, color: lv.color, life: CONFIG.timing.banner }); },
     onCrash: (n, x, y) => {
+      music.stop(0.08);
       sfx.crash();
       fx.burst(x, y, { count: 40, colors: ['#f4f7ff', '#ff3b4f', '#ffd23f'], speed: 500, size: 8 });
       fx.shake(10, 0.35);
       setTimeout(() => app.endFlight({ pillars: n, beat: false }), 1000);
     },
     onBeat: (n) => {
+      music.stop(0.4);
       sfx.milestone(4);
       fx.celebrate(4, 640, 500, CONFIG.text.milestones[50], '#ffd23f');
       setTimeout(() => app.endFlight({ pillars: n, beat: true }), 2500);

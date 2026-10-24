@@ -1,5 +1,5 @@
 // game.js: one try of flying (R4): Santa, gravity, the 50 chimneys, moving gaps, crashes, the HUD.
-// It knows nothing about prizes. It calls hooks: onFlap, onScore(n), onLevel(level), onCrash(n), onBeat().
+// It knows nothing about prizes. It calls hooks: onStart, onFlap, onScore(n), onLevel(level), onCrash(n), onBeat().
 
 import { CONFIG } from './config.js';
 import { buildCourse, gapAt, levelFor } from './course.js';
@@ -30,7 +30,7 @@ export function createFlight(hooks = {}) {
   };
 
   f.flap = () => {
-    if (f.state === 'ready') f.state = 'flying';
+    if (f.state === 'ready') { f.state = 'flying'; if (hooks.onStart) hooks.onStart(f.course); }
     if (f.state !== 'flying') return;
     f.vy = ph.flap;
     if (hooks.onFlap) hooks.onFlap(ph.santaX, f.y);

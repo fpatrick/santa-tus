@@ -34,7 +34,9 @@ The person you work with writes simple English as a second language. Answer in s
 | Title screen scenes (A1-A6) | `src/attract.js` |
 | The wheel and its spin (R7) | `src/wheel.js` |
 | Particles, rays, coins, fireworks, shake, flash, `celebrate(tier)` | `src/fx.js` |
-| Sounds and the jingle | `src/sound.js` |
+| Sound effects | `src/sound.js` |
+| Songs as notes (Jingle Bells, Silent Night) and their timing to the chimneys | `src/songs.js` |
+| Music player: instruments, modes (menu, lobby, flight), volume duck | `src/music.js` |
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
 | Staff panel and the draw (S11, S12, K2, K3) | `src/staff.js` |
 | Right-hand leaderboard panel (L2) | `src/board.js` |
@@ -52,7 +54,7 @@ The person you work with writes simple English as a second language. Answer in s
 
 | Command | What | When |
 | --- | --- | --- |
-| `npm test` | 28 rule, ledger and course tests (Node, about 3 s) | after every change |
+| `npm test` | 31 rule, ledger, course and music tests (Node, about 3 s) | after every change |
 | `npm run test:server` | 9 server tests (Python) | after a change to `server/` |
 | `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, about 40 s) | after a change to screens, flow, store, main |
 

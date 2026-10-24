@@ -87,7 +87,7 @@ Panel text is at least 28 px. **Players never need the keyboard** (mouse or a US
 
 **Attract mode:** A1 1980s arcade look (Press Start 2P + VT323 pixel fonts in `assets/fonts`, neon on a night sky, scanlines, chunky Santa).
 A2 four scenes of 8 s, then a demo that crashes [`attract`]. A3 prices 64 px+, nothing under 32 px. A4 nothing flashes more than 3 times a second.
-A5 jingle at most every 2 minutes, mute in the staff panel [`sound`]. A6 every word comes from `config.text`.
+A5 music [`music`]: Silent Night (music box) loops on the title screen. During a payment a soft Jingle Bells chorus plays under every screen (quieter while the wheel spins). When Santa flies, the full Jingle Bells starts at the first click and is timed to Santa's distance: intro + verse end at chimney 10, chorus at 20, chorus a key higher at 30 (no loop before 30, T31). After 30, verse + chorus loop two keys higher. Crash = music stops. Mute in the staff panel. A6 every word comes from `config.text`.
 
 **Version badge:** every screen shows "BETA v0.9.x · NOT THE FINAL GAME" while `STAGE` in `src/version.js` is not FINAL.
 
@@ -185,9 +185,10 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T28 | start file inside the ZIP | "Unzip the folder first" | W |
 | T29 | new version over the old folder | data still there | S |
 | T30 | test link, no server | plays, banner, browser only | F |
+| T31 | flight music | ends exactly at chimney 30, no loop before; tempo 140-260 bpm | N |
 
 ## Open decisions (from the analysis)
 
 1 R11 consolation on/off (off) · 2 R3 limit (3, on) · 3 last game before the draw (not built) · 4 winner not there (redraw with reason) ·
 5 cookie allowed? (`choice` enabled) · 6 leaderboard same screen (yes; `?view=board` for a 2nd screen) · 7 mouse or arcade button (mouse) ·
-8 paid play 18+? (`text.ageNote`) · 9 difficulty targets (play tests) · 10 public repo (yes) · 11 level 5 = level 4 (yes) · 12 jingle (every 2 min, mute in panel).
+8 paid play 18+? (`text.ageNote`) · 9 difficulty targets (play tests) · 10 public repo (yes) · 11 level 5 = level 4 (yes) · 12 title music (Silent Night, always on, mute in panel).
