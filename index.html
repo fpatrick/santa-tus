@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Santa TUS</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Crect width='8' height='8' fill='%23120c3a'/%3E%3Crect x='2' y='1' width='4' height='3' fill='%23ff3b4f'/%3E%3Crect x='2' y='4' width='4' height='2' fill='%23f4f7ff'/%3E%3C/svg%3E">
+  <link rel="preload" href="assets/fonts/PressStart2P.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/VT323.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <!-- One 1920 x 1080 stage, scaled to fit the screen (main.js). -->
+  <div id="stage">
+    <div id="shake">
+      <canvas id="game" width="1280" height="1080"></canvas>
+      <aside id="panel" aria-live="polite"></aside>
+      <div id="overlay"></div>
+      <canvas id="fx" width="1920" height="1080"></canvas>
+      <div id="banners"></div>
+      <div id="beta"></div>
+      <button id="hotspot" type="button" aria-label="Staff start" tabindex="-1"></button>
+    </div>
+  </div>
+  <noscript>Santa TUS needs JavaScript.</noscript>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>

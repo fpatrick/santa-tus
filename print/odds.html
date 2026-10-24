@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Santa TUS: prizes and odds (A4)</title>
+  <!-- R18: the printed A4 odds sheet. Every number comes from src/config.js. Print with Ctrl+P. -->
+  <style>
+    @font-face { font-family: 'Press Start 2P'; src: url('../assets/fonts/PressStart2P.woff2') format('woff2'); }
+    @font-face { font-family: 'VT323'; src: url('../assets/fonts/VT323.woff2') format('woff2'); }
+    @page { size: A4; margin: 14mm; }
+    body { font-family: 'VT323', monospace; font-size: 22pt; color: #120c3a; margin: 0; }
+    h1 { font: 30pt/1.2 'Press Start 2P', monospace; color: #c8102e; margin: 0 0 4mm; }
+    h2 { font: 14pt/1.3 'Press Start 2P', monospace; margin: 8mm 0 3mm; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { border: 2px solid #120c3a; padding: 2mm 3mm; text-align: left; }
+    th { background: #120c3a; color: #fff; font-weight: normal; }
+    .big { font-size: 30pt; }
+    .note { font-size: 16pt; margin-top: 8mm; }
+    .ver { position: fixed; bottom: 0; right: 0; font-size: 12pt; color: #666; }
+  </style>
+</head>
+<body>
+  <h1>SANTA TUS</h1>
+  <div id="tagline" class="big"></div>
+  <h2>PRICES</h2>
+  <table id="prices"></table>
+  <h2>WHAT YOU CAN WIN</h2>
+  <table id="prizes"></table>
+  <h2>WHEEL ODDS</h2>
+  <table id="odds"></table>
+  <div class="note" id="note"></div>
+  <div class="ver" id="ver"></div>
+  <script type="module">
+    import { CONFIG } from '../src/config.js';
+    import { versionLabel } from '../src/version.js';
+    const T = CONFIG.text;
+    const $ = (id) => document.getElementById(id);
+    $('tagline').textContent = `${T.tagline}. ${T.bestTry}.`;
+    $('prices').innerHTML = CONFIG.prices.map((p) => `<tr><td class="big">${p.label}</td><td>${p.badge || ''}</td></tr>`).join('');
+    const th = CONFIG.thresholds;
+    $('prizes').innerHTML = '<tr><th>Pass chimney</th><th>You get</th></tr>' + [
+      [th.choice, `${T.win10} (${CONFIG.choice.filter((c) => c.enabled && c.id !== 'free').map((c) => c.label).join(', ')})`],
+      [th.ticket, `${T.win20}`], [th.legend, T.win30], [th.master, T.win40], [th.beat, T.beat],
+    ].map(([n, t]) => `<tr><td class="big">${n}</td><td>${t}</td></tr>`).join('');
+    $('odds').innerHTML = '<tr><th>Wheel result</th><th>Chance</th></tr>' + CONFIG.wheel.outcomes.map((o) => `<tr><td>${o.label}</td><td>${o.odds}%</td></tr>`).join('');
+    $('note').textContent = `Prizes add up: passing ${th.legend} also gives the ${th.ticket} and ${th.choice} prizes. Each prize once per payment. `
+      + `Jackpot: €${CONFIG.jackpot.base} + ${CONFIG.jackpot.percent}% of all takings. Draw at ${CONFIG.event.drawTime}. ${T.charity}. ${T.ageNote || ''}`;
+    $('ver').textContent = versionLabel();
+  </script>
+</body>
+</html>

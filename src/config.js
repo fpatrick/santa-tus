@@ -94,6 +94,8 @@ export const CONFIG = {
     oddsTitle: 'WHEEL ODDS',
     drawAt: 'DRAW AT',
     clickToFly: 'CLICK TO FLY',
+    goals: { 10: 'PRIZE', 20: 'TICKET + SPIN', 30: 'LEGEND', 40: 'MASTER', 50: 'BEAT THE GAME' },
+    milestones: { 10: 'PRIZE UNLOCKED!', 20: 'WHEEL SPIN!', 30: 'LEGEND!', 40: 'MASTER!', 50: 'YOU BEAT IT!' },
     freeRestart: 'FREE RESTART!',
     beat: 'YOU BEAT SANTA TUS!',
     noPrize: 'NO PRIZE THIS TIME. THANK YOU FOR PLAYING!',

@@ -1,0 +1,92 @@
+# Builds SantaTUS-Windows.zip on a real Windows machine and tests it there (W1, W2, W9, T28).
+# Runs for every tag "v*" (it then makes a GitHub release with the ZIP) or by hand from the Actions tab.
+name: Build the Windows ZIP
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      python_version:
+        description: "Embeddable Python version (empty = newest 3.13.x)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Rule tests
+        run: npm test
+
+      - name: Get the official embeddable Python from python.org (W2)
+        shell: pwsh
+        run: |
+          $ver = "${{ github.event.inputs.python_version }}"
+          if (-not $ver) {
+            $list = (Invoke-WebRequest https://www.python.org/ftp/python/ -UseBasicParsing).Links.href |
+              Where-Object { $_ -match '^3\.13\.\d+/$' } | ForEach-Object { $_.TrimEnd('/') } |
+              Sort-Object { [version]$_ } -Descending
+            foreach ($v in $list) {
+              try { Invoke-WebRequest "https://www.python.org/ftp/python/$v/python-$v-embed-amd64.zip" -Method Head -UseBasicParsing | Out-Null; $ver = $v; break } catch {}
+            }
+          }
+          Write-Host "Embeddable Python $ver"
+          Invoke-WebRequest "https://www.python.org/ftp/python/$ver/python-$ver-embed-amd64.zip" -OutFile py.zip
+          New-Item -ItemType Directory SantaTUS | Out-Null
+          Expand-Archive py.zip -DestinationPath SantaTUS/python
+
+      - name: Copy the game into the folder
+        shell: pwsh
+        run: |
+          Copy-Item -Recurse index.html, style.css, src, assets, print, server SantaTUS/
+          Copy-Item "Start Santa TUS.bat", "Start Santa TUS (window).bat" SantaTUS/
+          New-Item -ItemType Directory SantaTUS/docs | Out-Null
+          Copy-Item docs/INSTALL.md, docs/MARKET-DAY.md SantaTUS/docs/
+
+      - name: Server tests with the bundled Python
+        run: SantaTUS\python\python.exe -m unittest discover -s tests -p "test_*.py"
+
+      - name: Smoke test - start, health, page (T27)
+        shell: pwsh
+        run: |
+          $p = Start-Process SantaTUS/python/python.exe -ArgumentList 'SantaTUS/server/server.py', '--no-browser', '--port', '8790', '--data', "$env:RUNNER_TEMP/santa-data" -PassThru
+          Start-Sleep 4
+          $h = Invoke-RestMethod http://127.0.0.1:8790/api/health
+          if (-not $h.ok -or $h.db -ne 'ok') { throw "health check failed" }
+          Invoke-WebRequest http://127.0.0.1:8790/ -UseBasicParsing | Out-Null
+          Invoke-WebRequest http://127.0.0.1:8790/src/main.js -UseBasicParsing | Out-Null
+          Stop-Process $p
+
+      - name: Start file run from inside a ZIP says "Unzip the folder first" (T28)
+        shell: pwsh
+        run: |
+          $dir = "$env:RUNNER_TEMP\Temp1_SantaTUS-Windows.zip\SantaTUS"
+          New-Item -ItemType Directory $dir -Force | Out-Null
+          Copy-Item "SantaTUS\Start Santa TUS.bat" $dir
+          $out = cmd /c "echo.| `"$dir\Start Santa TUS.bat`""
+          if (($out -join "`n") -notmatch 'UNZIP THE FOLDER FIRST') { throw "T28 failed: $out" }
+
+      - name: Make the ZIP (W1)
+        shell: pwsh
+        run: Compress-Archive -Path SantaTUS -DestinationPath SantaTUS-Windows.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SantaTUS-Windows
+          path: SantaTUS-Windows.zip
+
+      - name: Make a GitHub release (tags only)
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" SantaTUS-Windows.zip --title "Santa TUS ${{ github.ref_name }}" --notes "Windows ZIP. Unzip, then double-click 'Start Santa TUS'. See docs/INSTALL.md." --prerelease
