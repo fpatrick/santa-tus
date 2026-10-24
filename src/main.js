@@ -3,7 +3,7 @@
 
 import { CONFIG } from './config.js';
 import { versionLabel, DISCLAIMER, STAGE } from './version.js';
-import { buildState, applyEvent, openPayment, leaderboard, legends, totals, displayName, drawPool, lastActivePayment } from './ledger.js';
+import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, drawPool, lastActivePayment } from './ledger.js';
 import * as R from './rules.js';
 import { createStore } from './store.js';
 import { createFlight } from './game.js';
@@ -47,19 +47,31 @@ app.commit = async (name, body) => {
 app.refresh = () => {
   const s = app.ledgers.live;
   const t = totals(s, CONFIG);
+  const th = CONFIG.thresholds;
   app.board.update({
-    top: leaderboard(s, CONFIG).map((p) => ({ pid: p.pid, name: displayName(p, CONFIG), best: p.best, master: p.best >= CONFIG.thresholds.master })),
-    legends: legends(s, CONFIG).map((p) => ({ name: displayName(p, CONFIG), master: p.best >= CONFIG.thresholds.master })),
+    top: leaderboard(s, CONFIG).map((p) => ({ pid: p.pid, name: displayName(p, CONFIG), best: p.best, master: p.best >= th.master, legend: p.best >= th.legend })),
     jackpot: t.jackpot, lastDraw: t.lastDraw, freshPid: app.freshPid,
+    player: playerInfo(lastActivePayment(app.led ? app.led() : s)),
   });
   banners();
 };
 
+// The player box on the panel: what this payment already got (shown until the next game starts).
+function playerInfo(p) {
+  if (!p) return null;
+  const tile = p.p10 && CONFIG.choice.find((c) => c.id === p.p10);
+  const spin = p.wheel && CONFIG.wheel.outcomes.find((o) => o.id === p.wheel);
+  return {
+    name: displayName(p, CONFIG), best: p.best, open: p.status === 'open', triesLeft: Math.max(0, R.triesLeft(p)),
+    p10: tile ? (tile.id === 'free' ? 'FREE TRY (INSTEAD OF PRIZE)' : tile.label) : null,
+    spinEarned: p.p20 || p.best >= CONFIG.thresholds.ticket, spin: spin ? spin.label : null, tickets: p.tickets,
+  };
+}
+
 function attractInfo() {
   const s = app.ledgers.live;
   return {
-    top: leaderboard(s, CONFIG).map((p) => ({ name: displayName(p, CONFIG), best: p.best, master: p.best >= CONFIG.thresholds.master })),
-    legends: legends(s, CONFIG).map((p) => displayName(p, CONFIG)),
+    top: leaderboard(s, CONFIG).map((p) => ({ name: displayName(p, CONFIG), best: p.best, master: p.best >= CONFIG.thresholds.master, legend: p.best >= CONFIG.thresholds.legend })),
     jackpot: totals(s, CONFIG).jackpot, drawTime: CONFIG.event.drawTime,
   };
 }
@@ -146,7 +158,7 @@ function staffApi() {
       if (app.flowActive) return false;
       app.test = on;
       await app.commit(name(), R.staffBody('test-mode', on ? 'on' : 'off'));
-      banners();
+      app.refresh();
       return true;
     },
     backup: async () => { await app.commit(name(), R.staffBody('backup')); return app.store.backup(); },
@@ -177,6 +189,7 @@ function onKey(e) {
   if (e.key === CONFIG.keys.staffCode) { e.preventDefault(); if (app.scene === 'attract') startPaid(); return; }
   if (e.key === CONFIG.keys.staffPanel) { e.preventDefault(); openStaff(); return; }
   if ((e.key === ' ' || e.key === 'ArrowUp') && app.scene === 'flight') { e.preventDefault(); app.flight.flap(); }
+  if ((e.key === ' ' || e.key === 'Enter') && app.scene === 'wheel') { e.preventDefault(); app.wheel.click(); }
 }
 
 function onPointer(e) {
@@ -184,6 +197,7 @@ function onPointer(e) {
   if (e.target.id === 'hotspot' && app.scene === 'attract') { startPaid(); return; }
   if (screens.isOpen()) return;
   if (app.scene === 'flight' && e.button === 0) { e.preventDefault(); app.flight.flap(); }
+  if (app.scene === 'wheel' && e.button === 0) app.wheel.click();
 }
 
 // ---------- S13 health check ----------

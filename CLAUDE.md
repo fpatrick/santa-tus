@@ -29,17 +29,19 @@ The person you work with writes simple English as a second language. Answer in s
 | One payment from start to hand-over (screen order) | `src/flow.js` |
 | Flying, gravity, collisions, HUD | `src/game.js` |
 | Course building and the fairness check (R4, T26) | `src/course.js` |
-| Sky, town, rooftop, chimney drawing | `src/world.js` |
-| Santa and prize icons (pixel art maps) | `src/sprites.js` |
+| Sky per level, snow per level, town, TUS logo, rooftop | `src/world.js` |
+| Chimneys, presents (and their flight into the bag), level warning | `src/chimney.js` |
+| Santa, his TUS bag, prize and wheel icons (pixel art maps) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
-| The wheel and its spin (R7) | `src/wheel.js` |
+| The wheel, click to spin, its spin (R7) | `src/wheel.js` |
+| Wheel sounds (Christmas chest opening) | `src/wheelsound.js` |
 | Particles, rays, coins, fireworks, shake, flash, `celebrate(tier)` | `src/fx.js` |
 | Sound effects | `src/sound.js` |
 | Songs as notes (Jingle Bells, Silent Night) and their timing to the chimneys | `src/songs.js` |
 | Music player: instruments, modes (menu, lobby, flight), volume duck | `src/music.js` |
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
 | Staff panel and the draw (S11, S12, K2, K3) | `src/staff.js` |
-| Right-hand leaderboard panel (L2) | `src/board.js` |
+| Right-hand panel: jackpot, player prize box, best players (L2) | `src/board.js` |
 | Saving: server or browser, offline queue (D1, D4, P1) | `src/store.js` |
 | Start-up, keys, mouse, banners, health check, staff actions | `src/main.js` |
 | CSV export | `src/report.js` |

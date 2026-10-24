@@ -11,7 +11,7 @@ const T = CONFIG.text;
 const W = 1280;
 const SCENES = ['logo', 'prices', 'prizes', 'board', 'demo'];
 
-// getInfo() returns { top: [{name, best, master}], legends: [name], jackpot, drawTime }
+// getInfo() returns { top: [{name, best, master, legend}], jackpot, drawTime }
 export function createAttract(getInfo) {
   const a = { t: 0, i: 0, sceneT: 0, demo: createFlight({}) };
 
@@ -34,7 +34,7 @@ export function createAttract(getInfo) {
       a.demo.render(ctx, dt, null);
       outlined(ctx, 'DEMO', W / 2, 90, 48, '#c35cff', 'center');
     } else {
-      drawSky(ctx, a.t, a.t * 60, '#3dff8b');
+      drawSky(ctx, a.t, a.t * 60, 3);
       drawRoof(ctx, a.t * 60);
       ctx.fillStyle = 'rgba(7, 5, 28, 0.45)'; // dims the town so the text stands out
       ctx.fillRect(0, 0, W, 1080);
@@ -42,7 +42,7 @@ export function createAttract(getInfo) {
       if (name === 'prices') prices(ctx, a);
       if (name === 'prizes') prizes(ctx);
       if (name === 'board') board(ctx, getInfo());
-      drawSnow(ctx, dt);
+      drawSnow(ctx, dt, 2);
     }
     const on = Math.floor(a.t * 1.5) % 2 === 0; // A4: slow blink
     if (on) outlined(ctx, T.pay, W / 2, 900, 40, '#ffd23f', 'center');
@@ -118,34 +118,31 @@ function prizes(ctx) {
   ctx.font = '40px VT323';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#f4f7ff';
-  ctx.fillText(CONFIG.wheel.outcomes.map((o) => `${o.label} ${o.odds}%`).join('   '), W / 2, 760);
+  const odds = CONFIG.wheel.outcomes.map((o) => `${o.label} ${o.odds}%`);
+  ctx.fillText(odds.slice(0, 2).join('   '), W / 2, 750);
+  ctx.fillText(odds.slice(2).join('   '), W / 2, 795);
 }
 
 function board(ctx, info) {
-  outlined(ctx, 'JACKPOT', W / 2, 120, 40, '#ffd23f', 'center');
-  outlined(ctx, fmtEuro(info.jackpot), W / 2, 230, 96, '#fff6c8', 'center');
-  outlined(ctx, `${T.drawAt} ${info.drawTime}`, W / 2, 290, 32, '#f4f7ff', 'center');
-  outlined(ctx, 'TOP 10 TODAY', 330, 380, 32, '#3dff8b', 'center');
-  ctx.font = '42px VT323';
-  ctx.textAlign = 'left';
+  outlined(ctx, T.jackpot, W / 2, 110, 36, '#ffd23f', 'center');
+  outlined(ctx, fmtEuro(info.jackpot), W / 2, 220, 96, '#fff6c8', 'center');
+  outlined(ctx, `${T.drawAt} ${info.drawTime}`, W / 2, 280, 32, '#f4f7ff', 'center');
+  outlined(ctx, CONFIG.board.title, W / 2, 360, 36, '#3dff8b', 'center');
+  ctx.font = '40px VT323';
   if (!info.top.length) {
+    ctx.textAlign = 'center';
     ctx.fillStyle = '#c9d2f0';
-    ctx.fillText('BE THE FIRST!', 120, 450);
+    ctx.fillText('BE THE FIRST!', W / 2, 440);
   }
-  info.top.slice(0, 10).forEach((r, k) => {
-    ctx.fillStyle = r.master ? '#c35cff' : k === 0 ? '#ffd23f' : '#f4f7ff';
-    ctx.fillText(`${String(k + 1).padStart(2, ' ')}. ${r.name}`, 80, 450 + k * 42);
-    ctx.textAlign = 'right';
-    ctx.fillText(String(r.best), 600, 450 + k * 42);
+  // two columns: 1-8 on the left, 9-15 on the right
+  info.top.slice(0, CONFIG.board.size).forEach((r, k) => {
+    const col = k < 8 ? 0 : 1;
+    const x = 70 + col * 600;
+    const y = 430 + (k % 8) * 42;
+    ctx.fillStyle = r.master ? '#c35cff' : r.legend ? '#ffd23f' : k === 0 ? '#fff6c8' : '#f4f7ff';
     ctx.textAlign = 'left';
+    ctx.fillText(`${String(k + 1).padStart(2, ' ')}. ${r.name}`, x, y);
+    ctx.textAlign = 'right';
+    ctx.fillText(String(r.best), x + 520, y);
   });
-  outlined(ctx, 'LEGENDS', 960, 380, 32, '#ffd23f', 'center');
-  ctx.font = '42px VT323';
-  ctx.textAlign = 'left';
-  ctx.fillStyle = '#f4f7ff';
-  if (!info.legends.length) {
-    ctx.fillStyle = '#c9d2f0';
-    ctx.fillText('PASS CHIMNEY 30', 740, 450);
-  }
-  info.legends.slice(0, 10).forEach((n, k) => ctx.fillText(n, 740, 450 + k * 42));
 }

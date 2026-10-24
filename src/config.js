@@ -16,12 +16,12 @@ export const CONFIG = {
   ],
   freePlay: { tries: 1 }, // K2: a €0 payment after a technical problem
 
-  // R3: a crash before pillar 2 restarts the try for free, at most 3 times per try.
-  freeRestart: { below: 2, max: 3 },
+  // R3: a crash before chimney 5 restarts the try for free, at most 3 times per try.
+  freeRestart: { below: 5, max: 3 },
 
   // Chimney numbers that unlock prizes (R5, R6, R8, R20, R21).
   thresholds: { choice: 10, ticket: 20, legend: 30, master: 40, beat: 50 },
-  tickets: { p20: 1, p30: 3 }, // R6, R8
+  tickets: { p20: 0, p30: 3 }, // R6 (chimney 20 = a spin on the wheel, no ticket), R8
   consolation: { on: false, item: 'STICKER' }, // R11 (proposal, off by default)
 
   // R5: the pillar 10 choice. Set enabled: false to hide a tile (open decision 5).
@@ -34,12 +34,13 @@ export const CONFIG = {
 
   // R7: the wheel. odds must add up to 100. pieces = how many slices it shows
   // (same total odds). tier 1-4 sets how big the effects and sounds are.
+  // short = text on the slice, icon = picture on the slice (sprites.js).
   wheel: {
     outcomes: [
-      { id: 'free', label: 'FREE TRY', odds: 40, pieces: 4, tier: 1, color: '#27c8ff', tickets: 0, cash: 0, freeTry: true },
-      { id: 't2', label: '+2 TICKETS', odds: 30, pieces: 3, tier: 2, color: '#3dff8b', tickets: 2, cash: 0 },
-      { id: 't5', label: '+5 TICKETS', odds: 28, pieces: 3, tier: 3, color: '#c35cff', tickets: 5, cash: 0 },
-      { id: 'cash', label: '€10 CASH', odds: 2, pieces: 1, tier: 4, color: '#ffd23f', tickets: 0, cash: 10 },
+      { id: 'free', label: 'FREE TRY', short: 'FREE TRY', icon: 'free', odds: 40, pieces: 2, tier: 1, color: '#27c8ff', tickets: 0, cash: 0, freeTry: true },
+      { id: 't2', label: '+2 JACKPOT TICKETS', short: '+2', icon: 'ticket', odds: 30, pieces: 2, tier: 2, color: '#3dff8b', tickets: 2, cash: 0 },
+      { id: 't5', label: '+5 JACKPOT TICKETS', short: '+5', icon: 'ticket', odds: 28, pieces: 2, tier: 3, color: '#c35cff', tickets: 5, cash: 0 },
+      { id: 'cash', label: '€10 CASH', short: '€10', icon: 'cash', odds: 2, pieces: 1, tier: 4, color: '#ffd23f', tickets: 0, cash: 10 },
     ],
     tierNames: ['', 'NICE!', 'GREAT!', 'AMAZING!', 'LEGENDARY!'],
     spinSeconds: 6.5, // how long the spin lasts
@@ -50,7 +51,8 @@ export const CONFIG = {
   jackpot: { base: 10, percent: 10 },
 
   // L1, L2, S9
-  board: { size: 10, minPillars: 1, nickMax: 12, defaultNick: 'PLAYER' },
+  // L1: a tie goes to the latest player. Tags: MASTER (passed 40) or LEGEND (passed 30) before the name.
+  board: { size: 15, minPillars: 1, nickMax: 12, defaultNick: 'PLAYER', title: 'BEST PLAYERS', legendTag: 'LEGEND', masterTag: 'MASTER' },
 
   // R4: the course. Speeds in px per second, sizes in px (game area 1280 x 1080).
   // spacing = distance between chimneys. step = biggest jump of the gap centre.
@@ -81,6 +83,21 @@ export const CONFIG = {
   // FX safety (A4): never more than 3 flashes per second.
   fx: { maxFlashPerSec: 3, particleCap: 900 },
 
+  // Scenery per level (1-5): sky colours [top, middle, bottom], snow flakes and their fall speed (px/s).
+  // Snow grows fast with each level. bagGrow = how much bigger Santa's bag gets per chimney.
+  scenery: {
+    skies: [
+      ['#16244f', '#2c4a86', '#5a7fb8'],
+      ['#101a45', '#25307a', '#4a4aa0'],
+      ['#0d0b38', '#2a1466', '#55308a'],
+      ['#1a0626', '#4a0f40', '#7a1f3c'],
+      ['#05030f', '#1a0636', '#3a0a4a'],
+    ],
+    snow: [{ count: 6, speed: 35 }, { count: 30, speed: 70 }, { count: 90, speed: 130 }, { count: 220, speed: 230 }, { count: 420, speed: 380 }],
+    bagGrow: 0.03,
+    bagMax: 2.4,
+  },
+
   // S6 + screen timings in seconds.
   timing: { tryOver: 3, healthOk: 2.5, banner: 2.2, awardShow: 3.2 },
 
@@ -93,14 +110,20 @@ export const CONFIG = {
     charity: 'ALL PROFIT GOES TO PAEDIATRIC DIABETES, UHL',
     winTitle: 'WHAT YOU CAN WIN',
     win10: 'SMALL PRIZE OR A FREE TRY',
-    win20: 'DRAW TICKET + WHEEL SPIN',
-    win30: '3 MORE TICKETS + LEGEND',
+    win20: 'A SPIN ON THE WHEEL',
+    win30: '3 JACKPOT TICKETS + LEGEND',
     win40: 'MASTER TAG',
     oddsTitle: 'WHEEL ODDS',
     drawAt: 'DRAW AT',
     clickToFly: 'CLICK TO FLY',
-    goals: { 10: 'PRIZE', 20: 'TICKET + SPIN', 30: 'LEGEND', 40: 'MASTER', 50: 'BEAT THE GAME' },
-    milestones: { 10: 'PRIZE UNLOCKED!', 20: 'WHEEL SPIN!', 30: 'LEGEND!', 40: 'MASTER!', 50: 'YOU BEAT IT!' },
+    goals: { 10: 'PRIZE', 20: 'SPIN THE WHEEL', 30: 'LEGEND', 40: 'MASTER', 50: 'BEAT THE GAME' },
+    milestones: { 10: 'PRIZE UNLOCKED!', 20: 'SPIN THE WHEEL!', 30: 'LEGEND!', 40: 'MASTER!', 50: 'YOU BEAT IT!' },
+    jackpot: 'JACKPOT UNTIL NOW',
+    ticket: 'JACKPOT TICKET', // used everywhere a ticket is named
+    tickets: 'JACKPOT TICKETS',
+    spinWon: 'YOU WON A SPIN ON THE WHEEL!',
+    wheelTitle: 'SPIN THE WHEEL!',
+    clickToSpin: 'CLICK TO SPIN!',
     freeRestart: 'FREE RESTART!',
     beat: 'YOU BEAT SANTA TUS!',
     noPrize: 'NO PRIZE THIS TIME. THANK YOU FOR PLAYING!',

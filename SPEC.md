@@ -18,8 +18,8 @@ Every payment gets one set of prizes, decided by its best try.
 
 - **R1 Prices:** €2 = 1 try, €5 = 3 tries [`prices`]. Staff choose one after typing the code.
 - **R2 Best try counts:** inside one payment, the highest chimney reached in any try decides the prizes.
-- **R3 Free restart:** crash before chimney 2 and the try restarts without using it, at most 3 times per try [`freeRestart`] (*proposal*, on).
-- **R4 The course:** 50 chimneys in 5 levels. Harder at 10, 20, 30, 40; a banner announces each level. Passing 50 beats the game and ends the try.
+- **R3 Free restart:** crash before chimney 5 and the try restarts without using it, at most 3 times per try [`freeRestart`] (*proposal*, on).
+- **R4 The course:** 50 chimneys in 5 levels. Harder at 10, 20, 30, 40; a sound announces each level (no text on screen). Each level has its own sky colour and more snow (almost none at level 1, a storm at level 5) [`scenery`]. Bottom: brick chimneys. Top: a stack of Christmas presents; when Santa passes, the presents fly into his TUS bag, which grows with each chimney. Passing 50 beats the game and ends the try.
 
 | Level | Chimneys | Feel | What changes [`levels`] | Target pass rate (*proposal*) |
 | --- | --- | --- | --- | --- |
@@ -35,10 +35,10 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 **Prizes**
 
 - **R5 Chimney 10 choice:** once per payment, when no tries are left and the best try is 10 or more. The player picks a small prize (cookie, 3D token, sticker) or 1 free try [`choice`]. A free try gives up the prize and the choice is not offered again. After beating the game (50) there is no free-try tile.
-- **R6 Chimney 20 prize:** the first time a try in this payment passes 20: at the end of that try, 1 draw ticket, then the wheel spins.
-- **R7 The wheel:** 40% free try, 30% +2 tickets, 28% +5 tickets, 2% €10 cash [`wheel.outcomes`]. `secureRandom()` picks the result and it is SAVED before the animation starts. The animation only shows it.
-  Each result is cut into several slices (same total odds) [`pieces`]. Each result has a tier 1-4: effects and sounds grow with the tier (VS-style: rays, coins, flashes, shake, fireworks).
-- **R8 Chimney 30 prize:** the first time a try passes 30: 3 more tickets [`tickets.p30`] and the name goes on the Legends list.
+- **R6 Chimney 20 prize:** the first time a try in this payment passes 20: at the end of that try, "YOU WON A SPIN ON THE WHEEL!", then the wheel shows and the player clicks to spin it. No jackpot ticket at 20 [`tickets.p20` = 0].
+- **R7 The wheel:** 40% free try, 30% +2 jackpot tickets, 28% +5 jackpot tickets, 2% €10 cash [`wheel.outcomes`]. When the player clicks, `secureRandom()` picks the result and it is SAVED before the spin starts. The animation only shows it.
+  A wooden wheel with 7 big slices with icons (same total odds) [`pieces`]. Each result has a tier 1-4: effects and sounds grow with the tier (VS-style chest opening, Christmas bells: rays, coins, flashes, shake, fireworks).
+- **R8 Chimney 30 prize:** the first time a try passes 30: 3 jackpot tickets [`tickets.p30`] and the tag LEGEND before the name.
 - **R9 Prizes add up:** reaching 30 also gives the 20 prizes and the 10 choice.
 - **R10 Free tries:** a free try (from R5 or the wheel) is one more try on the same payment; the best try still counts. Never a second wheel spin or a second choice.
 - **R11 Consolation** (*proposal*, off) [`consolation.on`]: gave up the 10 prize for a free try and ended below 20: still 1 sticker.
@@ -48,12 +48,12 @@ Order after each try (from `rules.js nextStep`): chimney 20 ticket -> wheel -> c
 **After the prizes**
 
 - **R19 No prizes after 30:** chimneys 31-50 count only for the leaderboard.
-- **R20 Master tag:** passing 40 shows "MASTER" before the nickname everywhere.
+- **R20 Master tag:** passing 40 shows "MASTER" before the nickname everywhere (instead of LEGEND).
 - **R21 Beating the game:** passing 50 ends the try with "YOU BEAT SANTA TUS!". 50 is the highest score.
 
 **Tickets and jackpot**
 
-- **R12 Tickets:** numbered from #0001, in order. The screen says "GIVE 6 DRAW TICKETS #0041 TO #0046". Staff hand out pre-numbered cloakroom tickets in the same order.
+- **R12 Jackpot tickets:** always called "jackpot ticket" on screen [`text.ticket`]. Numbered from #0001, in order. The screen says "GIVE 5 JACKPOT TICKETS #0041 TO #0045". Staff hand out pre-numbered cloakroom tickets in the same order.
 - **R13 Jackpot:** €10 + 10% of all takings [`jackpot`], shown live. Test plays and undone payments do not count.
 - **R14 Draw:** at 12:45 [`event.drawTime`] staff start the draw. One issued ticket wins the whole jackpot. No tickets: the jackpot goes to charity.
 
@@ -72,20 +72,20 @@ Order after each try (from `rules.js nextStep`): chimney 20 ticket -> wheel -> c
 | S2 | Staff code: F2 or a click in the top-left corner. Dots. Enter checks, Esc cancels. A wrong code just clears. | staff | screens.staffCode |
 | S3 | Payment: €2 (key 1), €5 (key 2), Cancel (Esc) | staff | screens.payment |
 | S4 | Get ready: "CLICK TO FLY", tries left, best | player | game.js HUD |
-| S5 | Play: chimney count, level, tries left, best, next goal; level banner | player | game.js, flow.flightHooks |
+| S5 | Play: chimney count, level, tries left, best, next goal. A new level plays a sound only (no text). A warning glow between chimney and presents just before each level change | player | game.js, flow.flightHooks |
 | S6 | Try over: chimney and best, "FREE RESTART!" (R3), "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce |
-| S7 | Wheel: spins by itself, then shows the result | nobody | wheel.js |
+| S7 | Wheel: shows "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
 | S8 | Chimney 10 choice: big tiles, mouse | player | screens.choice |
-| S9 | Nickname: only for top 10, Legends or MASTER. Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
+| S9 | Nickname: only for the best players list, LEGEND or MASTER. Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
 | S10 | Hand-over: prize, ticket numbers, cash. Enter saves and goes back to S1 | staff | screens.handover |
 | S11 | Staff panel: F9 + code | staff | staff.staffPanel |
 | S12 | Draw: rolling numbers, winning ticket, jackpot, or "goes to charity" | staff | staff.drawScreen |
 | S13 | Health check at every start: server, database, USB, clock, screen, fonts, sound, settings | nobody | main.healthCheck |
 
-**Leaderboard panel (L2):** jackpot (biggest), "DRAW AT 12:45" + countdown on the event day, top 10 (rank, name, chimneys), Legends.
+**Leaderboard panel (L2):** "JACKPOT UNTIL NOW" (biggest), "DRAW AT 12:45" + countdown on the event day, this player's prizes (chimney 10 prize, wheel spin, jackpot tickets; shown until the next game starts), "BEST PLAYERS" top 15 (rank, name with LEGEND/MASTER tag, chimneys).
 Panel text is at least 28 px. **Players never need the keyboard** (mouse or a USB arcade button set as a click).
 
-**Attract mode:** A1 1980s arcade look (Press Start 2P + VT323 pixel fonts in `assets/fonts`, neon on a night sky, scanlines, chunky Santa).
+**Attract mode:** A1 1980s arcade look (Press Start 2P + VT323 pixel fonts in `assets/fonts`, neon on a night sky, scanlines, chunky Santa with a TUS bag, the TUS logo on a town building).
 A2 four scenes of 8 s, then a demo that crashes [`attract`]. A3 prices 64 px+, nothing under 32 px. A4 nothing flashes more than 3 times a second.
 A5 music [`music`]: Silent Night (music box) loops on the title screen. During a payment a soft Jingle Bells chorus plays under every screen (quieter while the wheel spins). When Santa flies, the full Jingle Bells starts at the first click and is timed to Santa's distance: intro + verse end at chimney 10, chorus at 20, chorus a key higher at 30 (no loop before 30, T31). After 30, verse + chorus loop two keys higher. Crash = music stops. Mute in the staff panel. A6 every word comes from `config.text`.
 
@@ -134,7 +134,7 @@ Common fields: `id` (unique), `n` (order number), `ts` (time in ms), `t` (type).
 Server API (127.0.0.1 only): `GET /api/health`, `GET /api/events?ledger=live|test&after=n`, `POST /api/events?ledger=`,
 `POST /api/backup`, `POST /api/export?ledger=` (CSV body), `POST /api/newday?ledger=`.
 
-**Leaderboard:** L1 best chimneys per payment, a tie goes to who got there first. L2 top 10 + Legends in order.
+**Leaderboard:** L1 best chimneys per payment, a tie goes to the latest player. L2 top 15 "BEST PLAYERS" with LEGEND/MASTER tags.
 L3 updates on hand-over; a second screen can open `?view=board` on the same laptop.
 
 ## Test link and Windows install
@@ -155,15 +155,15 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 
 | ID | Situation | Expected | How |
 | --- | --- | --- | --- |
-| T1 | €2, crash at 1 | free restart (R3) | N |
+| T1 | €2, crash at 1-4 | free restart; crash at 5 is not (R3) | N |
 | T2 | crash at 1 four times | 4th uses the try, best 1, no prize | N |
 | T3 | €2, best 7 | no prize | N |
 | T4 | €2, best 12, sticker | hand-over: 1 sticker | N, F |
 | T5 | best 12, free try, then 14 | no prize; R11 on: sticker | N |
-| T6 | best 12, free try, then 21 | ticket + spin, no 10 prize, no 2nd choice | N |
-| T7 | 22, wheel +5 | then the choice; prize + 6 tickets | N |
+| T6 | best 12, free try, then 21 | wheel spin, no 10 prize, no 2nd choice | N |
+| T7 | 22, wheel +5 | then the choice; prize + 5 jackpot tickets | N |
 | T8 | 22, wheel free try, then 9 | best 22, no 2nd spin, then choice | N |
-| T9 | 33, wheel +2 | 6 tickets, Legend, choice with free tile | N |
+| T9 | 33, wheel +2 | 5 jackpot tickets, LEGEND, choice with free tile | N |
 | T10 | €5: 5, 12, 9 | choice after the 3rd try | N |
 | T11 | €5: try 1 = 23, wheel free try | 3 tries left | N |
 | T12 | browser closed after try 1 of €5 | reopens, 2 tries left, best kept | N, F |
@@ -175,10 +175,10 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T18 | test mode | no effect on live board or totals | N |
 | T19 | undo last payment | out of totals and jackpot, kept as undone | N |
 | T20 | 30 x €2 + 10 x €5 | jackpot €21 | N |
-| T21 | tie on 18 | first one higher | N |
+| T21 | tie on 18 | latest one higher | N |
 | T22 | 4 hours of play | 60 fps, no slowdown | manual |
 | T23 | crash at 37 | same prizes as 30, board shows 37 | N |
-| T24 | passes 40 | "MASTER SAM" | N |
+| T24 | passes 40 / 30 | "MASTER SAM" / "LEGEND ANA" | N |
 | T25 | passes 50 | beat screen, no free-try tile | N |
 | T26 | 10,000 courses | all fair | N |
 | T27 | fresh Windows 11 + ZIP | playing in 5 minutes | W (smoke) + manual |

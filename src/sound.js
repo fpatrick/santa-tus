@@ -116,7 +116,17 @@ const hat = (t, v = 0.08) => noise(t, 0.04, { vol: v, freq: 8000, type: 'highpas
 const cymbal = (t, v = 0.3, d = 1.4) => noise(t, d, { vol: v, freq: 6000, type: 'highpass' });
 
 export const sfx = {
-  flap() { if (ok()) tone(420, now(), 0.09, { vol: 0.09, slide: 1.9 }); },
+  // Sleigh bells: a short jingle on every click.
+  flap() {
+    if (!ok()) return;
+    const t = now();
+    noise(t, 0.12, { vol: 0.12, freq: 7000, type: 'highpass' });
+    const base = 2400 + Math.random() * 300;
+    for (let i = 0; i < 3; i++) {
+      tone(base * (1 + i * 0.27), t + i * 0.025, 0.14, { type: 'sine', vol: 0.05 });
+      tone(base * (1 + i * 0.27) * 2.76, t + i * 0.025, 0.06, { type: 'sine', vol: 0.015 });
+    }
+  },
   point(level = 1) {
     if (!ok()) return;
     const t = now();
@@ -124,13 +134,18 @@ export const sfx = {
     tone(base, t, 0.06, { vol: 0.12 });
     tone(base * 1.335, t + 0.06, 0.16, { vol: 0.12 });
   },
+  // New level: a rising alarm + power-up, higher for each level.
   level(n = 2) {
     if (!ok()) return;
     const t = now();
-    const run = [['C5', 1], ['E5', 1], ['G5', 1], ['C6', 1], ['E6', 1], ['G6', 3]];
-    seq(run, t, 0.07, { vol: 0.14 });
-    seq([['C3', 2], ['G3', 2], ['C4', 3]], t, 0.07, { type: 'triangle', vol: 0.3 });
-    for (let i = 0; i < n; i++) hat(t + 0.5 + i * 0.07, 0.12);
+    for (let i = 0; i < 2; i++) tone(660 + n * 60, t + i * 0.18, 0.12, { type: 'sawtooth', vol: 0.07, slide: 1.5 });
+    const up = (n - 2) * 2;
+    const run = ['C5', 'E5', 'G5', 'C6', 'E6', 'G6'].map((x) => [x, 1]);
+    seq(run, t + 0.4, 0.06, { vol: 0.13 });
+    chord(['C5', 'G5', 'C6'].map((x) => x), t + 0.76, 0.5, { vol: 0.06, vib: 0.01 });
+    tone(130.8 * 2 ** (up / 12), t + 0.4, 0.6, { type: 'triangle', vol: 0.3, slide: 2 });
+    cymbal(t + 0.76, 0.12, 0.6);
+    for (let i = 0; i < n + 2; i++) noise(t + 0.4 + i * 0.05, 0.05, { vol: 0.08, freq: 7000, type: 'highpass' });
   },
   crash() {
     if (!ok()) return;
@@ -215,3 +230,6 @@ function fanfare(tier) {
     for (let i = 0; i < 24; i++) sfx.coin(i + 30);
   }
 }
+
+// Low-level helpers for other sound files (wheelsound.js).
+export const synth = { ok, now, tone, noise, hz, seq, chord, kick, snare, cymbal };

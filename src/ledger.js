@@ -97,21 +97,22 @@ export function lastActivePayment(s) {
   return null;
 }
 
-// R20: MASTER tag. L2: hidden nicknames show as "PLAYER 37".
+// R20: MASTER tag (passed 40), R8: LEGEND tag (passed 30). L2: hidden nicknames show as "PLAYER 37".
 export function displayName(p, cfg) {
   const base = (!p.nick || p.hidden) ? `${cfg.board.defaultNick} ${p.pid}` : p.nick;
-  return p.best >= cfg.thresholds.master ? `MASTER ${base}` : base;
+  if (p.best >= cfg.thresholds.master) return `${cfg.board.masterTag} ${base}`;
+  return p.best >= cfg.thresholds.legend ? `${cfg.board.legendTag} ${base}` : base;
 }
 
 function beats(a, b) {
-  return a.best > b.best || (a.best === b.best && a.bestTs < b.bestTs);
+  return a.best > b.best || (a.best === b.best && a.bestTs > b.bestTs);
 }
 
-// L1: best pillars per payment, highest first. A tie: who got there first stays above.
+// L1: best chimneys per payment, highest first. A tie: the latest player goes above.
 export function leaderboard(s, cfg, limit = cfg.board.size) {
   return s.payments
     .filter((p) => p.status === 'done' && p.best >= cfg.board.minPillars)
-    .sort((a, b) => (b.best - a.best) || (a.bestTs - b.bestTs))
+    .sort((a, b) => (b.best - a.best) || (b.bestTs - a.bestTs))
     .slice(0, limit);
 }
 

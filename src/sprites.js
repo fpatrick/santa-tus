@@ -14,13 +14,13 @@ export const SANTA = [
   '.WWWWRRRRRRRRRRRRRR.......',
   '..WW...WWWWWWWWWWWWW......',
   '.......WSSSSSSKSSSS.......',
-  '..bb...WSSSSSSSSSPPS......',
-  '.bBBb..WWWWWWWWWWWW.......',
-  'bBBBBb.WWWWWWWWWWWWW......',
-  'bBBBBbRWWWWWWWWWWWWRR.SS..',
-  'bBBBBRRRWWWWWWWWWWRRRRSS..',
-  '.bBBbRRRRRWWWWWWRRRRRR....',
-  '..bbRRRRRRKKYYKKRRRRR.....',
+  '.......WSSSSSSSSSPPS......',
+  '.......WWWWWWWWWWWW.......',
+  '.......WWWWWWWWWWWWW......',
+  '......RWWWWWWWWWWWWRR.SS..',
+  '.....RRRWWWWWWWWWWRRRRSS..',
+  '.....RRRRRWWWWWWRRRRRR....',
+  '....RRRRRRKKYYKKRRRRR.....',
   'gYgggggggggggggggggggggYg.',
   '.gGGGGGGGGGGGGGGGGGGGGGg..',
   '..gGGGYYYGGGGGGGGYYYGGg...',
@@ -30,7 +30,24 @@ export const SANTA = [
   '.........................Y',
 ];
 
+// Santa's present bag (drawn behind him, grows with each chimney). "TUS" is written on it.
+export const BAG = [
+  '.....bbbb.....', '....bYYYYb....', '.....bBBb.....', '....bBBBBb....', '...bBBBBBBb...',
+  '..bBBBBBBBBb..', '.bBBBBBBBBBBb.', 'bBBBBBBBBBBBBb', 'bBBBBBBBBBBBBb', 'bBBBBBBBBBBBBb',
+  'bBBBBBBBBBBBBb', '.bBBBBBBBBBBb.', '..bbbbbbbbbb..',
+];
+
 export const ICONS = {
+  ticket: [
+    '................', '................', 'yYYYYYYYYYYYYYYy', 'YWWWWWYWWWWWWWWY',
+    '.WWRWWYWWKKKKWW.', '.WRRRWYWWWWWWWW.', '.WWRWWYWWKKKWWW.', 'YWWWWWYWWWWWWWWY',
+    'yYYYYYYYYYYYYYYy', '................', '................', '................',
+  ],
+  cash: [
+    '................', '................', 'gGGGGGGGGGGGGGGg', 'gGGGGGGGGGGGGGGg',
+    'gGGGGGYYYYGGGGGg', 'gGGGGYYyyYYGGGGg', 'gGGGGYyYYYYGGGGg', 'gGGGGYyYYYYGGGGg',
+    'gGGGGYYyyYYGGGGg', 'gGGGGGYYYYGGGGGg', 'gGGGGGGGGGGGGGGg', 'gGGGGGGGGGGGGGGg',
+  ],
   cookie: [
     '....cccccccc....', '...cCCCCCCCCc...', '..cCCKCCCCCCCc..', '.cCCCCCCCKCCCCc.',
     'cCCCCCCCCCCCCCCc', 'cCCKCCCCCCCCKCCc', 'cCCCCCCKCCCCCCCc', 'cCCCCCCCCCCCCCCc',
@@ -78,18 +95,52 @@ export function spriteCanvas(map, scale = 4, tint = null) {
   return c;
 }
 
-// Draws Santa centred on (x, y), tilted by `angle` radians, with a dark outline for contrast.
-export function drawSanta(ctx, x, y, angle = 0, scale = 4) {
-  const img = spriteCanvas(SANTA, scale);
-  const sh = spriteCanvas(SANTA, scale, '#07051c');
+// A sprite with its dark outline baked in (one image, so the outline never flickers when it turns).
+function outlinedCanvas(map, scale) {
+  const key = `outlined|${map[0]}|${map.length}|${scale}`;
+  if (cache.has(key)) return cache.get(key);
+  const img = spriteCanvas(map, scale);
+  const sh = spriteCanvas(map, scale, '#07051c');
+  const c = document.createElement('canvas');
+  c.width = img.width + scale * 2;
+  c.height = img.height + scale * 2;
+  const g = c.getContext('2d');
+  for (const [dx, dy] of [[0, 1], [2, 1], [1, 0], [1, 2]]) g.drawImage(sh, dx * scale, dy * scale);
+  g.drawImage(img, scale, scale);
+  cache.set(key, c);
+  return c;
+}
+
+function bagCanvas(scale) {
+  const key = `bag|${scale}`;
+  if (cache.has(key)) return cache.get(key);
+  const c = outlinedCanvas(BAG, scale);
+  const g = c.getContext('2d');
+  g.font = `${scale * 3}px "Press Start 2P"`;
+  g.textAlign = 'center';
+  g.textBaseline = 'middle';
+  g.fillStyle = '#07051c';
+  g.fillText('TUS', c.width / 2 + scale / 2, c.height * 0.62 + scale / 2);
+  g.fillStyle = '#ffd23f';
+  g.fillText('TUS', c.width / 2, c.height * 0.62);
+  cache.set(key, c);
+  return c;
+}
+
+// Draws Santa centred on (x, y), tilted by `angle` radians. bag = size of his bag (1 = normal).
+export function drawSanta(ctx, x, y, angle = 0, scale = 4, bag = 1) {
+  const img = outlinedCanvas(SANTA, scale);
+  const sack = bagCanvas(scale);
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   ctx.rotate(angle);
-  ctx.imageSmoothingEnabled = false;
-  const ox = -img.width / 2;
-  const oy = -img.height / 2;
-  for (const [dx, dy] of [[-scale, 0], [scale, 0], [0, -scale], [0, scale]]) ctx.drawImage(sh, ox + dx, oy + dy);
-  ctx.drawImage(img, ox, oy);
+  ctx.imageSmoothingEnabled = true; // smooth turning, no shimmer
+  ctx.imageSmoothingQuality = 'high';
+  // the bag sits behind Santa, its bottom-right corner fixed on the sleigh
+  const bx = -img.width / 2 + 8 * scale;
+  const by = img.height / 2 - 6 * scale;
+  ctx.drawImage(sack, bx - sack.width * bag, by - sack.height * bag, sack.width * bag, sack.height * bag);
+  ctx.drawImage(img, -img.width / 2, -img.height / 2);
   ctx.restore();
 }
 

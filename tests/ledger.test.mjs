@@ -64,8 +64,9 @@ test('T19: undo last payment: out of the totals and the jackpot, kept as "undone
 test('R12: ticket numbers keep counting across payments', () => {
   const sess = newSession();
   playPayment(sess, 'p2', { tries: [21], wheel: ['t2'], choices: ['sticker'] });
-  const r = playPayment(sess, 'p2', { tries: [21], wheel: ['free'], choices: ['sticker'] });
-  assert.deepEqual(r.p.tickets, [4]);
+  const first = CONFIG.tickets.p20 + 2;
+  const r = playPayment(sess, 'p2', { tries: [21], wheel: ['t5'], choices: ['sticker'] });
+  assert.deepEqual(r.p.tickets, Array.from({ length: CONFIG.tickets.p20 + 5 }, (_, i) => first + 1 + i));
   assert.equal(fmtTickets([41, 42, 43, 50]), '#0041 TO #0043, #0050');
   assert.equal(fmtEuro(21), '€21');
   assert.equal(fmtEuro(10.2), '€10.20');

@@ -68,7 +68,7 @@ export function payment({ testMode = false, drawDone = false } = {}) {
       <span class="key">${p.key}</span>${esc(p.label)}${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}</button>`).join('');
     const el = open(`<div class="box"><h1>NEW PAYMENT</h1>
       ${testMode ? `<p style="color: var(--gold)">${esc(CONFIG.text.testMode)}</p>` : ''}
-      ${drawDone ? '<p style="color: var(--red)">THE DRAW IS DONE: NEW TICKETS ARE NOT IN THE DRAW.</p>' : ''}
+      ${drawDone ? '<p style="color: var(--red)">THE DRAW IS DONE: NEW ${CONFIG.text.tickets} ARE NOT IN THE DRAW.</p>' : ''}
       <div class="btns">${btns}</div>
       <div class="btns"><button class="btn ghost" data-id="">CANCEL</button></div>
       <div class="hint">Press <kbd>1</kbd> or <kbd>2</kbd> after you take the cash. <kbd>ESC</kbd> cancels.</div></div>`);
@@ -128,9 +128,9 @@ export function nickname({ pid, best, rank, legend }) {
 export function handover({ items, pid, best, name }) {
   return new Promise((resolve) => {
     const li = items.map((it) => {
-      if (it.kind === 'tickets') return `<li class="tickets">GIVE ${it.count} DRAW TICKET${it.count > 1 ? 'S' : ''}<br><b>${fmtTickets(it.tickets)}</b></li>`;
+      if (it.kind === 'tickets') return `<li class="tickets">GIVE ${it.count} ${it.count > 1 ? CONFIG.text.tickets : CONFIG.text.ticket}<br><b>${fmtTickets(it.tickets)}</b></li>`;
       if (it.kind === 'cash') return `<li class="cash">PAY ${fmtEuro(it.amount)} CASH</li>`;
-      if (it.kind === 'legend') return '<li class="legend">LEGEND: NAME ON THE LEGENDS LIST</li>';
+      if (it.kind === 'legend') return '<li class="legend">LEGEND TAG ON THE BEST PLAYERS LIST</li>';
       if (it.kind === 'master') return '<li class="legend">MASTER TAG ON THE BOARD</li>';
       return `<li>GIVE ${esc(it.text)}</li>`;
     }).join('');

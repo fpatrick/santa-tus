@@ -39,7 +39,7 @@ export function staffPanel(api) {
           <div><span>Undone:</span> ${t.undone}</div>
           <div><span>Money in:</span> ${fmtEuro(t.moneyIn)}</div>
           <div><span>Cash prizes paid:</span> ${fmtEuro(t.cashOut)}</div>
-          <div><span>Tickets issued:</span> ${t.tickets} (next ${fmtTicket(i.nextTicket)})</div>
+          <div><span>Jackpot tickets issued:</span> ${t.tickets} (next ${fmtTicket(i.nextTicket)})</div>
           <div><span>Jackpot now:</span> ${fmtEuro(t.jackpot)}</div>
           <div><span>Draw:</span> ${t.lastDraw ? (t.lastDraw.ticket ? fmtTicket(t.lastDraw.ticket) : 'no tickets') : 'not yet'}</div>
           <div><span>Laptop clock:</span> ${new Date().toLocaleString('en-IE')}</div>
@@ -124,11 +124,11 @@ export function staffPanel(api) {
 export function drawScreen(ev, pool) {
   return new Promise((resolve) => {
     const el = open(`<div class="box gold wide"><h1>JACKPOT DRAW</h1>
-      <p>${ev.count} TICKETS IN THE DRAW · JACKPOT ${fmtEuro(ev.jackpot)}</p>
+      <p>${ev.count} ${CONFIG.text.tickets} IN THE DRAW · JACKPOT ${fmtEuro(ev.jackpot)}</p>
       <div class="drawnum">----</div><p class="who"></p><div class="hint"></div></div>`, 'full clear');
     const num = el.querySelector('.drawnum');
     if (!ev.ticket) {
-      num.textContent = 'NO TICKETS';
+      num.textContent = 'NO TICKETS'; // short: it is very big on screen
       num.style.fontSize = '90px';
       el.querySelector('.who').textContent = 'THE JACKPOT GOES TO CHARITY.';
       el.querySelector('.hint').innerHTML = 'Press <kbd>ENTER</kbd>.';
@@ -144,7 +144,7 @@ export function drawScreen(ev, pool) {
       if (k >= secs) {
         clearInterval(timer);
         num.textContent = fmtTicket(ev.ticket);
-        el.querySelector('.who').textContent = `THE HOLDER OF TICKET ${fmtTicket(ev.ticket)} WINS ${fmtEuro(ev.jackpot)}!`;
+        el.querySelector('.who').textContent = `THE HOLDER OF ${CONFIG.text.ticket} ${fmtTicket(ev.ticket)} WINS ${fmtEuro(ev.jackpot)}!`;
         el.querySelector('.hint').innerHTML = 'Press <kbd>ENTER</kbd> to close.';
         sfx.reveal(4);
         fx.celebrate(4, 960, 560, '', '#ffd23f');

@@ -73,28 +73,30 @@ async function flyOnce(app, name, p) {
 async function giveAward(app, name, p, kind) {
   const ev = await app.commit(name, R.awardBody(kind, p, app.led(name), CONFIG));
   if (kind === 'p20') {
-    sfx.ticket(ev.tickets.length);
-    fx.celebrate(2, 640, 560, '', '#ff8fd0');
-    await screens.message('DRAW TICKET!', [`TICKET ${fmtTickets(ev.tickets)}`, 'NOW SPIN THE WHEEL!'], { secs: CONFIG.timing.awardShow, cls: 'gold' });
+    sfx.milestone(2);
+    fx.celebrate(2, 640, 560, '', '#ffd23f');
+    const lines = ev.tickets.length ? [`${CONFIG.text.tickets}: ${fmtTickets(ev.tickets)}`] : [];
+    await screens.message(CONFIG.text.spinWon, lines, { secs: CONFIG.timing.awardShow, cls: 'gold' });
   } else if (kind === 'p30') {
     sfx.milestone(3);
     fx.celebrate(3, 640, 560, '', '#ffd23f');
-    await screens.message('LEGEND!', [`+${ev.tickets.length} TICKETS: ${fmtTickets(ev.tickets)}`, 'YOUR NAME GOES ON THE LEGENDS LIST'], { secs: CONFIG.timing.awardShow + 1, cls: 'gold' });
+    await screens.message('LEGEND!', [`+${ev.tickets.length} ${CONFIG.text.tickets}: ${fmtTickets(ev.tickets)}`, 'LEGEND TAG ON YOUR NAME'], { secs: CONFIG.timing.awardShow + 1, cls: 'gold' });
   } else {
     sfx.milestone(1);
     await screens.message('THANK YOU!', [`1 ${CONFIG.consolation.item} FOR YOU`], { secs: CONFIG.timing.awardShow });
   }
 }
 
-// R7: pick and save the result first, then spin.
+// R7: the wheel shows, the player clicks, then the result is picked and saved, then it spins.
 async function spinWheel(app, name, p) {
+  app.setScene('wheel');
+  await app.wheel.waitForClick();
   const ev = await app.commit(name, R.wheelBody(p, app.led(name), CONFIG));
   const outcome = CONFIG.wheel.outcomes.find((o) => o.id === ev.result);
-  app.setScene('wheel');
   music.duck(true);
   await app.wheel.spin(outcome);
   const lines = [];
-  if (ev.tickets.length) lines.push(`TICKETS ${fmtTickets(ev.tickets)}`);
+  if (ev.tickets.length) lines.push(`${CONFIG.text.tickets}: ${fmtTickets(ev.tickets)}`);
   if (ev.cash) lines.push('STAFF WILL PAY YOU AT THE END');
   if (ev.freeTry) lines.push('ONE MORE TRY!');
   await screens.message(outcome.label, lines, { secs: CONFIG.timing.awardShow, cls: 'gold' });
@@ -133,10 +135,10 @@ export function flightHooks(app) {
       const tier = MILESTONE_TIER[n];
       if (tier && n < TH.beat) {
         sfx.milestone(tier);
-        fx.celebrate(tier, CONFIG.physics.santaX, app.flight.y, CONFIG.text.milestones[n], tier >= 3 ? '#ffd23f' : '#3dff8b');
+        fx.celebrate(Math.min(tier, 2), CONFIG.physics.santaX, app.flight.y, '', tier >= 3 ? '#ffd23f' : '#3dff8b'); // no text while flying
       }
     },
-    onLevel: (lv) => { sfx.level(lv.n); fx.popText(`LEVEL ${lv.n} ${lv.name}`, { x: 640, y: 420, size: 64, color: lv.color, life: CONFIG.timing.banner }); },
+    onLevel: (lv) => sfx.level(lv.n), // a sound only: text in the middle distracts the player
     onCrash: (n, x, y) => {
       music.stop(0.08);
       sfx.crash();

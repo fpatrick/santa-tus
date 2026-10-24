@@ -13,7 +13,7 @@ const CW = cfg.world.chimneyW;
 export function createFlight(hooks = {}) {
   const f = {
     state: 'ready', // ready | flying | crashed | beat
-    course: [], dist: 0, y: cfg.world.firstGap, vy: 0, t: 0, flyT: 0, score: 0, level: 1, angle: 0,
+    course: [], dist: 0, y: cfg.world.firstGap, vy: 0, t: 0, flyT: 0, score: 0, level: 1, angle: 0, bag: 1,
     autopilot: null, // { crashAfter } for the title screen demo
   };
 
@@ -26,6 +26,7 @@ export function createFlight(hooks = {}) {
     f.score = 0;
     f.level = 1;
     f.angle = 0;
+    f.bag = 1;
     f.state = 'ready';
   };
 
@@ -64,6 +65,7 @@ export function createFlight(hooks = {}) {
     const sx = ph.santaX + f.dist;
     while (f.score < f.course.length && sx > f.course[f.score].x + CW / 2) {
       f.score += 1;
+      f.course[f.score - 1].collectAt = f.t; // its presents fly into the bag
       if (hooks.onScore) hooks.onScore(f.score);
       if (f.score >= cfg.thresholds.beat) {
         f.state = 'beat';
@@ -84,15 +86,21 @@ export function createFlight(hooks = {}) {
 
   f.render = (ctx, dt, hud) => {
     const lv = levelFor(Math.min(f.score + 1, cfg.thresholds.beat), cfg);
-    drawSky(ctx, f.t, f.dist, lv.color);
+    const sc = cfg.scenery;
+    f.bag += (Math.min(sc.bagMax, 1 + f.score * sc.bagGrow) - f.bag) * Math.min(1, dt * 3); // the bag grows
+    drawSky(ctx, f.t, f.dist, lv.n);
+    const bag = { x: ph.santaX - 44, y: f.y - 8 };
     for (const ch of f.course) {
       const sx = ch.x - f.dist;
-      if (sx < -CW - 40 || sx > cfg.world.width + CW + 40) continue;
-      drawChimney(ctx, ch, sx, gapAt(ch, f.flyT), levelFor(ch.i, cfg).color, ch.i <= f.score);
+      if (sx < -CW - 60 || sx > cfg.world.width + CW + 60) continue;
+      const lvc = levelFor(ch.i, cfg);
+      const warn = ch.i === lvc.to && ch.i < cfg.thresholds.beat && ch.i > f.score ? levelFor(ch.i + 1, cfg).color : null;
+      const collect = ch.collectAt != null ? { t0: ch.collectAt, ...bag } : null;
+      drawChimney(ctx, ch, sx, gapAt(ch, f.flyT), { passed: ch.i <= f.score, t: f.t, warn, collect });
     }
     drawRoof(ctx, f.dist);
-    drawSanta(ctx, ph.santaX, f.y, f.angle, 4);
-    drawSnow(ctx, dt);
+    drawSanta(ctx, ph.santaX, f.y, f.angle, 4, f.bag);
+    drawSnow(ctx, dt, lv.n);
     if (hud) drawHud(ctx, f, lv, hud);
   };
 
