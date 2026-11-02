@@ -108,9 +108,9 @@ const FRONT = {
 
 const SIDE = {
   0: [
-    'ogwwwwwwwwwwwwwwwwgo..',
-    'owwwwwwwwwwwwwwwwwwo..',
-    'ogggwwwwwwwwwwwggggo..',
+    '..ogwwwwwwwwwwwwwgo...',
+    '..owwwwwwwwwwwwwwwo...',
+    '..oggwwwwwwwwwwgggo...',
     '....ossssssssssso.....',
     '...oossssssssssso.....',
     '..ogssssssssssssso....',
@@ -130,9 +130,9 @@ const SIDE = {
     '..........oGGoo.......',
   ],
   1: [
-    'ogwwwwwwwwwwwwwwwwgo..',
-    'owwwwwwwwwwwwwwwwwwo..',
-    'ogggwwwwwwwwwwwggggo..',
+    '..ogwwwwwwwwwwwwwgo...',
+    '..owwwwwwwwwwwwwwwo...',
+    '..oggwwwwwwwwwwgggo...',
     '....ossssssssssso.....',
     '...oossssssssssso.....',
     '..ogssssssssssssso....',
