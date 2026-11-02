@@ -33,7 +33,8 @@ The person you work with writes simple English as a second language. Answer in s
 | Chimneys, the present stack (and its flight into the bag), level warning | `src/chimney.js` |
 | The presents themselves: big and small boxes, patterns, ribbons, bows | `src/gifts.js` |
 | Santa, his sleigh, his TUS bag and its ropes, his laugh faces (shapes turned into pixel art) | `src/santa.js` (helpers in `src/drawkit.js`) |
-| Santa's head, faces, beard and hat (or bald head without it) | `src/santahead.js` |
+| Santa's hat (and the model face used only when the hat is off) | `src/santahead.js` |
+| Santa's cute faces and beards, hand-made pixel sprites (side and front, ok / happy / sad) | `src/santaface.js` |
 | Santa standing after a crash: poses ok / happy / sad | `src/santastand.js` |
 | Crash scene: tumble, hat flies, bag rolls, zoom, speech box (C1-C4) | `src/crash.js` |
 | What Santa says after a crash, and how long the box stays (C1-C4) | `src/messages.js` (words in `config.js` `text.crash`) |

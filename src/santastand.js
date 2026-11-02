@@ -3,7 +3,8 @@
 // frame 0/1 = two steps of the waving / cheering animation. Same pixel-art pipeline as santa.js.
 
 import { INK, PAD, lin, shape, maskCtx, canvasFor } from './drawkit.js';
-import { pixelate, texture, enlarge, stampEye } from './pixelart.js';
+import { pixelate, texture, enlarge } from './pixelart.js';
+import { stampFace } from './santaface.js';
 
 const W = 150;
 const H = 230;
@@ -71,8 +72,8 @@ function face(g, pose, frame) {
     shape(g, (gg) => gg.arc(x, y, r, 0, Math.PI * 2), FUR(g, y - r, y + r), 2.5, 'hair');
   }
   // cheeks
-  g.fillStyle = happy ? 'rgba(255,70,90,0.8)' : 'rgba(255,90,110,0.5)';
-  for (const x of [58, 92]) { g.beginPath(); g.ellipse(x, 76, 7, 5, 0, 0, Math.PI * 2); g.fill(); }
+  g.fillStyle = happy ? 'rgba(255,70,90,0.85)' : 'rgba(255,105,130,0.75)'; // round pink blush, under the eyes
+  for (const x of [55, 95]) { g.beginPath(); g.ellipse(x, 77, 7, 5, 0, 0, Math.PI * 2); g.fill(); }
   // beard
   shape(g, (gg) => {
     gg.moveTo(50, 74); gg.bezierCurveTo(46, 100, 58, 124, 75, 128); gg.bezierCurveTo(92, 124, 104, 100, 100, 74);
@@ -87,26 +88,24 @@ function face(g, pose, frame) {
     g.strokeStyle = '#3a0a14'; g.lineWidth = 4;
     g.beginPath(); g.moveTo(66, 100); g.quadraticCurveTo(75, 91, 84, 100); g.stroke();
   } else {
-    shape(g, (gg) => { gg.moveTo(64, 92); gg.quadraticCurveTo(75, 106, 86, 92); gg.closePath(); }, '#3a0a14', 2.5);
-    g.fillStyle = '#ffffff'; g.fillRect(67, 92, 16, 3);
+    shape(g, (gg) => { gg.moveTo(66, 91); gg.quadraticCurveTo(75, 104, 84, 91); gg.closePath(); }, '#3a0a14', 2.5); // open happy smile
+    g.fillStyle = '#e8435a'; g.beginPath(); g.ellipse(75, 97, 4, 2.5, 0, 0, Math.PI * 2); g.fill();
   }
   // moustache and nose
-  shape(g, (gg) => { gg.moveTo(75, 84); gg.bezierCurveTo(66, 78, 52, 80, 48, 90); gg.bezierCurveTo(58, 88, 68, 92, 75, 88); gg.bezierCurveTo(82, 92, 92, 88, 102, 90); gg.bezierCurveTo(98, 80, 84, 78, 75, 84); },
+  shape(g, (gg) => { gg.moveTo(75, 83); gg.bezierCurveTo(68, 79, 57, 80, 53, 87); gg.bezierCurveTo(61, 87, 69, 89, 75, 87); gg.bezierCurveTo(81, 89, 89, 87, 97, 87); gg.bezierCurveTo(93, 80, 82, 79, 75, 83); },
     '#ffffff', 2.5, 'hair');
-  shape(g, (gg) => gg.ellipse(75, 76, 7, 6, 0, 0, Math.PI * 2), '#ff7f7f', 2);
+  shape(g, (gg) => gg.ellipse(75, 77, 5, 4.5, 0, 0, Math.PI * 2), '#ff8f8f', 2);
   // eyes and eyebrows
   g.strokeStyle = INK; g.fillStyle = INK; g.lineWidth = 3.5;
   for (const x of [64, 86]) {
     if (happy) { g.beginPath(); g.moveTo(x - 5, 66); g.quadraticCurveTo(x, 59, x + 5, 66); g.stroke(); } // ^ ^
-    // open eyes: stamped later as crisp pixels (pixelart.js stampEye)
+    // open eyes: the hand-made pixel face (santaface.js) is drawn over this
   }
   g.strokeStyle = '#f2ebe0'; g.lineWidth = 4;
   if (sad) { // brows up in the middle
-    g.beginPath(); g.moveTo(56, 56); g.lineTo(70, 52); g.moveTo(94, 56); g.lineTo(80, 52); g.stroke();
+    g.beginPath(); g.moveTo(56, 58); g.lineTo(67, 55); g.moveTo(94, 58); g.lineTo(83, 55); g.stroke();
     g.fillStyle = '#7fd4ff'; // a tear
     g.beginPath(); g.ellipse(89, 76 + frame * 4, 3, 4.5, 0, 0, Math.PI * 2); g.fill();
-  } else {
-    g.beginPath(); g.moveTo(56, 54); g.quadraticCurveTo(64, 49, 71, 54); g.moveTo(79, 54); g.quadraticCurveTo(86, 49, 94, 54); g.stroke();
   }
 }
 
@@ -116,7 +115,8 @@ function standCanvas(pose, frame, scale) {
     const paint = (g) => body(g, pose, frame);
     const art = pixelate(canvasFor(ART_K * 10, W, H, paint));
     texture(art, canvasFor(ART_K * 10, W, H, (g) => paint(maskCtx(g))));
-    if (pose !== 'happy') for (const x of [64, 86]) stampEye(art, (PAD + x) * ART_K, (PAD + (pose === 'sad' ? 73 : 65)) * ART_K, x > 75);
+    // the hand-made pixel face over the head (head centre x 75, top y 42 in the model)
+    stampFace(art, (PAD + 75) * ART_K - 8, (PAD + 42 + (pose === 'sad' ? 6 : 0)) * ART_K, pose);
     cache.set(key, enlarge(art, factor(scale)));
   }
   return cache.get(key);

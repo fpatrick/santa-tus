@@ -5,21 +5,22 @@ import { INK, lin, shape } from './drawkit.js';
 
 // Head, beard and hat. mouth: 0 = closed, 1 = laughing wide open, 2 = laughing half open.
 // When he laughs his head tips back a little and his eyes close happily. hat = false: he lost it.
-export function head(g, mouth, hat = true) {
+// face = false: only the hat is drawn here; the face is a hand-made pixel sprite (santaface.js).
+export function head(g, mouth, hat = true, face = true) {
   g.save();
+  if (!face) { drawHat(g); g.restore(); return; }
   if (mouth) { g.translate(150, 70); g.rotate(mouth === 1 ? -0.14 : -0.07); g.translate(-150, -70); }
   // face
   shape(g, (gg) => gg.arc(150, 44, 20, 0, Math.PI * 2), lin(g, 132, 30, 170, 60, [[0, '#ffd9bd'], [1, '#e8a27c']]), 3);
-  g.fillStyle = mouth ? 'rgba(255,70,90,0.8)' : 'rgba(255,90,110,0.55)';
-  g.beginPath(); g.ellipse(160, 50, 7, 5, 0, 0, Math.PI * 2); g.fill();
+  g.fillStyle = mouth ? 'rgba(255,70,90,0.85)' : 'rgba(255,105,130,0.75)'; // round pink blush
+  g.beginPath(); g.ellipse(158, 52, 7, 5, 0, 0, Math.PI * 2); g.fill();
   if (mouth) { // happy closed eye
     g.strokeStyle = INK; g.lineWidth = 3;
     g.beginPath(); g.moveTo(155, 42); g.quadraticCurveTo(160, 35, 165, 42); g.stroke();
   } else {
-    // open eye: stamped later as crisp pixels (pixelart.js stampEye)
+    // (with the hat on, the open face is the pixel sprite in santaface.js)
   }
   g.strokeStyle = '#f2ebe0'; g.lineWidth = 3;
-  g.beginPath(); g.moveTo(154, mouth ? 31 : 33); g.quadraticCurveTo(161, 28, 167, 33); g.stroke(); // eyebrow
   shape(g, (gg) => gg.arc(170, 46, 5.5, 0, Math.PI * 2), '#ff7f7f', 2); // nose
   // beard: big and curly, warm white with soft shading strands
   const beard = (gg) => {

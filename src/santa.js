@@ -3,7 +3,8 @@
 // pixel art (see "pixel art" below). Each size and face is made ONCE and cached, so nothing flickers.
 // scale 4 (in the game) = 1 screen pixel per art pixel; the title screen shows it 3x bigger.
 
-import { pixelate, stampText, enlarge, texture, stampEye } from './pixelart.js';
+import { pixelate, stampText, enlarge, texture } from './pixelart.js';
+import { stampSideFace } from './santaface.js';
 import { INK, PAD, lin, shape, maskCtx, canvasFor } from './drawkit.js';
 import { head, drawHat } from './santahead.js';
 
@@ -74,7 +75,7 @@ function sleigh(g) {
 }
 
 // ---------- Santa ----------
-function santa(g, mouth = 0, hat = true) {
+function santa(g, mouth = 0, hat = true, face = true) {
   // back arm (dark) holding the sleigh edge
   shape(g, (gg) => { gg.moveTo(112, 84); gg.bezierCurveTo(100, 100, 102, 112, 112, 118); gg.lineTo(124, 112); gg.closePath(); }, '#8e1224', 3, 'coat');
   // coat body
@@ -106,7 +107,7 @@ function santa(g, mouth = 0, hat = true) {
   g.strokeStyle = '#6b3a14';
   g.lineWidth = 3;
   g.beginPath(); g.moveTo(220, 100); g.quadraticCurveTo(240, 104, 258, 90); g.stroke();
-  head(g, mouth, hat);
+  head(g, mouth, hat, face);
 }
 
 // ---------- the TUS bag ----------
@@ -170,6 +171,9 @@ const BAG_ANCHOR = { x: 98, y: 132 + TOP }; // ... sits here, just behind the sl
 const ART_K = 0.24; // art pixels per model unit (chunky arcade pixels)
 const factor = (scale) => Math.max(1, Math.round(scale / 2)); // game (4) = 2x2 screen pixels, title (10) = 5
 
+// Where the side face sprite goes, in art pixels (top-left, just under the hat).
+const FACE_AT = { x: 28, y: 9 };
+
 // empty = the sleigh without Santa (he got out after a crash).
 function santaCanvas(scale, mouth, hat = true, empty = false) {
   const key = `santa|${scale}|${mouth}|${hat}|${empty}`;
@@ -180,15 +184,15 @@ function santaCanvas(scale, mouth, hat = true, empty = false) {
       g.translate(150, 122); // Santa is 20% bigger than the sleigh, so he reads well at game size
       g.scale(1.2, 1.2);
       g.translate(-150, -122);
-      if (!empty) santa(g, mouth, hat);
+      if (!empty) santa(g, mouth, hat, !hat); // with the hat on, the face comes from the pixel sprite
       g.restore();
       sleigh(g);
     };
     const art = pixelate(canvasFor(ART_K * 10, UNITS.w, UNITS.h, paint));
     const mask = canvasFor(ART_K * 10, UNITS.w, UNITS.h, (g) => paint(maskCtx(g)));
     texture(art, mask); // knitted hat, velvet coat, fluffy fur, hair strands
-    // the open eye, as crisp anime pixels (model point 160, 44 after Santa's 1.2x scale)
-    if (!empty && !mouth) stampEye(art, (PAD + 150 + (160 - 150) * 1.2) * ART_K, (PAD + TOP + 122 + (44 - 122) * 1.2) * ART_K, true);
+    // the face: a clean hand-made pixel sprite (santaface.js); the model face is too small to convert well
+    if (!empty && hat) stampSideFace(art, FACE_AT.x, FACE_AT.y, mouth);
     cache.set(key, enlarge(art, factor(scale)));
   }
   return cache.get(key);

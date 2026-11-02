@@ -99,19 +99,13 @@ export function texture(art, mask) {
 
 const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));
 
-// A small cute eye (2 x 3 art pixels): dark brown with one white shine pixel, and a pink blush
-// pixel pair below it. (cx, cy) = centre in art pixels. right = shine and blush lean to the right side.
-const EYE = ['KK', 'WK', 'KK', '..', 'PP'];
-const EYE_RGB = { K: [40, 22, 26], W: [255, 255, 255], P: [255, 128, 150] };
-export function stampEye(c, cx, cy, right = true) {
+// A cute eye for a small sprite: a 1 x 2 dark-brown oval. Rules from cute pixel faces:
+// no white around the eye (white = scary), no lashes or brows pressing on it (= angry),
+// placed low and wide on the face, with pink blush on the cheeks (drawn in the model).
+const EYE_RGB = [44, 26, 30];
+export function stampEye(c, cx, cy) {
   const g = c.getContext('2d');
   g.setTransform(1, 0, 0, 1, 0, 0);
-  const x0 = Math.round(cx - 1);
-  const y0 = Math.round(cy - 1.5);
-  EYE.forEach((row, y) => [...row].forEach((ch, x) => {
-    if (ch === '.') return;
-    const px = right ? x : 1 - x;
-    g.fillStyle = `rgb(${EYE_RGB[ch].join(',')})`;
-    g.fillRect(x0 + px, y0 + y, 1, 1);
-  }));
+  g.fillStyle = `rgb(${EYE_RGB.join(',')})`;
+  g.fillRect(Math.round(cx - 0.5), Math.round(cy - 1), 1, 2);
 }
