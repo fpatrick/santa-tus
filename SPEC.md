@@ -19,7 +19,7 @@ Every payment gets one set of prizes, decided by its best try.
 - **R1 Prices:** €2 = 1 try, €5 = 3 tries [`prices`]. Staff choose one after typing the code.
 - **R2 Best try counts:** inside one payment, the highest chimney reached in any try decides the prizes.
 - **R3 Free restart:** crash before chimney 5 and the try restarts without using it, at most 3 times per try [`freeRestart`] (*proposal*, on).
-- **R4 The course:** 50 chimneys in 5 levels. Harder at 10, 20, 30, 40; a sound announces each level (no text on screen). Each level has its own sky colour and more snow (almost none at level 1, a storm at level 5) [`scenery`]. Bottom: brick chimneys. Top: a stack of big and small Christmas presents (patterned paper, ribbons, bows); when Santa passes, the presents fly into his TUS bag, which grows with each chimney, and Santa laughs (mouth opens, no sound) [`scenery.laughSecs`]. Passing 50 beats the game and ends the try.
+- **R4 The course:** 50 chimneys in 5 levels. Harder at 10, 20, 30, 40; a sound announces each level (no text on screen). Each level has its own sky colour and more snow (almost none at level 1, a storm at level 5) [`scenery`]. Bottom: brick chimneys. Top: a packed stack of wide and tall Christmas presents with no gaps (patterned paper, ribbons, bows on the front); when Santa passes, the presents fly into his TUS bag, which grows with each chimney, and Santa laughs (mouth opens, no sound) [`scenery.laughSecs`]. Passing 50 beats the game and ends the try.
 
 | Level | Chimneys | Feel | What changes [`levels`] | Target pass rate (*proposal*) |
 | --- | --- | --- | --- | --- |

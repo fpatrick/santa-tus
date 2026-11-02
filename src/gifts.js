@@ -1,5 +1,5 @@
-// gifts.js: the Christmas presents stacked above each chimney: big and small boxes, wrapping paper
-// patterns, ribbons, bows and gift tags. chimney.js stacks them and flies them into Santa's bag.
+// gifts.js: the Christmas presents stacked above each chimney, packed with no gaps: wide and tall boxes
+// of different sizes, wrapping paper patterns, ribbons, bows and gift tags. chimney.js stacks them and flies them into Santa's bag.
 
 import { CONFIG } from './config.js';
 
@@ -19,36 +19,54 @@ export function rand(seed) {
   };
 }
 
-// The presents of one chimney, from the gap upwards. Each layer is one big present, two small
-// presents side by side, or (not at the bottom) one small present. y = distance from the gap.
+// The presents of one chimney, from the gap upwards, packed with no gaps: each layer is a full-width
+// block, cut into wide (horizontal) and tall (vertical) presents of different sizes. Layer kinds:
+// one wide present, two wide presents side by side, 2-3 tall presents, or a tall present next to a
+// column of two small ones. y = distance from the gap. The bows sit on the front, where the ribbons cross.
 const PATTERNS = ['plain', 'dots', 'stripes', 'stars', 'checks', 'snow'];
+const SEAM = 3; // the dark line between two presents
 export function gifts(ch) {
   if (ch._gifts) return ch._gifts;
   const r = rand(ch.i * 131 + 7);
-  const pick = () => ({ col: GIFT_COLORS[Math.floor(r() * GIFT_COLORS.length)], pat: PATTERNS[Math.floor(r() * PATTERNS.length)], tag: r() < 0.3 });
+  const W = CW + 4; // the stack is one straight column, as wide as the chimney
+  const pick = () => ({ col: GIFT_COLORS[Math.floor(r() * GIFT_COLORS.length)], pat: PATTERNS[Math.floor(r() * PATTERNS.length)], tag: r() < 0.3, bowFront: true });
   const list = [];
+  const cell = (x0, w, y, h, big = false) => list.push({ w: w - SEAM, h: h - SEAM, dx: Math.round(x0 + w / 2 - W / 2), y: y + SEAM / 2, big, ...pick() });
+  const split = (n, min) => { // n widths that add up to W, none smaller than min
+    const cuts = [];
+    let left = W;
+    for (let i = n; i > 1; i--) { const w = Math.round(min + r() * (left - min * i)); cuts.push(w); left -= w; }
+    cuts.push(left);
+    return cuts;
+  };
   let h = 0;
-  let layer = 0;
   while (h < 1000) {
     const kind = r();
-    if (kind < 0.45) { // one big present
-      const gh = 54 + Math.floor(r() * 4) * 8;
-      list.push({ w: CW - 6 + Math.floor(r() * 4) * 6, h: gh, dx: Math.round((r() - 0.5) * 10), y: h, big: true, ...pick() });
-      h += gh;
-    } else if (kind < 0.85 || layer === 0) { // two small presents
-      const w1 = Math.round(CW * (0.42 + r() * 0.14));
-      const w2 = CW + 4 - w1;
-      const h1 = 30 + Math.floor(r() * 4) * 6;
-      const h2 = 30 + Math.floor(r() * 4) * 6;
-      list.push({ w: w1, h: h1, dx: Math.round(-CW / 2 + w1 / 2 - 2), y: h, ...pick() });
-      list.push({ w: w2, h: h2, dx: Math.round(CW / 2 - w2 / 2 + 2), y: h, ...pick() });
-      h += Math.max(h1, h2);
-    } else { // one small present in the middle
-      const gh = 32 + Math.floor(r() * 3) * 6;
-      list.push({ w: Math.round(CW * (0.5 + r() * 0.2)), h: gh, dx: Math.round((r() - 0.5) * 30), y: h, ...pick() });
-      h += gh;
+    if (kind < 0.25) { // one wide present
+      const H = 46 + Math.floor(r() * 3) * 8;
+      cell(0, W, h, H, true);
+      h += H;
+    } else if (kind < 0.5) { // two wide presents side by side
+      const H = 36 + Math.floor(r() * 3) * 6;
+      let x0 = 0;
+      for (const w of split(2, 46)) { cell(x0, w, h, H); x0 += w; }
+      h += H;
+    } else if (kind < 0.75) { // 2 or 3 tall (vertical) presents
+      const H = 70 + Math.floor(r() * 3) * 8;
+      let x0 = 0;
+      for (const w of split(r() < 0.5 ? 2 : 3, 32)) { cell(x0, w, h, H); x0 += w; }
+      h += H;
+    } else { // a tall present next to a column of two small ones
+      const H = 72 + Math.floor(r() * 3) * 8;
+      const tw = Math.round(W * (0.36 + r() * 0.1));
+      const tallLeft = r() < 0.5;
+      const h1 = Math.round(H * (0.4 + r() * 0.2));
+      cell(tallLeft ? 0 : W - tw, tw, h, H);
+      const cx0 = tallLeft ? tw : 0;
+      cell(cx0, W - tw, h, h1);
+      cell(cx0, W - tw, h + h1, H - h1);
+      h += H;
     }
-    layer += 1;
   }
   ch._gifts = list;
   return list;
@@ -137,10 +155,10 @@ export function drawGift(g, p) {
   g.fillStyle = 'rgba(255,255,255,0.45)';
   g.fillRect(-rw / 2 + 1, y, 2, h);
   g.fillRect(x, -rw / 2 + 1, w, 2);
-  // bow on top: two loops, two tails, a knot
-  const s = Math.min(1, w / 120) * (p.big ? 1 : 0.8);
+  // bow: two loops, two tails, a knot. In the packed stack it sits on the front, where the ribbons cross.
+  const s = p.bowFront ? Math.min(0.75, Math.min(w, h) / 80) : Math.min(1, w / 120) * (p.big ? 1 : 0.8);
   g.save();
-  g.translate(0, y + 2);
+  g.translate(0, p.bowFront ? 4 : y + 2);
   g.scale(s, s);
   g.fillStyle = rib;
   g.strokeStyle = '#1a0a14';

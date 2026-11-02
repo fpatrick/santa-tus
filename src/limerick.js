@@ -237,13 +237,14 @@ function silhouette(c) {
 export function buildLimerick(logoFn) {
   seed = 7;
   flags = [];
-  // trees stand in the gaps and overlap their neighbours a little, so the town is packed close together
-  const plan = [['geo', 3], ['tree', 150], ['castle'], ['tree', 170], ['tus', 98, 220], ['geo', 4], ['tree', 160],
-    ['cathedral'], ['clayton'], ['tree', 175], ['geo', 3], ['tree', 150], ['tus', 80, 170]];
+  // a little gap between buildings; a few trees stand in the gaps and overlap their neighbours a little
+  const plan = [['geo', 3], ['tree', 150], ['castle'], ['tus', 98, 220], ['geo', 4], ['tree', 165],
+    ['cathedral'], ['clayton'], ['geo', 3], ['tree', 155], ['tus', 80, 170]];
+  const GAP = 5; // a little space between buildings (art pixels)
   const widths = { castle: 214, cathedral: 144, clayton: 58 };
   const treeStep = (h) => Math.round(h * 0.5 * 0.42); // how much room a tree takes in the row
   let SW = 2;
-  for (const p of plan) SW += (p[0] === 'geo' ? p[1] * 46 : p[0] === 'tree' ? treeStep(p[1]) : p[0] === 'tus' ? p[1] : widths[p[0]]) + 1;
+  for (const p of plan) SW += (p[0] === 'geo' ? p[1] * 46 : p[0] === 'tree' ? treeStep(p[1]) : p[0] === 'tus' ? p[1] : widths[p[0]]) + GAP;
   const c = document.createElement('canvas');
   c.width = SW;
   c.height = SH + 2;
@@ -259,7 +260,7 @@ export function buildLimerick(logoFn) {
     else if (p[0] === 'cathedral') { cathedral(g, x); x += widths.cathedral; }
     else if (p[0] === 'clayton') { clayton(g, x); x += widths.clayton; }
     else if (p[0] === 'tus') { tus(g, x, p[1], p[2], logoFn(Math.round(p[1] * 0.62))); x += p[1]; }
-    x += 1;
+    x += GAP;
   }
   for (const [mid, h] of trees) { // trees last: in front of the buildings next to them
     const t = tree(g, Math.round(mid - h * 0.25), h);

@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.20.0 (2026-11-02): present stacks are packed with no gaps, with wide and tall (vertical) presents of different sizes and the bows on the front (R4). The town has a little gap between buildings and only 3 trees.
 - 0.19.3 (2026-11-02): the town is packed close together (trees stand in the gaps and overlap the buildings a little), and the castle flies the green and white Limerick flag people use.
 - 0.19.2 (2026-11-02): the Limerick town is further away (smaller, slower, the sky shows through), the trees are only dark shadows with softly fading lights, and King John's Castle flies the Limerick city flag (white castle on red).
 - 0.19.1 (2026-11-02): the Limerick town is now a far-away night silhouette (ART.md A11), and the Christmas trees are real-looking pines built branch by branch, covered in lights that twinkle at their own pace.
