@@ -58,7 +58,7 @@ export function drawSky(ctx, t, scroll, level = sky.level) {
   }
   ctx.globalAlpha = 1;
   drawMoon(ctx, 1040, 150);
-  drawTown(ctx, scroll * 0.22, t);
+  drawTown(ctx, scroll * SC.town.scroll, t);
 }
 
 function drawMoon(ctx, cx, cy) {

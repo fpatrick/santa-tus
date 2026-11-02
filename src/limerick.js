@@ -7,12 +7,17 @@
 // are drawn every frame.
 
 import { enlarge } from './pixelart.js';
+import { CONFIG } from './config.js';
+
+const T = CONFIG.scenery.town;
 
 const K = 2; // screen pixels per art pixel
 const SH = 300; // strip height in art pixels
 const LIGHT_COLORS = ['#fff3c0', '#ff5b6c', '#ffd23f', '#5ab8ff', '#7dffa8'];
 
 let seed = 7;
+let flags = []; // flagpole tops (art pixels), filled while the castle is drawn
+const FLAG = ['RRRRRRRRR', 'RRWRWRWRR', 'RRWWWWWRR', 'RRWWRWWRR', 'RRRRRRRRR']; // Limerick city flag: a white castle on red
 const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 
 function r(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
@@ -92,9 +97,8 @@ function castle(g, x) {
     merlons(tx, SH - th, tw, 1);
     for (let k2 = 0; k2 < 3; k2++) r(g, tx + tw / 2 - 1, SH - th + 22 + k2 * 32, 2, 7, '#0c0e24'); // arrow slits
   }
-  // the flag of Limerick (blue and gold) on the big tower
-  r(g, x + 19, SH - 190, 1, 25, '#c9d2f0');
-  r(g, x + 20, SH - 190, 10, 3, '#2a6fdb'); r(g, x + 20, SH - 187, 10, 3, '#ffd23f');
+  r(g, x + 19, SH - 192, 2, 27, '#c9d2f0'); // the flagpole (the flag itself is added after the silhouette)
+  flags.push([x + 21, SH - 192]);
 }
 
 // St Mary's Cathedral: the nave with pointed windows and the square tower with four corner pinnacles.
@@ -197,7 +201,7 @@ function tree(g, x, h) {
         for (let n = -up; n <= down; n++) r(g, bx, by + n, 1, 1, n < 0 && dir < 0 ? '#2e6a4a' : n < 0 ? '#22543c' : '#163c2c');
         if (rnd() < 0.18) r(g, bx + dir, by + down, 1, 1, '#163c2c'); // stray needles
         if (n0(t) && rnd() < 0.25) r(g, bx, by - up, 1, 1, '#9aa8d0'); // a little snow on top of the branch
-        if (rnd() < 0.17) lights.push({ x: bx, y: by, c: LIGHT_COLORS[Math.floor(rnd() * LIGHT_COLORS.length)], p: rnd() * 6.28, f: 1.2 + rnd() * 4 });
+        if (rnd() < T.lightChance) lights.push({ x: bx, y: by, c: LIGHT_COLORS[Math.floor(rnd() * LIGHT_COLORS.length)], p: rnd() * 6.28, f: 0.5 + rnd() * 1.5 });
       }
     }
   }
@@ -208,7 +212,7 @@ function tree(g, x, h) {
 }
 const n0 = (t) => t > 0.3;
 
-// Far away: every building and tree becomes a dark night silhouette (a little detail stays), while the
+// Far away: every building and tree becomes a dark night shadow (a little detail stays), while the
 // warm lights (windows, fanlights, the TUS logos, the star) keep glowing, a little dimmer.
 function silhouette(c) {
   const g = c.getContext('2d');
@@ -220,10 +224,9 @@ function silhouette(c) {
     const [R, G, B] = [d[i], d[i + 1], d[i + 2]];
     const lum = (0.3 * R + 0.59 * G + 0.11 * B) / 255;
     let out;
-    if (R > 170 && G > 110 && R > B + 60) out = [R * 0.62 + 30, G * 0.55 + 20, B * 0.4 + 20]; // a warm light
-    else if (G > R + 8 && G >= B) out = [10 + lum * 40, 28 + lum * 70, 34 + lum * 46]; // pine needles
-    else if (lum > 0.7) out = [70, 80, 130]; // snow, far away
-    else out = [16 + lum * 40, 14 + lum * 36, 50 + lum * 60]; // stone, brick, glass: night blue
+    if (R > 150 && G > 100 && R > B + 50) out = [R * 0.62 + 30, G * 0.55 + 20, B * 0.4 + 20]; // a warm light
+    else if (lum > 0.62) out = [44, 48, 96]; // snow, far away: only a faint line
+    else out = [14 + lum * 22, 12 + lum * 20, 44 + lum * 34]; // everything else (stone, brick, trees): one night shadow
     const q = (v) => Math.min(255, Math.round(v / 6) * 6);
     d[i] = q(out[0]); d[i + 1] = q(out[1]); d[i + 2] = q(out[2]);
   }
@@ -233,6 +236,7 @@ function silhouette(c) {
 // Builds the whole strip once. Returns { img, width (screen px), lights (screen px) }.
 export function buildLimerick(logoFn) {
   seed = 7;
+  flags = [];
   const plan = [['geo', 3], ['tree', 150], ['castle'], ['tree', 170], ['tus', 98, 220], ['geo', 4], ['tree', 160],
     ['cathedral'], ['clayton'], ['tree', 175], ['geo', 3], ['tus', 80, 170], ['tree', 150]];
   const widths = { castle: 214, cathedral: 144, clayton: 58 };
@@ -254,8 +258,20 @@ export function buildLimerick(logoFn) {
     else if (p[0] === 'tus') { tus(g, x, p[1], p[2], logoFn(Math.round(p[1] * 0.62))); x += p[1]; }
     x += 8;
   }
-  silhouette(c);
-  return { img: enlarge(c, K), width: SW * K, height: (SH + 2) * K, lights: lights.map((l) => ({ ...l, x: l.x * K, y: l.y * K })) };
+  // far away: shrink it (soft, so small detail melts away), then make it a night shadow
+  const S = T.size;
+  const far = document.createElement('canvas');
+  far.width = Math.round(c.width * S);
+  far.height = Math.round(c.height * S);
+  const fg = far.getContext('2d');
+  fg.imageSmoothingEnabled = true;
+  fg.imageSmoothingQuality = 'high';
+  fg.drawImage(c, 0, 0, far.width, far.height);
+  silhouette(far);
+  for (const [fx, fy] of flags) { // the city flag stays red and white, so it can be seen
+    FLAG.forEach((row, yy) => [...row].forEach((ch, xx) => { fg.fillStyle = ch === 'R' ? '#a8202e' : '#d8d4e0'; fg.fillRect(Math.round(fx * S) + xx, Math.round((fy + 2) * S) + yy, 1, 1); }));
+  }
+  return { img: enlarge(far, K), width: far.width * K, height: far.height * K, lights: lights.map((l) => ({ ...l, x: l.x * S * K, y: l.y * S * K })) };
 }
 
 // Draws the strip with its bottom on `baseY`, scrolled by `off` screen pixels, and the twinkling lights.
@@ -266,15 +282,17 @@ export function drawLimerick(ctx, town, off, baseY, t, screenW) {
   for (const rep of [0, town.width]) {
     const x = Math.round(rep - shift);
     if (x > screenW || x + town.width < 0) continue;
+    ctx.globalAlpha = T.fade; // the sky shows through: far away
     ctx.drawImage(town.img, x, y0);
+    ctx.globalAlpha = 1;
     for (const l of town.lights) {
       const lx = Math.round(x + l.x);
       if (lx < -8 || lx > screenW + 8) continue;
-      const k = Math.max(0, Math.sin(t * l.f + l.p)); // each light twinkles at its own pace (under 1 per second)
-      ctx.globalAlpha = 0.16 * k;
+      const k = Math.max(0, Math.sin(t * l.f + l.p)); // each light slowly fades in and out at its own pace
+      ctx.globalAlpha = 0.12 * k * T.lightAlpha;
       ctx.fillStyle = l.c;
       ctx.fillRect(lx - 2, y0 + l.y - 2, 6, 6); // soft glow
-      ctx.globalAlpha = 0.35 + 0.65 * k;
+      ctx.globalAlpha = (0.15 + 0.85 * k) * T.lightAlpha;
       ctx.fillRect(lx, y0 + l.y, 2, 2);
     }
     ctx.globalAlpha = 1;

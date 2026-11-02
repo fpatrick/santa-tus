@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.19.2 (2026-11-02): the Limerick town is further away (smaller, slower, the sky shows through), the trees are only dark shadows with softly fading lights, and King John's Castle flies the Limerick city flag (white castle on red).
 - 0.19.1 (2026-11-02): the Limerick town is now a far-away night silhouette (ART.md A11), and the Christmas trees are real-looking pines built branch by branch, covered in lights that twinkle at their own pace.
 - 0.19.0 (2026-11-02): the town is now Limerick City at night in 16-bit HD pixel art: Georgian red-brick terraces with coloured doors, King John's Castle (floodlit, Limerick flag), St Mary's Cathedral, the Clayton tower, two TUS buildings with the logo, and tall planted Christmas trees with soft twinkling lights.
 - 0.18.0 (2026-11-02): new ranks (R8, R20, R21): LEGEND at 30 (gold crown badge), MYTHIC at 40 instead of MASTER (feral purple beast badge with claw slashes), GODLIKE at 50 (red and blue divine badge with wings and halo). Badges on the board and the title screen, slow glow animations; texts, CSV columns and tests updated.

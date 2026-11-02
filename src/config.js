@@ -93,6 +93,9 @@ export const CONFIG = {
   // Scenery per level (1-5): sky colours [top, middle, bottom], snow flakes and their fall speed (px/s).
   // Snow grows fast with each level. bagGrow = how much bigger Santa's bag gets per chimney.
   scenery: {
+    // the Limerick town far behind (limerick.js): size = how big it is drawn (smaller = further away),
+    // fade = how much the sky shows through it, scroll = how fast it moves (front = 1), lights = tree lights.
+    town: { size: 0.6, fade: 0.72, scroll: 0.12, lightChance: 0.12, lightAlpha: 0.7 },
     skies: [
       ['#16244f', '#2c4a86', '#5a7fb8'],
       ['#101a45', '#25307a', '#4a4aa0'],
