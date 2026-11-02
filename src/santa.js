@@ -3,7 +3,7 @@
 // pixel art (see "pixel art" below). Each size and face is made ONCE and cached, so nothing flickers.
 // scale 4 (in the game) = 1 screen pixel per art pixel; the title screen shows it 3x bigger.
 
-import { pixelate, stampText, enlarge } from './pixelart.js';
+import { pixelate, stampText, enlarge, texture } from './pixelart.js';
 
 const INK = '#1a0a14';
 const UNITS = { w: 260, h: 216 };
@@ -17,12 +17,24 @@ function lin(g, x0, y0, x1, y1, stops) {
   return gr;
 }
 
-function shape(g, draw, fill, line = 3) {
-  g.beginPath();
-  draw(g);
-  g.fillStyle = fill;
-  g.fill();
-  if (line) { g.lineWidth = line; g.strokeStyle = INK; g.stroke(); }
+// mat = the material, for the texture pass: 'hat', 'coat', 'fur' or 'hair' (nothing = no texture).
+function shape(g, draw, fill, line = 3, mat = '') {
+  const raw = g.__raw || g;
+  raw.beginPath();
+  draw(raw);
+  raw.fillStyle = g.__raw ? (MASK[mat] || '#000000') : fill;
+  raw.fill();
+  if (line) { raw.lineWidth = line; raw.strokeStyle = g.__raw ? '#000000' : INK; raw.stroke(); }
+}
+
+// Mask drawing: every shape is painted in its material colour, everything else black.
+// The texture pass reads it to know which art pixels are hat, coat, fur or hair.
+const MASK = { hat: '#ff0000', coat: '#00ff00', fur: '#0000ff', hair: '#ffff00' };
+function maskCtx(raw) {
+  return new Proxy(raw, {
+    get(t, p) { if (p === '__raw') return t; const v = t[p]; return typeof v === 'function' ? v.bind(t) : v; },
+    set(t, p, v) { t[p] = p === 'fillStyle' || p === 'strokeStyle' ? '#000000' : v; return true; },
+  });
 }
 
 function canvasFor(scale, wu, hu, paint) {
@@ -104,7 +116,7 @@ function sleigh(g) {
 // ---------- Santa ----------
 function santa(g, mouth = 0) {
   // back arm (dark) holding the sleigh edge
-  shape(g, (gg) => { gg.moveTo(112, 84); gg.bezierCurveTo(100, 100, 102, 112, 112, 118); gg.lineTo(124, 112); gg.closePath(); }, '#8e1224', 3);
+  shape(g, (gg) => { gg.moveTo(112, 84); gg.bezierCurveTo(100, 100, 102, 112, 112, 118); gg.lineTo(124, 112); gg.closePath(); }, '#8e1224', 3, 'coat');
   // coat body
   const coat = (gg) => {
     gg.moveTo(104, 120);
@@ -112,13 +124,13 @@ function santa(g, mouth = 0) {
     gg.bezierCurveTo(170, 60, 184, 84, 182, 120);
     gg.closePath();
   };
-  shape(g, coat, lin(g, 100, 60, 186, 120, [[0, '#ff5b6c'], [0.5, '#d61f35'], [1, '#7a0a1a']]), 4);
+  shape(g, coat, lin(g, 100, 60, 186, 120, [[0, '#ff5b6c'], [0.5, '#d61f35'], [1, '#7a0a1a']]), 4, 'coat');
   g.save(); g.beginPath(); coat(g); g.clip();
   g.fillStyle = 'rgba(0,0,0,0.18)';
   g.beginPath(); g.ellipse(176, 100, 16, 40, 0, 0, Math.PI * 2); g.fill(); // body shadow on the far side
   g.restore();
   // fur trim down the front + belt with gold buckle
-  shape(g, (gg) => gg.rect(150, 70, 12, 50), lin(g, 150, 0, 162, 0, [[0, '#ffffff'], [1, '#e2d6c4']]), 2);
+  shape(g, (gg) => gg.rect(150, 70, 12, 50), lin(g, 150, 0, 162, 0, [[0, '#ffffff'], [1, '#e2d6c4']]), 2, 'fur');
   shape(g, (gg) => gg.rect(104, 104, 78, 10), '#1c1018', 2);
   shape(g, (gg) => gg.rect(146, 101, 18, 16), lin(g, 0, 101, 0, 117, [[0, '#fff1a8'], [1, '#c98a14']]), 2);
   g.fillStyle = '#1c1018';
@@ -127,8 +139,8 @@ function santa(g, mouth = 0) {
   for (const by of [78, 90]) { g.beginPath(); g.arc(156, by, 2.2, 0, Math.PI * 2); g.fill(); }
   // front arm reaching to the reins, white cuff, black glove
   shape(g, (gg) => { gg.moveTo(160, 74); gg.bezierCurveTo(186, 70, 200, 80, 206, 92); gg.lineTo(196, 100); gg.bezierCurveTo(188, 90, 176, 88, 164, 92); gg.closePath(); },
-    lin(g, 160, 70, 206, 100, [[0, '#ff5b6c'], [1, '#a5122a']]), 3);
-  shape(g, (gg) => { gg.ellipse(202, 95, 7, 10, -0.6, 0, Math.PI * 2); }, '#ffffff', 2);
+    lin(g, 160, 70, 206, 100, [[0, '#ff5b6c'], [1, '#a5122a']]), 3, 'coat');
+  shape(g, (gg) => { gg.ellipse(202, 95, 7, 10, -0.6, 0, Math.PI * 2); }, '#ffffff', 2, 'fur');
   shape(g, (gg) => { gg.ellipse(212, 99, 7, 6.5, 0, 0, Math.PI * 2); }, lin(g, 206, 92, 220, 106, [[0, '#8a5a3a'], [1, '#3a2014']]), 2);
   // reins to the front of the sleigh
   g.strokeStyle = '#6b3a14';
@@ -167,7 +179,7 @@ function head(g, mouth) {
     gg.bezierCurveTo(168, 58, 160, 58, 156, 54);
     gg.bezierCurveTo(150, 58, 140, 56, 132, 48);
   };
-  shape(g, beard, lin(g, 0, 48, 0, 98, [[0, '#ffffff'], [1, '#e2d6c4']]), 3);
+  shape(g, beard, lin(g, 0, 48, 0, 98, [[0, '#ffffff'], [1, '#e2d6c4']]), 3, 'hair');
   g.strokeStyle = 'rgba(160,130,105,0.45)';
   g.lineWidth = 2;
   for (let i = 0; i < 6; i++) {
@@ -186,26 +198,27 @@ function head(g, mouth) {
     g.fillRect(155, 64 - ry + 1, 14, 2.5);
   }
   // moustache
-  shape(g, (gg) => { gg.moveTo(146, 54); gg.bezierCurveTo(156, 47, 170, 49, 180, 58); gg.bezierCurveTo(170, 59, 162, 61, 158, 56); gg.bezierCurveTo(154, 61, 144, 61, 146, 54); }, '#ffffff', 2.5);
-  // hat: all red, a tall cone flopping back over his head, warm white fur brim and pompom
-  shape(g, (gg) => {
-    gg.moveTo(128, 36);
-    gg.bezierCurveTo(128, 8, 150, -2, 170, 12);
-    gg.bezierCurveTo(178, 18, 178, 28, 176, 32);
-    gg.lineTo(128, 36);
+  shape(g, (gg) => { gg.moveTo(146, 54); gg.bezierCurveTo(156, 47, 170, 49, 180, 58); gg.bezierCurveTo(170, 59, 162, 61, 158, 56); gg.bezierCurveTo(154, 61, 144, 61, 146, 54); }, '#ffffff', 2.5, 'hair');
+  // hat: ONE piece of red cloth: it rises from the brim, peaks, then flops back and down to the pompom.
+  const hat = (gg) => {
+    gg.moveTo(178, 30);
+    gg.bezierCurveTo(182, 14, 170, 0, 152, 0);
+    gg.bezierCurveTo(132, 0, 112, 6, 98, 24);
+    gg.bezierCurveTo(104, 24, 114, 24, 122, 28);
+    gg.bezierCurveTo(124, 30, 126, 32, 126, 34);
     gg.closePath();
-  }, lin(g, 128, 0, 176, 36, [[0, '#a5122a'], [0.5, '#e8293f'], [1, '#c8182e']]), 3);
-  shape(g, (gg) => {
-    gg.moveTo(140, 12);
-    gg.bezierCurveTo(124, 4, 104, 8, 96, 24);
-    gg.bezierCurveTo(108, 18, 122, 20, 134, 28);
-    gg.closePath();
-  }, lin(g, 96, 4, 140, 28, [[0, '#8e0f22'], [1, '#d61f35']]), 3);
-  g.fillStyle = 'rgba(255,255,255,0.18)';
-  g.beginPath(); g.ellipse(156, 14, 10, 4, -0.4, 0, Math.PI * 2); g.fill();
-  shape(g, (gg) => { gg.moveTo(124, 34); gg.bezierCurveTo(140, 22, 166, 22, 180, 30); gg.lineTo(178, 40); gg.bezierCurveTo(162, 32, 142, 34, 128, 46); gg.closePath(); },
-    lin(g, 0, 22, 0, 46, [[0, '#ffffff'], [1, '#e2d6c4']]), 3);
-  shape(g, (gg) => gg.arc(94, 26, 9, 0, Math.PI * 2), lin(g, 86, 18, 102, 34, [[0, '#ffffff'], [1, '#e2d6c4']]), 3);
+  };
+  shape(g, hat, lin(g, 100, 2, 180, 36, [[0, '#8e0f22'], [0.45, '#d61f35'], [0.75, '#ff4a5e'], [1, '#c8182e']]), 3, 'hat');
+  g.save(); g.beginPath(); hat(g); g.clip();
+  g.strokeStyle = 'rgba(90,0,20,0.55)'; g.lineWidth = 3; // the fold where the hat bends back
+  g.beginPath(); g.moveTo(160, 8); g.quadraticCurveTo(140, 12, 120, 24); g.stroke();
+  g.strokeStyle = 'rgba(255,200,200,0.35)'; g.lineWidth = 3; // light on the top
+  g.beginPath(); g.moveTo(170, 12); g.quadraticCurveTo(158, 5, 140, 7); g.stroke();
+  g.restore();
+  // fur brim and pompom
+  shape(g, (gg) => { gg.moveTo(122, 31); gg.bezierCurveTo(140, 21, 166, 21, 182, 27); gg.lineTo(181, 36); gg.bezierCurveTo(162, 30, 142, 32, 126, 44); gg.closePath(); },
+    lin(g, 0, 24, 0, 47, [[0, '#ffffff'], [1, '#e2d6c4']]), 3, 'fur');
+  shape(g, (gg) => gg.arc(96, 26, 9, 0, Math.PI * 2), lin(g, 88, 18, 104, 34, [[0, '#ffffff'], [1, '#e2d6c4']]), 3, 'fur');
   g.restore();
 }
 
@@ -271,7 +284,7 @@ const factor = (scale) => Math.max(1, Math.round(scale / 4)); // game (4) = 1, t
 function santaCanvas(scale, mouth) {
   const key = `santa|${scale}|${mouth}`;
   if (!cache.has(key)) {
-    const art = canvasFor(ART_K * 10, UNITS.w, UNITS.h, (g) => {
+    const paint = (g) => {
       g.translate(0, TOP);
       g.save();
       g.translate(150, 122); // Santa is 20% bigger than the sleigh, so he reads well at game size
@@ -280,8 +293,11 @@ function santaCanvas(scale, mouth) {
       santa(g, mouth);
       g.restore();
       sleigh(g);
-    });
-    cache.set(key, enlarge(pixelate(art), factor(scale)));
+    };
+    const art = pixelate(canvasFor(ART_K * 10, UNITS.w, UNITS.h, paint));
+    const mask = canvasFor(ART_K * 10, UNITS.w, UNITS.h, (g) => paint(maskCtx(g)));
+    texture(art, mask); // knitted hat, velvet coat, fluffy fur, hair strands
+    cache.set(key, enlarge(art, factor(scale)));
   }
   return cache.get(key);
 }

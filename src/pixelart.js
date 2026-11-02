@@ -62,3 +62,39 @@ export function enlarge(src, f) {
   return c;
 }
 
+
+// Cloth textures, done pixel by pixel after the pixel-art step. mask = same size canvas where the
+// hat is red, the coat green, fur blue and hair yellow (santa.js draws it).
+export function texture(art, mask) {
+  const g = art.getContext('2d');
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  const img = g.getImageData(0, 0, art.width, art.height);
+  const m = mask.getContext('2d').getImageData(0, 0, mask.width, mask.height).data;
+  const d = img.data;
+  const shift = (i, v) => { d[i] = clamp(d[i] + v); d[i + 1] = clamp(d[i + 1] + v * 0.7); d[i + 2] = clamp(d[i + 2] + v * 0.7); };
+  for (let y = 0; y < art.height; y++) {
+    for (let x = 0; x < art.width; x++) {
+      const i = (y * art.width + x) * 4;
+      if (d[i + 3] !== 255 || d[i] + d[i + 1] + d[i + 2] < 110) continue; // empty or outline
+      const r = m[i] > 128;
+      const gr = m[i + 1] > 128;
+      const b = m[i + 2] > 128;
+      const h = (x * 37 + y * 91 + x * y * 7) % 11;
+      if (r && !gr && !b) { // hat: knitted ribs
+        if (x % 3 === 0) shift(i, -42);
+        else if ((x + y) % 2 === 0 && y % 3 === 1) shift(i, 22);
+      } else if (gr && !r && !b) { // coat: velvet weave
+        if ((x + y) % 4 === 0) shift(i, -36);
+        else if ((x - y + 1000) % 6 === 0) shift(i, 20);
+      } else if (b && !r && !gr) { // fur: fluffy
+        if (h < 2) shift(i, -34);
+        else if (h === 5) shift(i, -18);
+      } else if (r && gr && !b) { // hair: strands
+        if (x % 2 === 0 && h % 3 === 0) shift(i, -30);
+      }
+    }
+  }
+  g.putImageData(img, 0, 0);
+}
+
+const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));

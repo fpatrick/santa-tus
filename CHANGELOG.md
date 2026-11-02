@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.13.1 (2026-11-02): Santa's hat is now one piece of red cloth that flops back; textures on his clothes: knitted hat, velvet coat, fluffy fur, beard strands.
 - 0.13.0 (2026-11-02): Santa, sleigh and bag are now detailed pixel art (1 pixel = 1 screen pixel in the game); hat all red with warm white fur; the bag is tied into the sleigh with ropes; Santa laughs with an open mouth after each chimney.
 - 0.12.0 (2026-11-02): New detailed Santa (shaded coat, beard, belt, glove), red lacquer sleigh with gold scrolls and brass runners, burlap TUS bag with a stitched patch to match; presents now come big and small with wrapping-paper patterns, ribbons, bows and gift tags.
 - 0.11.0 (2026-10-24): Big visual and rules update. "Jackpot until now", "jackpot ticket" everywhere; chimney 20 = "you won a spin on the wheel", no ticket (R6); the player clicks to spin (S7); wooden wheel with icons, 7 big slices, Christmas chest sound (R7); free restart before chimney 5 (R3); "Best players" top 15 with LEGEND/MASTER tags, tie = latest first (L1, L2); player prize box on the panel; presents instead of ice columns, they fly into Santa's growing TUS bag; textured brick chimneys with snow, no gold border; sky colour and snow per level; arcs warn of a level change; level change = sound only; sleigh-bell flap sound; TUS logo on a town building; Santa outline no longer flickers.

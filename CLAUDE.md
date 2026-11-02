@@ -33,7 +33,7 @@ The person you work with writes simple English as a second language. Answer in s
 | Chimneys, the present stack (and its flight into the bag), level warning | `src/chimney.js` |
 | The presents themselves: big and small boxes, patterns, ribbons, bows | `src/gifts.js` |
 | Santa, his sleigh, his TUS bag and its ropes, his laugh faces (shapes turned into pixel art) | `src/santa.js` |
-| Pixel-art converter: hard edges, fewer colours, outline, 3x5 font | `src/pixelart.js` |
+| Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures | `src/pixelart.js` |
 | Prize and wheel icons (pixel art maps) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
 | The wheel, click to spin, its spin (R7) | `src/wheel.js` |
