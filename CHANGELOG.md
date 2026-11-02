@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.19.0 (2026-11-02): the town is now Limerick City at night in 16-bit HD pixel art: Georgian red-brick terraces with coloured doors, King John's Castle (floodlit, Limerick flag), St Mary's Cathedral, the Clayton tower, two TUS buildings with the logo, and tall planted Christmas trees with soft twinkling lights.
 - 0.18.0 (2026-11-02): new ranks (R8, R20, R21): LEGEND at 30 (gold crown badge), MYTHIC at 40 instead of MASTER (feral purple beast badge with claw slashes), GODLIKE at 50 (red and blue divine badge with wings and halo). Badges on the board and the title screen, slow glow animations; texts, CSV columns and tests updated.
 - 0.17.1 (2026-11-02): new art style rule ART.md (A0-A10): all design is 16-bit HD pixel art; CLAUDE.md and the change command point to it.
 - 0.17.0 (2026-11-02): the wheel is now a Christmas slot machine (R7): lit marquee sign, a lever pulled on the click, fast peg clatter, chiptune Jingle Bells, drum roll and a coin payout. Slices say JACKPOT TICKETS +2 / +5. New 16-bit HD icons (pot of gold for jackpot tickets, €10 notes, free try arrow). Spin 5.5 s, 9 turns.

@@ -34,7 +34,8 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | One payment from start to hand-over (screen order) | `src/flow.js` |
 | Flying, gravity, collisions, HUD | `src/game.js` |
 | Course building and the fairness check (R4, T26) | `src/course.js` |
-| Sky per level, snow per level, town, TUS logo, rooftop | `src/world.js` |
+| Sky per level, snow per level, TUS logo shape, rooftop | `src/world.js` |
+| The town: Limerick at night (Georgian terraces, King John's Castle, St Mary's, Clayton tower, TUS buildings, Christmas trees with lights) | `src/limerick.js` |
 | Chimneys, the present stack (and its flight into the bag), level warning | `src/chimney.js` |
 | The presents themselves: big and small boxes, patterns, ribbons, bows | `src/gifts.js` |
 | Santa, his sleigh, his TUS bag and its ropes, his laugh faces (shapes turned into pixel art) | `src/santa.js` (helpers in `src/drawkit.js`) |

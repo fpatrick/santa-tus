@@ -1,8 +1,9 @@
 // world.js: draws the scenery on the game canvas: the sky (a colour per level), stars, moon,
-// the town with the TUS logo on a building, falling snow (more and faster each level) and the rooftop.
+// the town (Limerick City at night, limerick.js) with the TUS logo on its buildings, falling snow (more and faster each level) and the rooftop.
 // The chimneys and presents are in chimney.js.
 
 import { CONFIG } from './config.js';
+import { buildLimerick, drawLimerick } from './limerick.js';
 
 const W = CONFIG.world.width;
 const H = CONFIG.world.height;
@@ -11,7 +12,7 @@ const SC = CONFIG.scenery;
 
 const stars = [];
 const flakes = [];
-let town = [];
+let town = null;
 const sky = { from: SC.skies[0], to: SC.skies[0], k: 1, level: 1 };
 const snow = { count: SC.snow[0].count, speed: SC.snow[0].speed };
 let logoCache = null;
@@ -20,21 +21,7 @@ export function initWorld() {
   for (let i = 0; i < 140; i++) stars.push({ x: Math.random() * W, y: Math.random() * 640, s: Math.random() < 0.15 ? 4 : 2, p: Math.random() * 6 });
   const max = Math.max(...SC.snow.map((s) => s.count));
   for (let i = 0; i < max; i++) flakes.push({ x: Math.random() * W, y: Math.random() * H, v: 0.6 + Math.random() * 0.8, s: Math.random() < 0.3 ? 4 : 3, w: Math.random() * 6 });
-  town = [];
-  let x = 0;
-  let i = 0;
-  while (x < W * 2) {
-    const tus = i === 4;
-    const w = tus ? 190 : 70 + Math.floor(Math.random() * 7) * 16;
-    const h = tus ? 440 : 140 + Math.floor(Math.random() * 12) * 18;
-    const wins = [];
-    for (let wy = 24; wy < h - 20; wy += 34) {
-      for (let wx = 14; wx < w - 18; wx += 26) if (Math.random() < 0.3 && !(tus && wy < 230)) wins.push([wx, wy]);
-    }
-    town.push({ x, w, h, wins, tus });
-    x += w + 6;
-    i++;
-  }
+  town = null; // built on first draw (it needs the page to be ready)
 }
 
 // Level 1-5: the sky fades to that level's colours, the snow changes.
@@ -71,7 +58,7 @@ export function drawSky(ctx, t, scroll, level = sky.level) {
   }
   ctx.globalAlpha = 1;
   drawMoon(ctx, 1040, 150);
-  drawTown(ctx, scroll * 0.22);
+  drawTown(ctx, scroll * 0.22, t);
 }
 
 function drawMoon(ctx, cx, cy) {
@@ -90,31 +77,9 @@ function drawMoon(ctx, cx, cy) {
   ctx.fillRect(cx - 8, cy + 36, 12, 8);
 }
 
-function drawTown(ctx, off) {
-  const total = town.length ? town[town.length - 1].x + town[town.length - 1].w + 6 : W;
-  const shift = off % total;
-  for (const b of town) {
-    for (const rep of [0, total]) {
-      const x = Math.round(b.x - shift + rep);
-      if (x > W || x + b.w < 0) continue;
-      const y = ROOF - b.h;
-      ctx.fillStyle = '#150d45';
-      ctx.fillRect(x, y, b.w, b.h);
-      ctx.fillStyle = '#c9942a';
-      for (const [wx, wy] of b.wins) ctx.fillRect(x + wx, y + wy, 10, 14);
-      ctx.fillStyle = '#f4f7ff';
-      ctx.fillRect(x - 2, y - 6, b.w + 4, 8);
-      if (b.tus) {
-        const logo = tusLogo(130);
-        ctx.fillStyle = '#0c0830';
-        ctx.fillRect(x + (b.w - 156) / 2, y + 22, 156, 196);
-        ctx.shadowColor = '#e8c97a';
-        ctx.shadowBlur = 16;
-        ctx.drawImage(logo, x + (b.w - logo.width) / 2, y + 36);
-        ctx.shadowBlur = 0;
-      }
-    }
-  }
+function drawTown(ctx, off, t = 0) {
+  if (!town) town = buildLimerick((w) => tusLogo(w));
+  drawLimerick(ctx, town, off, ROOF, t, W);
 }
 
 // The TUS logo (from the image the team sent), drawn as shapes so it is sharp at any size.

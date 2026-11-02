@@ -8,11 +8,12 @@ const FONT = { // 3 x 5 pixel letters for the bag patch
   S: ['###', '#..', '###', '..#', '###'],
 };
 
-export function pixelate(c) {
+// step = size of the colour bands (48 = few shades; the dark night town uses a finer 12 so its colours stay).
+export function pixelate(c, step = 48) {
   const g = c.getContext('2d');
   const img = g.getImageData(0, 0, c.width, c.height);
   const d = img.data;
-  const q = (v) => Math.min(255, Math.round(v / 48) * 48); // few shades = arcade colour bands
+  const q = (v) => Math.min(255, Math.round(v / step) * step); // few shades = arcade colour bands
   for (let i = 0; i < d.length; i += 4) {
     if (d[i + 3] < 120) { d[i + 3] = 0; continue; }
     const a = d[i + 3] / 255; // undo the soft edge, then snap the colour
