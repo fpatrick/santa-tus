@@ -34,7 +34,7 @@ The person you work with writes simple English as a second language. Answer in s
 | The presents themselves: big and small boxes, patterns, ribbons, bows | `src/gifts.js` |
 | Santa, his sleigh, his TUS bag and its ropes, his laugh faces (shapes turned into pixel art) | `src/santa.js` (helpers in `src/drawkit.js`) |
 | Santa's hat (and the model face used only when the hat is off) | `src/santahead.js` |
-| Santa's faces and beards, hand-made pixel sprites in the classic jolly Santa style (side, side bald, front ok / happy / sad) | `src/santaface.js` |
+| Santa's faces and beards, cartoon pixel sprites made from round shapes (side, side bald, front ok / happy / sad) | `src/santaface.js` |
 | Santa standing after a crash: poses ok / happy / sad | `src/santastand.js` |
 | Crash scene: tumble, hat flies, bag rolls, zoom, speech box (C1-C4) | `src/crash.js` |
 | What Santa says after a crash, and how long the box stays (C1-C4) | `src/messages.js` (words in `config.js` `text.crash`) |
