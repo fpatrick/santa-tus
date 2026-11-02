@@ -12,13 +12,13 @@ const time = (ts) => (ts ? new Date(ts).toLocaleString('en-IE') : '');
 export function buildCsv(s, cfg, label = 'live') {
   const rows = [[
     'payment', 'time', 'type', 'amount_eur', 'status', 'tries_bought', 'tries_played', 'best', 'nickname',
-    'pillar10_choice', 'wheel', 'tickets', 'cash_prize_eur', 'legend', 'master', 'reason',
+    'pillar10_choice', 'wheel', 'tickets', 'cash_prize_eur', 'legend', 'mythic', 'godlike', 'reason',
   ]];
   for (const p of s.payments) {
     rows.push([
       p.pid, time(p.ts), p.kind, p.amount, p.status, p.triesBought, p.tries.length, p.best, displayName(p, cfg),
       p.p10 || '', p.wheel || '', p.tickets.map(fmtTicket).join(' '), p.cash,
-      p.best >= cfg.thresholds.legend ? 'yes' : '', p.best >= cfg.thresholds.master ? 'yes' : '', p.reason,
+      p.best >= cfg.thresholds.legend ? 'yes' : '', p.best >= cfg.thresholds.mythic ? 'yes' : '', p.best >= cfg.thresholds.beat ? 'yes' : '', p.reason,
     ]);
   }
   const t = totals(s, cfg);

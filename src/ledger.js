@@ -97,11 +97,22 @@ export function lastActivePayment(s) {
   return null;
 }
 
-// R20: MASTER tag (passed 40), R8: LEGEND tag (passed 30). L2: hidden nicknames show as "PLAYER 37".
+// The rank of a payment: 'godlike' (R21, beat 50), 'mythic' (R20, passed 40), 'legend' (R8, passed 30) or ''.
+export function rankOf(p, cfg) {
+  const th = cfg.thresholds;
+  return p.best >= th.beat ? 'godlike' : p.best >= th.mythic ? 'mythic' : p.best >= th.legend ? 'legend' : '';
+}
+
+// The nickname without the tag. L2: hidden nicknames show as "PLAYER 37".
+export function plainName(p, cfg) {
+  return (!p.nick || p.hidden) ? `${cfg.board.defaultNick} ${p.pid}` : p.nick;
+}
+
+// The name with the rank tag in front: "GODLIKE SAM", "MYTHIC ANA", "LEGEND TOM".
 export function displayName(p, cfg) {
-  const base = (!p.nick || p.hidden) ? `${cfg.board.defaultNick} ${p.pid}` : p.nick;
-  if (p.best >= cfg.thresholds.master) return `${cfg.board.masterTag} ${base}`;
-  return p.best >= cfg.thresholds.legend ? `${cfg.board.legendTag} ${base}` : base;
+  const rank = rankOf(p, cfg);
+  const base = plainName(p, cfg);
+  return rank ? `${cfg.board[`${rank}Tag`]} ${base}` : base;
 }
 
 function beats(a, b) {

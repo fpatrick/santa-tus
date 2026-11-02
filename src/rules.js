@@ -43,7 +43,7 @@ export function nextStep(p, s, cfg) {
   return { step: 'handover' }; // S10, R16
 }
 
-// S9: a nickname only for the top 10, the Legends or MASTER.
+// S9: a nickname only for the top 10 and the ranked players (LEGEND, MYTHIC, GODLIKE).
 export function needsNick(p, s, cfg) {
   if (p.nickAsked) return false;
   if (p.best >= cfg.thresholds.legend) return true;
@@ -128,7 +128,8 @@ export function handoverItems(p, cfg) {
   if (p.tickets.length) items.push({ kind: 'tickets', count: p.tickets.length, tickets: p.tickets });
   if (p.cash) items.push({ kind: 'cash', amount: p.cash });
   if (p.best >= cfg.thresholds.legend) items.push({ kind: 'legend' });
-  if (p.best >= cfg.thresholds.master) items.push({ kind: 'master' });
+  if (p.best >= cfg.thresholds.mythic) items.push({ kind: 'mythic' });
+  if (p.best >= cfg.thresholds.beat) items.push({ kind: 'godlike' });
   return items;
 }
 

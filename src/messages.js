@@ -28,7 +28,7 @@ export function pendingPrizes(p, cfg, pillars) {
   const out = [];
   if (p.best >= th.ticket && !p.p20) out.push(P.spin);
   if (p.best >= th.legend && !p.p30) out.push(P.legend);
-  if (pillars >= th.master && pillars === p.best) out.push(P.master);
+  if (pillars >= th.mythic && pillars === p.best) out.push(P.mythic);
   if (R.triesLeft(p) <= 0) {
     if (p.best >= th.choice && !p.p10) out.push(P.choice);
     if (cfg.consolation.on && p.p10 === 'free' && p.best < th.ticket && !p.consolation) out.push(P.consolation);
@@ -38,7 +38,7 @@ export function pendingPrizes(p, cfg, pillars) {
 
 function nextGoal(pillars, cfg) {
   const th = cfg.thresholds;
-  return [th.choice, th.ticket, th.legend, th.master, th.beat].find((g) => pillars < g);
+  return [th.choice, th.ticket, th.legend, th.mythic, th.beat].find((g) => pillars < g);
 }
 
 // info = { pillars, freeRestart: bool, restartsLeft, prevBest (best before this try) }

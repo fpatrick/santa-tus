@@ -6,12 +6,13 @@ import { drawSky, drawSnow, drawRoof } from './world.js';
 import { drawSanta } from './sprites.js';
 import { createFlight, outlined } from './game.js';
 import { fmtEuro } from './ledger.js';
+import { rankBadge, RANK_COLOR } from './rankbadge.js';
 
 const T = CONFIG.text;
 const W = 1280;
 const SCENES = ['logo', 'prices', 'prizes', 'board', 'demo'];
 
-// getInfo() returns { top: [{name, best, master, legend}], jackpot, drawTime }
+// getInfo() returns { top: [{name, rank, best}], jackpot, drawTime }
 export function createAttract(getInfo) {
   const a = { t: 0, i: 0, sceneT: 0, demo: createFlight({}) };
 
@@ -108,10 +109,10 @@ function priceBox(ctx, x, y, w, h, text, color) {
 
 function prizes(ctx) {
   outlined(ctx, T.winTitle, W / 2, 130, 44, '#27c8ff', 'center');
-  const rows = [[10, T.win10, '#3dff8b'], [20, T.win20, '#27c8ff'], [30, T.win30, '#ffd23f'], [40, T.win40, '#c35cff']];
+  const rows = [[10, T.win10, '#3dff8b'], [20, T.win20, '#27c8ff'], [30, T.win30, '#ffd23f'], [40, T.win40, '#c35cff'], [50, T.win50, '#ff6b7a']];
   rows.forEach(([n, text, color], k) => {
-    const y = 230 + k * 105;
-    outlined(ctx, String(n), 150, y + 40, 64, color, 'center');
+    const y = 190 + k * 92;
+    outlined(ctx, String(n), 150, y + 40, 60, color, 'center');
     outlined(ctx, text, 250, y + 30, 32, '#f4f7ff', 'left');
   });
   outlined(ctx, T.oddsTitle, W / 2, 690, 32, '#ffd23f', 'center');
@@ -139,9 +140,23 @@ function board(ctx, info) {
     const col = k < 8 ? 0 : 1;
     const x = 70 + col * 600;
     const y = 430 + (k % 8) * 42;
-    ctx.fillStyle = r.master ? '#c35cff' : r.legend ? '#ffd23f' : k === 0 ? '#fff6c8' : '#f4f7ff';
     ctx.textAlign = 'left';
-    ctx.fillText(`${String(k + 1).padStart(2, ' ')}. ${r.name}`, x, y);
+    ctx.fillStyle = k === 0 ? '#fff6c8' : '#f4f7ff';
+    const num = `${String(k + 1).padStart(2, ' ')}. `;
+    ctx.fillText(num, x, y);
+    let nx = x + ctx.measureText(num).width;
+    const badge = rankBadge(r.rank, 2); // LEGEND / MYTHIC / GODLIKE pixel badge
+    if (badge) {
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(badge, nx, y - 34);
+      nx += badge.width + 10;
+    }
+    if (r.rank === 'godlike') {
+      const g = ctx.createLinearGradient(nx, 0, nx + ctx.measureText(r.name).width, 0);
+      g.addColorStop(0, '#ff3b4f'); g.addColorStop(0.5, '#ffffff'); g.addColorStop(1, '#27a8ff');
+      ctx.fillStyle = g;
+    } else if (r.rank) ctx.fillStyle = RANK_COLOR[r.rank];
+    ctx.fillText(r.name, nx, y);
     ctx.textAlign = 'right';
     ctx.fillText(String(r.best), x + 520, y);
   });

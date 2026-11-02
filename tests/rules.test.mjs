@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG } from '../src/config.js';
 import * as R from '../src/rules.js';
-import { totals, leaderboard, legends, displayName } from '../src/ledger.js';
+import { totals, leaderboard, legends, displayName, rankOf } from '../src/ledger.js';
 import { newSession, playPayment, cfgWith } from './helpers.mjs';
 
 const kinds = (items) => items.map((i) => i.kind);
@@ -130,10 +130,10 @@ test('T23: crash at 37: same prizes as 30, the leaderboard shows 37 (R19)', () =
   assert.equal(a.p.best, 37);
 });
 
-test('T24: passing 40 shows MASTER before the nickname (R20)', () => {
+test('T24: passing 40 shows MYTHIC before the nickname (R20)', () => {
   const sess = newSession();
   const r = playPayment(sess, 'p2', { tries: [41], wheel: ['t2'], choices: ['sticker'], nick: 'SAM' });
-  assert.equal(displayName(r.p, CONFIG), 'MASTER SAM');
+  assert.equal(displayName(r.p, CONFIG), 'MYTHIC SAM');
   const l = playPayment(sess, 'p2', { tries: [31], wheel: ['t2'], choices: ['sticker'], nick: 'ANA' });
   assert.equal(displayName(l.p, CONFIG), 'LEGEND ANA');
   assert.equal(legends(sess.s, CONFIG).length, 2);
@@ -144,6 +144,16 @@ test('T25: passing 50: the choice has no free-try tile (R5, R21)', () => {
   assert.ok(r.steps.includes('choice:nofree'));
   assert.throws(() => R.choiceBody(r.p, 'free', CONFIG));
   assert.ok(kinds(r.items).includes('cash'));
+});
+
+test('T25: passing 50 shows GODLIKE before the nickname, and the hand-over lists it (R21)', () => {
+  const r = playPayment(newSession(), 'p2', { tries: [50], wheel: ['t2'], choices: ['token'], nick: 'ZED' });
+  assert.equal(displayName(r.p, CONFIG), 'GODLIKE ZED');
+  assert.equal(rankOf(r.p, CONFIG), 'godlike');
+  assert.ok(kinds(r.items).includes('godlike'));
+  const m = playPayment(newSession(), 'p2', { tries: [45], wheel: ['t2'], choices: ['token'] });
+  assert.equal(rankOf(m.p, CONFIG), 'mythic');
+  assert.ok(!kinds(m.items).includes('godlike'));
 });
 
 test('R15: each prize level is given at most once per payment', () => {

@@ -57,6 +57,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
 | Staff panel and the draw (S11, S12, K2, K3) | `src/staff.js` |
 | Right-hand panel: jackpot, player prize box, best players (L2) | `src/board.js` |
+| Rank badges LEGEND (gold) / MYTHIC (feral purple) / GODLIKE (red-blue divine) before names (R8, R20, R21) | `src/rankbadge.js` (rank = `rankOf()` in ledger.js) |
 | Saving: server or browser, offline queue (D1, D4, P1) | `src/store.js` |
 | Start-up, keys, mouse, banners, health check, staff actions | `src/main.js` |
 | CSV export | `src/report.js` |

@@ -27,7 +27,7 @@ Every payment gets one set of prizes, decided by its best try.
 | 2 Medium | 11-20 | Many players lose here | faster, smaller gaps | 25% |
 | 3 Hard | 21-30 | Very hard, never impossible | gaps move slowly up and down | 6% |
 | 4 Veteran | 31-40 | For Flappy Bird veterans | big speed jump, tight moving gaps | 1% |
-| 5 Master | 41-50 | Bragging rights | as hard as level 4 (*proposal*) | very few |
+| 5 Mythic | 41-50 | Bragging rights | as hard as level 4 (*proposal*) | very few |
 
 **Fairness check:** every gap can be reached from the one before. `course.js isFairStep()` checks each chimney it builds,
 using what a player can surely do [`fair`]. T26 builds 10,000 courses.
@@ -38,7 +38,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 - **R6 Chimney 20 prize:** the first time a try in this payment passes 20: at the end of that try, "YOU WON A SPIN ON THE WHEEL!", then the wheel shows and the player clicks to spin it. No jackpot ticket at 20 [`tickets.p20` = 0].
 - **R7 The wheel:** 40% free try, 30% +2 jackpot tickets, 28% +5 jackpot tickets, 2% €10 cash [`wheel.outcomes`]. When the player clicks, `secureRandom()` picks the result and it is SAVED before the spin starts. The animation only shows it.
   A wooden wheel with 7 big slices with icons (same total odds) [`pieces`]. Each result has a tier 1-4: effects and sounds grow with the tier (VS-style chest opening, Christmas bells: rays, coins, flashes, shake, fireworks).
-- **R8 Chimney 30 prize:** the first time a try passes 30: 3 jackpot tickets [`tickets.p30`] and the tag LEGEND before the name.
+- **R8 Chimney 30 prize:** the first time a try passes 30: 3 jackpot tickets [`tickets.p30`] and the tag LEGEND before the name (a gold badge).
 - **R9 Prizes add up:** reaching 30 also gives the 20 prizes and the 10 choice.
 - **R10 Free tries:** a free try (from R5 or the wheel) is one more try on the same payment; the best try still counts. Never a second wheel spin or a second choice.
 - **R11 Consolation** (*proposal*, off) [`consolation.on`]: gave up the 10 prize for a free try and ended below 20: still 1 sticker.
@@ -48,8 +48,8 @@ Order after each try (from `rules.js nextStep`): chimney 20 ticket -> wheel -> c
 **After the prizes**
 
 - **R19 No prizes after 30:** chimneys 31-50 count only for the leaderboard.
-- **R20 Master tag:** passing 40 shows "MASTER" before the nickname everywhere (instead of LEGEND).
-- **R21 Beating the game:** passing 50 ends the try with "YOU BEAT SANTA TUS!". 50 is the highest score.
+- **R20 Mythic tag:** passing 40 shows "MYTHIC" before the nickname everywhere (instead of LEGEND), with a feral purple badge.
+- **R21 Beating the game:** passing 50 ends the try with "YOU BEAT SANTA TUS!". 50 is the highest score. It shows "GODLIKE" before the nickname everywhere (instead of MYTHIC), with a red and blue divine badge. Ranks: LEGEND (30) < MYTHIC (40) < GODLIKE (50) [`board.legendTag`, `mythicTag`, `godlikeTag`].
 
 **Tickets and jackpot**
 
@@ -76,13 +76,13 @@ Order after each try (from `rules.js nextStep`): chimney 20 ticket -> wheel -> c
 | S6 | Try over: the crash scene C1-C4 (Santa speaks), or "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce, crash.js |
 | S7 | Wheel: shows "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
 | S8 | Chimney 10 choice: big tiles, mouse | player | screens.choice |
-| S9 | Nickname: only for the best players list, LEGEND or MASTER. Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
+| S9 | Nickname: only for the best players list, LEGEND, MYTHIC or GODLIKE. Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
 | S10 | Hand-over: prize, ticket numbers, cash. Enter saves and goes back to S1 | staff | screens.handover |
 | S11 | Staff panel: F9 (or hold F + press 9) + code | staff | staff.staffPanel |
 | S12 | Draw: rolling numbers, winning ticket, jackpot, or "goes to charity" | staff | staff.drawScreen |
 | S13 | Health check at every start: server, database, USB, clock, screen, fonts, sound, settings | nobody | main.healthCheck |
 
-**Leaderboard panel (L2):** "JACKPOT UNTIL NOW" (biggest), "DRAW AT 12:45" + countdown on the event day, this player's prizes (chimney 10 prize, wheel spin, jackpot tickets; shown until the next game starts), "BEST PLAYERS" top 15 (rank, name with LEGEND/MASTER tag, chimneys).
+**Leaderboard panel (L2):** "JACKPOT UNTIL NOW" (biggest), "DRAW AT 12:45" + countdown on the event day, this player's prizes (chimney 10 prize, wheel spin, jackpot tickets; shown until the next game starts), "BEST PLAYERS" top 15 (rank, the LEGEND / MYTHIC / GODLIKE badge, name, chimneys).
 Panel text is at least 28 px. **Players never need the keyboard** (mouse or a USB arcade button set as a click).
 
 **Attract mode:** A1 1980s arcade look (Press Start 2P + VT323 pixel fonts in `assets/fonts`, neon on a night sky, scanlines, detailed pixel-art Santa (all-red hat) in a red and gold sleigh, his burlap TUS bag tied on with ropes, the TUS logo on a town building).
@@ -150,7 +150,7 @@ Common fields: `id` (unique), `n` (order number), `ts` (time in ms), `t` (type).
 Server API (127.0.0.1 only): `GET /api/health`, `GET /api/events?ledger=live|test&after=n`, `POST /api/events?ledger=`,
 `POST /api/backup`, `POST /api/export?ledger=` (CSV body), `POST /api/newday?ledger=`.
 
-**Leaderboard:** L1 best chimneys per payment, a tie goes to the latest player. L2 top 15 "BEST PLAYERS" with LEGEND/MASTER tags.
+**Leaderboard:** L1 best chimneys per payment, a tie goes to the latest player. L2 top 15 "BEST PLAYERS" with LEGEND / MYTHIC / GODLIKE badges.
 L3 updates on hand-over; a second screen can open `?view=board` on the same laptop.
 
 ## Test link and Windows install
@@ -194,8 +194,8 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T21 | tie on 18 | latest one higher | N |
 | T22 | 4 hours of play | 60 fps, no slowdown | manual |
 | T23 | crash at 37 | same prizes as 30, board shows 37 | N |
-| T24 | passes 40 / 30 | "MASTER SAM" / "LEGEND ANA" | N |
-| T25 | passes 50 | beat screen, no free-try tile | N |
+| T24 | passes 40 / 30 | "MYTHIC SAM" / "LEGEND ANA" | N |
+| T25 | passes 50 | beat screen, no free-try tile, "GODLIKE" tag | N |
 | T26 | 10,000 courses | all fair | N |
 | T27 | fresh Windows 11 + ZIP | playing in 5 minutes | W (smoke) + manual |
 | T28 | start file inside the ZIP | "Unzip the folder first" | W |

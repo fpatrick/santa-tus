@@ -3,7 +3,7 @@
 
 import { CONFIG } from './config.js';
 import * as R from './rules.js';
-import { displayName, rankFor, fmtTickets } from './ledger.js';
+import { displayName, rankFor, rankOf, fmtTickets } from './ledger.js';
 import * as screens from './screens.js';
 import * as fx from './fx.js';
 import { sfx } from './sound.js';
@@ -126,7 +126,7 @@ async function pickChoice(app, name, p, freeTile) {
 
 // S9
 async function askNick(app, name, p) {
-  const nick = await screens.nickname({ pid: p.pid, best: p.best, rank: rankFor(app.led(name), p), legend: p.best >= TH.legend });
+  const nick = await screens.nickname({ pid: p.pid, best: p.best, rank: rankFor(app.led(name), p), legend: rankOf(p, CONFIG) });
   await app.commit(name, R.nickBody(p, nick, CONFIG));
 }
 

@@ -1,10 +1,11 @@
 // board.js: the right-hand panel (L2, L3): jackpot until now (rolls up when it grows), "draw at 12:45"
 // with a countdown, this player's prizes (shown until the next game starts), and the best players
-// with LEGEND / MASTER tags on the names.
+// with the LEGEND / MYTHIC / GODLIKE pixel badges (rankbadge.js) in front of the names.
 
 import { CONFIG } from './config.js';
 import { fmtEuro, fmtTicket, fmtTickets } from './ledger.js';
 import { sfx } from './sound.js';
+import { rankBadge } from './rankbadge.js';
 
 const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
@@ -22,8 +23,9 @@ export function createBoard(el) {
   const $ = (s) => el.querySelector(s);
   const b = { shown: null, target: 0, lastDraw: null, freshPid: null, key: '' };
 
-  // data = { top: [{pid, name, best, master, legend}], jackpot, lastDraw, freshPid, player }
+  // data = { top: [{pid, name, rank, best}], jackpot, lastDraw, freshPid, player }
   b.update = (data) => {
+    b.last = data;
     b.target = data.jackpot;
     if (b.shown === null) b.shown = data.jackpot;
     b.lastDraw = data.lastDraw;
@@ -37,11 +39,21 @@ export function createBoard(el) {
       const li = document.createElement('li');
       if (k === 0) li.classList.add('top1');
       if (r.pid === data.freshPid) li.classList.add('fresh');
-      li.innerHTML = `<span class="rk">${k + 1}</span><span class="nm${r.master ? ' master' : r.legend ? ' legend' : ''}"></span><span class="sc">${r.best}</span>`;
-      li.querySelector('.nm').textContent = r.name;
+      li.innerHTML = `<span class="rk">${k + 1}</span><span class="nm${r.rank ? ` ${r.rank}` : ''}"><span class="nmtxt"></span></span><span class="sc">${r.best}</span>`;
+      li.querySelector('.nmtxt').textContent = r.name;
+      const badge = rankBadge(r.rank, 2);
+      if (badge) {
+        const span = document.createElement('span');
+        span.className = `rankbadge rank-${r.rank}`;
+        span.appendChild(cloneCanvas(badge));
+        li.querySelector('.nm').prepend(span);
+      }
       ol.appendChild(li);
     });
   };
+
+  // The badges use the pixel font: draw the list again once the fonts are loaded.
+  if (document.fonts) document.fonts.ready.then(() => { b.key = ''; if (b.last) b.update(b.last); });
 
   // Called every frame: rolls the jackpot up, updates the countdown once a second.
   let acc = 1;
@@ -98,4 +110,13 @@ function playerBox(p) {
     <div>CHIMNEY ${th.choice} PRIZE: ${p.p10 ? yes(p.p10) : no}</div>
     <div>WHEEL SPIN: ${p.spin ? yes(p.spin) : p.spinEarned ? '<b class="yes">WON, NOT SPUN YET</b>' : no}</div>
     <div>${CONFIG.text.tickets}: ${p.tickets.length ? `<b class="yes">${fmtTickets(p.tickets)}</b>` : '<span class="no">NONE</span>'}</div>`;
+}
+
+// A canvas can only be in one place in the page, so each row gets its own copy of the cached badge.
+function cloneCanvas(src) {
+  const c = document.createElement('canvas');
+  c.width = src.width;
+  c.height = src.height;
+  c.getContext('2d').drawImage(src, 0, 0);
+  return c;
 }

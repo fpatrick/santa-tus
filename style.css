@@ -48,15 +48,25 @@ body { font-family: var(--term); color: var(--snow); user-select: none; -webkit-
 .jp-draw b { color: var(--gold); font-weight: normal; }
 .board-title { font: 28px/1 var(--pixel); flex: none; color: var(--green); text-shadow: 0 0 10px rgba(61, 255, 139, 0.6); margin: 6px 0 4px; }
 .board { list-style: none; margin: 0; padding: 0; flex: 1; overflow: hidden; }
-.board li { display: grid; grid-template-columns: 50px 1fr 70px; align-items: baseline; font: 34px/1.02 var(--term); padding: 0 6px; }
+.board li { display: grid; grid-template-columns: 50px 1fr 70px; align-items: center; font: 34px/1.02 var(--term); padding: 0 6px; }
 .board li:nth-child(odd) { background: rgba(255, 255, 255, 0.04); }
 .board .rk { color: var(--dim); }
-.board .nm { white-space: nowrap; overflow: hidden; text-overflow: clip; }
+.board .nm { white-space: nowrap; overflow: visible; }
 .board .sc { text-align: right; color: var(--gold); }
 .board li.top1 .nm, .board li.top1 .sc { color: #fff6c8; text-shadow: 0 0 8px var(--gold); }
 .board li.fresh { animation: fresh 1s steps(2) 3; }
-.board .master { color: var(--violet); }
-.board .legend { color: var(--gold); }
+/* Rank badges (rankbadge.js) and ranked names. Slow movement only, never fast flashing (A10). */
+.board .rankbadge { display: inline-block; vertical-align: middle; margin: -6px 10px -6px 0; }
+.board .rankbadge canvas { display: block; image-rendering: pixelated; }
+.board .legend .nmtxt { color: var(--gold); text-shadow: 2px 2px 0 #8a5a00; }
+.board .mythic .nmtxt { color: #d68aff; text-shadow: 2px 2px 0 #2a0a40; }
+.board .godlike .nmtxt { background: linear-gradient(90deg, #ff3b4f, #ffffff 50%, #27a8ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.rank-legend { animation: gleam 2.4s ease-in-out infinite; }
+.rank-mythic { animation: growl 3s ease-in-out infinite; }
+.rank-godlike { animation: divine 3s ease-in-out infinite; }
+@keyframes gleam { 50% { filter: brightness(1.3) drop-shadow(0 0 4px #ffd23f); } }
+@keyframes growl { 0%, 70%, 100% { transform: translateX(0); filter: drop-shadow(0 0 2px #7a34c0); } 76% { transform: translateX(-2px); } 82% { transform: translateX(2px); filter: drop-shadow(0 0 7px #c35cff); } 88% { transform: translateX(-1px); } }
+@keyframes divine { 0%, 100% { transform: translateY(0); filter: drop-shadow(0 0 5px #ff3b4f); } 50% { transform: translateY(-3px); filter: drop-shadow(0 0 7px #27a8ff); } }
 /* This player's prizes (stays until the next game). */
 .me { font: 28px/1.12 var(--term); color: var(--snow); background: rgba(39, 200, 255, 0.1); border-left: 6px solid var(--ice); padding: 6px 12px; }
 .me:empty { display: none; }

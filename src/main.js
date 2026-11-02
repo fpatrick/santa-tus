@@ -3,7 +3,7 @@
 
 import { CONFIG } from './config.js';
 import { versionLabel, DISCLAIMER, STAGE } from './version.js';
-import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, drawPool, lastActivePayment } from './ledger.js';
+import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, plainName, rankOf, drawPool, lastActivePayment } from './ledger.js';
 import * as R from './rules.js';
 import { createStore } from './store.js';
 import { createFlight } from './game.js';
@@ -49,7 +49,7 @@ app.refresh = () => {
   const t = totals(s, CONFIG);
   const th = CONFIG.thresholds;
   app.board.update({
-    top: leaderboard(s, CONFIG).map((p) => ({ pid: p.pid, name: displayName(p, CONFIG), best: p.best, master: p.best >= th.master, legend: p.best >= th.legend })),
+    top: leaderboard(s, CONFIG).map((p) => ({ pid: p.pid, name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
     jackpot: t.jackpot, lastDraw: t.lastDraw, freshPid: app.freshPid,
     player: playerInfo(lastActivePayment(app.led ? app.led() : s)),
   });
@@ -71,7 +71,7 @@ function playerInfo(p) {
 function attractInfo() {
   const s = app.ledgers.live;
   return {
-    top: leaderboard(s, CONFIG).map((p) => ({ name: displayName(p, CONFIG), best: p.best, master: p.best >= CONFIG.thresholds.master, legend: p.best >= CONFIG.thresholds.legend })),
+    top: leaderboard(s, CONFIG).map((p) => ({ name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
     jackpot: totals(s, CONFIG).jackpot, drawTime: CONFIG.event.drawTime,
   };
 }

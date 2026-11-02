@@ -21,7 +21,7 @@ export const CONFIG = {
   freeRestart: { below: 5, max: 3 },
 
   // Chimney numbers that unlock prizes (R5, R6, R8, R20, R21).
-  thresholds: { choice: 10, ticket: 20, legend: 30, master: 40, beat: 50 },
+  thresholds: { choice: 10, ticket: 20, legend: 30, mythic: 40, beat: 50 },
   tickets: { p20: 0, p30: 3 }, // R6 (chimney 20 = a spin on the wheel, no ticket), R8
   consolation: { on: false, item: 'STICKER' }, // R11 (proposal, off by default)
 
@@ -56,8 +56,10 @@ export const CONFIG = {
   jackpot: { base: 10, percent: 10 },
 
   // L1, L2, S9
-  // L1: a tie goes to the latest player. Tags: MASTER (passed 40) or LEGEND (passed 30) before the name.
-  board: { size: 15, minPillars: 1, nickMax: 12, defaultNick: 'PLAYER', title: 'BEST PLAYERS', legendTag: 'LEGEND', masterTag: 'MASTER' },
+  // L1: a tie goes to the latest player. Rank tags before the name: LEGEND (passed 30), MYTHIC (passed 40),
+  // GODLIKE (beat 50). Each has its own pixel badge (rankbadge.js). newRank = the nickname screen title.
+  board: { size: 15, minPillars: 1, nickMax: 12, defaultNick: 'PLAYER', title: 'BEST PLAYERS', legendTag: 'LEGEND', mythicTag: 'MYTHIC', godlikeTag: 'GODLIKE',
+    newRank: { legend: 'NEW LEGEND!', mythic: 'NEW MYTHIC!', godlike: 'YOU ARE GODLIKE!' } },
 
   // R4: the course. Speeds in px per second, sizes in px (game area 1280 x 1080).
   // spacing = distance between chimneys. step = biggest jump of the gap centre.
@@ -67,7 +69,7 @@ export const CONFIG = {
     { n: 2, name: 'MEDIUM', to: 20, color: '#27c8ff', speed: 300, gap: 275, spacing: 520, step: 250, move: 0, period: 0 },
     { n: 3, name: 'HARD', to: 30, color: '#ffd23f', speed: 320, gap: 255, spacing: 520, step: 250, move: 55, period: 3.2 },
     { n: 4, name: 'VETERAN', to: 40, color: '#ff4f6d', speed: 400, gap: 235, spacing: 560, step: 260, move: 80, period: 2.6 },
-    { n: 5, name: 'MASTER', to: 50, color: '#c35cff', speed: 400, gap: 235, spacing: 560, step: 260, move: 80, period: 2.6 },
+    { n: 5, name: 'MYTHIC', to: 50, color: '#c35cff', speed: 400, gap: 235, spacing: 560, step: 260, move: 80, period: 2.6 },
   ],
   physics: { gravity: 2300, flap: -680, maxFall: 900, santaX: 300, hitW: 66, hitH: 44 },
   world: { width: 1280, height: 1080, roof: 110, gapMin: 240, gapMax: 740, firstGap: 500, chimneyW: 130 },
@@ -123,12 +125,13 @@ export const CONFIG = {
     win10: 'SMALL PRIZE OR A FREE TRY',
     win20: 'A SPIN ON THE WHEEL',
     win30: '3 JACKPOT TICKETS + LEGEND',
-    win40: 'MASTER TAG',
+    win40: 'MYTHIC TAG',
+    win50: 'GODLIKE TAG',
     oddsTitle: 'WHEEL ODDS',
     drawAt: 'DRAW AT',
     clickToFly: 'CLICK TO FLY',
-    goals: { 10: 'PRIZE', 20: 'SPIN THE WHEEL', 30: 'LEGEND', 40: 'MASTER', 50: 'BEAT THE GAME' },
-    milestones: { 10: 'PRIZE UNLOCKED!', 20: 'SPIN THE WHEEL!', 30: 'LEGEND!', 40: 'MASTER!', 50: 'YOU BEAT IT!' },
+    goals: { 10: 'PRIZE', 20: 'SPIN THE WHEEL', 30: 'LEGEND', 40: 'MYTHIC', 50: 'GODLIKE' },
+    milestones: { 10: 'PRIZE UNLOCKED!', 20: 'SPIN THE WHEEL!', 30: 'LEGEND!', 40: 'MYTHIC!', 50: 'GODLIKE!' },
     jackpot: 'JACKPOT UNTIL NOW',
     ticket: 'JACKPOT TICKET', // used everywhere a ticket is named
     tickets: 'JACKPOT TICKETS',
@@ -162,7 +165,7 @@ export const CONFIG = {
       over: ['THE CHIMNEYS WON THIS TIME...', 'I LOST MY HAT AND MY PRESENTS!', 'THAT ROOF CAME OUT OF NOWHERE!'],
       overClose: 'SO CLOSE! CHIMNEY 10 WAS ONLY {gap} AWAY.',
       thanks: 'THANK YOU FOR HELPING KIDS WITH DIABETES AT UHL!',
-      prize: { spin: 'A SPIN ON THE WHEEL', legend: '3 JACKPOT TICKETS AND THE LEGEND TAG', master: 'THE MASTER TAG', choice: 'A PRIZE FROM CHIMNEY 10', consolation: 'A STICKER' },
+      prize: { spin: 'A SPIN ON THE WHEEL', legend: '3 JACKPOT TICKETS AND THE LEGEND TAG', mythic: 'THE MYTHIC TAG', choice: 'A PRIZE FROM CHIMNEY 10', consolation: 'A STICKER' },
       skip: 'CLICK TO CONTINUE',
     },
   },

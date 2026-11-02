@@ -108,9 +108,9 @@ export function choice(freeTile) {
 }
 
 // S9: staff type a nickname (max 12) or press Esc to skip ("PLAYER 37").
-export function nickname({ pid, best, rank, legend }) {
+export function nickname({ pid, best, rank, legend }) { // legend = the rank: 'legend', 'mythic', 'godlike' or ''
   return new Promise((resolve) => {
-    const el = open(`<div class="box gold"><h1>${legend ? 'NEW LEGEND!' : `RANK ${rank} TODAY!`}</h1>
+    const el = open(`<div class="box gold"><h1>${legend ? CONFIG.board.newRank[legend] : `RANK ${rank} TODAY!`}</h1>
       <p>BEST: ${best} CHIMNEYS</p>
       <p>Staff: type a nickname (max ${CONFIG.board.nickMax}).</p>
       <input class="nick" maxlength="${CONFIG.board.nickMax}" spellcheck="false" autocomplete="off">
@@ -130,8 +130,9 @@ export function handover({ items, pid, best, name }) {
     const li = items.map((it) => {
       if (it.kind === 'tickets') return `<li class="tickets">GIVE ${it.count} ${it.count > 1 ? CONFIG.text.tickets : CONFIG.text.ticket}<br><b>${fmtTickets(it.tickets)}</b></li>`;
       if (it.kind === 'cash') return `<li class="cash">PAY ${fmtEuro(it.amount)} CASH</li>`;
-      if (it.kind === 'legend') return '<li class="legend">LEGEND TAG ON THE BEST PLAYERS LIST</li>';
-      if (it.kind === 'master') return '<li class="legend">MASTER TAG ON THE BOARD</li>';
+      if (it.kind === 'legend') return `<li class="legend">${CONFIG.board.legendTag} TAG ON THE BEST PLAYERS LIST</li>`;
+      if (it.kind === 'mythic') return `<li class="legend">${CONFIG.board.mythicTag} TAG ON THE BOARD</li>`;
+      if (it.kind === 'godlike') return `<li class="legend">${CONFIG.board.godlikeTag} TAG ON THE BOARD</li>`;
       return `<li>GIVE ${esc(it.text)}</li>`;
     }).join('');
     open(`<div class="box ${items.length ? 'gold' : ''}"><h1>HAND-OVER</h1>
