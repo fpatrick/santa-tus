@@ -1,11 +1,12 @@
-// limerick.js: the town behind the game, inspired by Limerick City at night, in 16-bit HD pixel art.
-// Georgian red-brick terraces (white sash windows, coloured doors with fanlights), King John's Castle
-// (round drum towers, floodlit), St Mary's Cathedral (square tower with pinnacles), the tall Clayton
-// hotel tower on the Shannon, the TUS buildings with the logo, and tall planted Christmas trees with faint
-// twinkling lights. The strip is drawn once at half size (1 art pixel = 2 screen pixels), snapped to
-// pixels with an outline, and scrolled slowly. Only the tree lights are drawn every frame.
+// limerick.js: the town far behind the game: Limerick City at night as a dark silhouette, in 16-bit HD
+// pixel art (ART.md A11). Georgian terraces (sash windows, fanlights, chimney pots), King John's Castle
+// (round drum towers, the Limerick flag), St Mary's Cathedral (square tower with pinnacles), the tall
+// Clayton hotel tower, the TUS buildings with the glowing logo, and tall planted pine trees covered in
+// twinkling Christmas lights. The strip is drawn once at half size (1 art pixel = 2 screen pixels),
+// turned into a silhouette (only warm lights keep their colour) and scrolled slowly. Only the tree lights
+// are drawn every frame.
 
-import { pixelate, enlarge } from './pixelart.js';
+import { enlarge } from './pixelart.js';
 
 const K = 2; // screen pixels per art pixel
 const SH = 300; // strip height in art pixels
@@ -166,48 +167,67 @@ function tus(g, x, w, h, logo) {
   g.drawImage(logo, Math.round(x + (w - logo.width) / 2), SH - h + 18);
 }
 
-// A tall planted Christmas tree: stacked branch tiers, light on the left, a gold star on top.
-// Returns where its lights hang (art pixels), drawn every frame by drawLimerick.
+// A tall planted pine tree, drawn branch by branch: many drooping branches out of the trunk, ragged
+// needle clusters, short at the top and long at the bottom, a gold star on top. Returns where its lights
+// hang (on the branches, art pixels); drawLimerick makes them twinkle.
 function tree(g, x, h) {
-  const w = Math.round(h * 0.42);
-  const cx = x + w / 2;
+  const w = Math.round(h * 0.5);
+  const cx = Math.round(x + w / 2);
   const top = SH - h;
-  r(g, cx - 4, SH - 26, 8, 26, '#3a2010'); // trunk
-  r(g, cx - 4, SH - 26, 3, 26, '#5a3418');
-  r(g, cx - 14, SH - 12, 28, 12, '#5a2a14'); // the planter
-  r(g, cx - 14, SH - 12, 28, 3, '#8a4a22');
-  const tiers = 6;
-  for (let t = 0; t < tiers; t++) {
-    const ty = top + 10 + t * ((h - 40) / tiers);
-    const half = ((t + 1.4) / (tiers + 0.4)) * (w / 2);
-    const th = (h - 40) / tiers + 10;
-    for (let yy = 0; yy < th; yy++) {
-      const hw = Math.round(half * ((yy + 2) / th));
-      for (let xx = -hw; xx <= hw; xx++) {
-        const k = (xx + hw) / (2 * hw + 1);
-        const c = k < 0.3 ? '#2a8a4a' : k < 0.75 ? '#1a6a38' : '#0e4a26';
-        r(g, cx + xx, ty + yy, 1, 1, c);
+  const lights = [];
+  r(g, cx - 2, top + 6, 3, h - 6, '#2a1a10'); // trunk
+  const rows = [];
+  for (let y = top + 5; y < SH - 16;) { // branches grow in whorls (groups), with small gaps between them
+    const k = (y - top) / h;
+    const n = 2 + Math.floor(rnd() * 3);
+    for (let j = 0; j < n; j++) rows.push(y + j * 2);
+    y += n * 2 + 2 + Math.floor(k * 5 + rnd() * 3);
+  }
+  for (const y of rows) {
+    const k = (y - top) / h; // 0 at the top, 1 at the bottom
+    for (const dir of [-1, 1]) {
+      const len = Math.max(2, (w / 2) * Math.pow(k, 0.85) * (0.55 + rnd() * 0.55));
+      const droop = len * (0.18 + rnd() * 0.12);
+      for (let i = 0; i <= len; i++) {
+        const t = i / len;
+        const bx = cx + dir * i;
+        const by = y + droop * t * t - (t > 0.85 ? (t - 0.85) * 8 : 0); // out, down, a little up at the tip
+        const up = 1 + Math.floor(rnd() * 2 + (1 - t) * 1.5);
+        const down = 1 + Math.floor(rnd() * 2.5);
+        for (let n = -up; n <= down; n++) r(g, bx, by + n, 1, 1, n < 0 && dir < 0 ? '#2e6a4a' : n < 0 ? '#22543c' : '#163c2c');
+        if (rnd() < 0.18) r(g, bx + dir, by + down, 1, 1, '#163c2c'); // stray needles
+        if (n0(t) && rnd() < 0.25) r(g, bx, by - up, 1, 1, '#9aa8d0'); // a little snow on top of the branch
+        if (rnd() < 0.17) lights.push({ x: bx, y: by, c: LIGHT_COLORS[Math.floor(rnd() * LIGHT_COLORS.length)], p: rnd() * 6.28, f: 1.2 + rnd() * 4 });
       }
     }
-    for (let xx = -Math.round(half); xx <= half; xx += 4) r(g, cx + xx, ty + th - 1, 2, 1, '#e8eeff'); // snow on the branch tips
   }
-  // gold star
-  const sy = top + 4;
-  r(g, cx - 1, sy - 6, 2, 12, '#ffd23f'); r(g, cx - 5, sy - 1, 10, 2, '#ffd23f');
-  r(g, cx - 3, sy - 3, 6, 6, '#ffd23f'); r(g, cx - 1, sy - 2, 2, 2, '#fff6c8');
-  // lights along the garlands (diagonal lines across the tree)
-  const lights = [];
-  for (let k = 0; k < 7; k++) {
-    const y0 = top + 18 + k * ((h - 50) / 7);
-    for (let s = 0; s < 1; s += 0.14) {
-      const yy = y0 + s * 14;
-      const t2 = (yy - top) / (h - 30);
-      const hw = (w / 2) * Math.min(1, t2 * 1.05);
-      const xx = cx - hw + s * 2 * hw;
-      lights.push({ x: xx, y: yy, c: LIGHT_COLORS[(k + Math.round(s * 7)) % LIGHT_COLORS.length], p: rnd() * 6.28 });
-    }
-  }
+  // the gold star on top
+  r(g, cx - 1, top - 4, 2, 10, '#ffd23f'); r(g, cx - 4, top, 8, 2, '#ffd23f');
+  r(g, cx - 2, top - 2, 4, 6, '#ffd23f'); r(g, cx - 1, top - 1, 2, 2, '#fff6c8');
   return { w, lights };
+}
+const n0 = (t) => t > 0.3;
+
+// Far away: every building and tree becomes a dark night silhouette (a little detail stays), while the
+// warm lights (windows, fanlights, the TUS logos, the star) keep glowing, a little dimmer.
+function silhouette(c) {
+  const g = c.getContext('2d');
+  const img = g.getImageData(0, 0, c.width, c.height);
+  const d = img.data;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] < 120) { d[i + 3] = 0; continue; }
+    d[i + 3] = 255;
+    const [R, G, B] = [d[i], d[i + 1], d[i + 2]];
+    const lum = (0.3 * R + 0.59 * G + 0.11 * B) / 255;
+    let out;
+    if (R > 170 && G > 110 && R > B + 60) out = [R * 0.62 + 30, G * 0.55 + 20, B * 0.4 + 20]; // a warm light
+    else if (G > R + 8 && G >= B) out = [10 + lum * 40, 28 + lum * 70, 34 + lum * 46]; // pine needles
+    else if (lum > 0.7) out = [70, 80, 130]; // snow, far away
+    else out = [16 + lum * 40, 14 + lum * 36, 50 + lum * 60]; // stone, brick, glass: night blue
+    const q = (v) => Math.min(255, Math.round(v / 6) * 6);
+    d[i] = q(out[0]); d[i + 1] = q(out[1]); d[i + 2] = q(out[2]);
+  }
+  g.putImageData(img, 0, 0);
 }
 
 // Builds the whole strip once. Returns { img, width (screen px), lights (screen px) }.
@@ -217,7 +237,7 @@ export function buildLimerick(logoFn) {
     ['cathedral'], ['clayton'], ['tree', 175], ['geo', 3], ['tus', 80, 170], ['tree', 150]];
   const widths = { castle: 214, cathedral: 144, clayton: 58 };
   let SW = 0;
-  for (const p of plan) SW += (p[0] === 'geo' ? p[1] * 46 : p[0] === 'tree' ? Math.round(p[1] * 0.42) : p[0] === 'tus' ? p[1] : widths[p[0]]) + 8;
+  for (const p of plan) SW += (p[0] === 'geo' ? p[1] * 46 : p[0] === 'tree' ? Math.round(p[1] * 0.5) : p[0] === 'tus' ? p[1] : widths[p[0]]) + 8;
   const c = document.createElement('canvas');
   c.width = SW;
   c.height = SH + 2;
@@ -234,13 +254,7 @@ export function buildLimerick(logoFn) {
     else if (p[0] === 'tus') { tus(g, x, p[1], p[2], logoFn(Math.round(p[1] * 0.62))); x += p[1]; }
     x += 8;
   }
-  pixelate(c, 12);
-  // night haze: the town sits a bit back and darker, so the chimneys and presents in front stand out
-  g.setTransform(1, 0, 0, 1, 0, 0);
-  g.globalCompositeOperation = 'source-atop';
-  g.fillStyle = 'rgba(14, 10, 48, 0.3)';
-  g.fillRect(0, 0, c.width, c.height);
-  g.globalCompositeOperation = 'source-over';
+  silhouette(c);
   return { img: enlarge(c, K), width: SW * K, height: (SH + 2) * K, lights: lights.map((l) => ({ ...l, x: l.x * K, y: l.y * K })) };
 }
 
@@ -256,11 +270,11 @@ export function drawLimerick(ctx, town, off, baseY, t, screenW) {
     for (const l of town.lights) {
       const lx = Math.round(x + l.x);
       if (lx < -8 || lx > screenW + 8) continue;
-      const k = 0.55 + 0.45 * Math.sin(t * 1.6 + l.p); // a slow, soft twinkle (well under 3 per second)
-      ctx.globalAlpha = 0.18 * k;
+      const k = Math.max(0, Math.sin(t * l.f + l.p)); // each light twinkles at its own pace (under 1 per second)
+      ctx.globalAlpha = 0.16 * k;
       ctx.fillStyle = l.c;
-      ctx.fillRect(lx - 4, y0 + l.y - 4, 10, 10); // faint glow
-      ctx.globalAlpha = 0.5 + 0.5 * k;
+      ctx.fillRect(lx - 2, y0 + l.y - 2, 6, 6); // soft glow
+      ctx.globalAlpha = 0.35 + 0.65 * k;
       ctx.fillRect(lx, y0 + l.y, 2, 2);
     }
     ctx.globalAlpha = 1;

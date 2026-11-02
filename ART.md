@@ -18,6 +18,7 @@ If a request does not fit this style, say so and suggest the 16-bit HD way.
 | A8 | **Small things are hand-placed.** Faces, logos and icons smaller than about 30 pixels are pixel maps or hand-placed pixels (`src/santaface.js`, `TUS_LOGO` in santa.js), not shrunk vector drawings. |
 | A9 | **Text in the game** uses the pixel fonts already loaded (`Press Start 2P`, `VT323`) with the dark outline (`outlined()` in game.js). |
 | A10 | **Effects** (sparkles, coins, stars, confetti) are square pixel particles (`src/fx.js`). Flashing stays at 3 per second or less. |
+| A11 | **Far background = silhouette.** The town behind the game (`src/limerick.js`) is far away: dark night-blue silhouettes with only a little detail and no ink outline (like SNES parallax layers). Only warm lights keep colour (windows, the TUS logos, stars, tree lights). Trees are real-looking pines built branch by branch, not cartoon triangles. The front (Santa, chimneys, presents) must always stand out from it. |
 
 ## How to make new art (the pipeline)
 
