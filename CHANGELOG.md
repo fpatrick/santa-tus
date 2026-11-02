@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.16.7 (2026-11-02): after each chimney Santa laughs again: a big wide-open mouth for 1 second (no ho-ho-ho flapping).
 - 0.16.6 (2026-11-02): Santa's hat sits 2 pixels lower on his head.
 - 0.16.5 (2026-11-02): the white hat brim is now as wide as Santa's head (it stuck out on both sides).
 - 0.16.4 (2026-11-02): Santa's hat is smaller so it fits his head (title screen and game), and the bag now has the TUS castle logo embroidered in gold thread instead of the word TUS; it grows with the bag and the ropes go around it.
