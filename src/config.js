@@ -35,17 +35,21 @@ export const CONFIG = {
 
   // R7: the wheel. odds must add up to 100. pieces = how many slices it shows
   // (same total odds). tier 1-4 sets how big the effects and sounds are.
-  // short = text on the slice, icon = picture on the slice (sprites.js).
+  // short = text on the slice (\n = new line), icon = picture on the slice (wheelicons.js).
   wheel: {
     outcomes: [
       { id: 'free', label: 'FREE TRY', short: 'FREE TRY', icon: 'free', odds: 40, pieces: 2, tier: 1, color: '#27c8ff', tickets: 0, cash: 0, freeTry: true },
-      { id: 't2', label: '+2 JACKPOT TICKETS', short: '+2', icon: 'ticket', odds: 30, pieces: 2, tier: 2, color: '#3dff8b', tickets: 2, cash: 0 },
-      { id: 't5', label: '+5 JACKPOT TICKETS', short: '+5', icon: 'ticket', odds: 28, pieces: 2, tier: 3, color: '#c35cff', tickets: 5, cash: 0 },
+      { id: 't2', label: 'JACKPOT TICKETS +2', short: 'JACKPOT\nTICKETS +2', icon: 'jackpot', odds: 30, pieces: 2, tier: 2, color: '#3dff8b', tickets: 2, cash: 0 },
+      { id: 't5', label: 'JACKPOT TICKETS +5', short: 'JACKPOT\nTICKETS +5', icon: 'jackpotBig', odds: 28, pieces: 2, tier: 3, color: '#c35cff', tickets: 5, cash: 0 },
       { id: 'cash', label: '€10 CASH', short: '€10', icon: 'cash', odds: 2, pieces: 1, tier: 4, color: '#ffd23f', tickets: 0, cash: 10 },
     ],
     tierNames: ['', 'NICE!', 'GREAT!', 'AMAZING!', 'LEGENDARY!'],
-    spinSeconds: 6.5, // how long the spin lasts
-    turns: 6, // full turns before it stops
+    spinSeconds: 5.5, // how long the spin lasts
+    turns: 9, // full turns before it stops
+    pegs: 28, // pegs on the rim: each one clicks as it passes the pointer (the fast slot-machine clatter)
+    // the jackpot-machine sounds: eighth = seconds per note of the fast Jingle Bells, rollSecs = drum roll
+    // at the end, coins = coin dings in the payout per tier (1-4), coinGap = seconds between coin dings.
+    sound: { eighth: 0.065, rollSecs: 1.6, coins: [0, 8, 16, 26, 60], coinGap: 0.04 },
   },
 
   // R13: jackpot = base + percent of all takings.

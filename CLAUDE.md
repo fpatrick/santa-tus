@@ -41,8 +41,10 @@ The person you work with writes simple English as a second language. Answer in s
 | Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures, embroidery (logo on the bag), cute eye | `src/pixelart.js` |
 | Prize and wheel icons (pixel art maps) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
-| The wheel, click to spin, its spin (R7) | `src/wheel.js` |
-| Wheel sounds (Christmas chest opening) | `src/wheelsound.js` |
+| The wheel logic: click (lever pull) to spin, its spin, peg clicks, the payout (R7) | `src/wheel.js` |
+| How the wheel looks: slot-machine sign, lever, wood wheel, labels, rim bulbs, pointer | `src/wheelart.js` |
+| Wheel prize icons in 16-bit HD pixel art (pot of gold, €10 notes, free try arrow) | `src/wheelicons.js` |
+| Wheel sounds: Christmas jackpot machine (lever, fast clatter, Jingle Bells, coin payout) | `src/wheelsound.js` |
 | Particles, rays, coins, fireworks, shake, flash, `celebrate(tier)` | `src/fx.js` |
 | Sound effects | `src/sound.js` |
 | Songs as notes (Jingle Bells, Silent Night, sad crash tune) and their timing to the chimneys | `src/songs.js` |
