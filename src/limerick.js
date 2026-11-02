@@ -17,7 +17,7 @@ const LIGHT_COLORS = ['#fff3c0', '#ff5b6c', '#ffd23f', '#5ab8ff', '#7dffa8'];
 
 let seed = 7;
 let flags = []; // flagpole tops (art pixels), filled while the castle is drawn
-const FLAG = ['RRRRRRRRR', 'RRWRWRWRR', 'RRWWWWWRR', 'RRWWRWWRR', 'RRRRRRRRR']; // Limerick city flag: a white castle on red
+const FLAG = ['GGGGWWWWW', 'GGGGWWWWW', 'GGGGWWWWW', 'GGGGWWWWW', 'GGGGWWWWW']; // the Limerick flag people fly: green and white
 const rnd = () => { seed = (seed * 16807) % 2147483647; return (seed - 1) / 2147483646; };
 
 function r(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(Math.round(x), Math.round(y), Math.round(w), Math.round(h)); }
@@ -237,26 +237,33 @@ function silhouette(c) {
 export function buildLimerick(logoFn) {
   seed = 7;
   flags = [];
+  // trees stand in the gaps and overlap their neighbours a little, so the town is packed close together
   const plan = [['geo', 3], ['tree', 150], ['castle'], ['tree', 170], ['tus', 98, 220], ['geo', 4], ['tree', 160],
-    ['cathedral'], ['clayton'], ['tree', 175], ['geo', 3], ['tus', 80, 170], ['tree', 150]];
+    ['cathedral'], ['clayton'], ['tree', 175], ['geo', 3], ['tree', 150], ['tus', 80, 170]];
   const widths = { castle: 214, cathedral: 144, clayton: 58 };
-  let SW = 0;
-  for (const p of plan) SW += (p[0] === 'geo' ? p[1] * 46 : p[0] === 'tree' ? Math.round(p[1] * 0.5) : p[0] === 'tus' ? p[1] : widths[p[0]]) + 8;
+  const treeStep = (h) => Math.round(h * 0.5 * 0.42); // how much room a tree takes in the row
+  let SW = 2;
+  for (const p of plan) SW += (p[0] === 'geo' ? p[1] * 46 : p[0] === 'tree' ? treeStep(p[1]) : p[0] === 'tus' ? p[1] : widths[p[0]]) + 1;
   const c = document.createElement('canvas');
   c.width = SW;
   c.height = SH + 2;
   const g = c.getContext('2d');
   g.translate(0, 2);
-  let x = 4;
+  let x = 2;
   const lights = [];
+  const trees = [];
   for (const p of plan) {
     if (p[0] === 'geo') { for (let i = 0; i < p[1]; i++) georgian(g, x + i * 46, 46, 120 + Math.floor(rnd() * 3) * 10); x += p[1] * 46; }
-    else if (p[0] === 'tree') { const t = tree(g, x, p[1]); for (const l of t.lights) lights.push({ ...l, y: l.y + 2 }); x += t.w; }
+    else if (p[0] === 'tree') { trees.push([x + treeStep(p[1]) / 2, p[1]]); x += treeStep(p[1]); }
     else if (p[0] === 'castle') { castle(g, x); x += widths.castle; }
     else if (p[0] === 'cathedral') { cathedral(g, x); x += widths.cathedral; }
     else if (p[0] === 'clayton') { clayton(g, x); x += widths.clayton; }
     else if (p[0] === 'tus') { tus(g, x, p[1], p[2], logoFn(Math.round(p[1] * 0.62))); x += p[1]; }
-    x += 8;
+    x += 1;
+  }
+  for (const [mid, h] of trees) { // trees last: in front of the buildings next to them
+    const t = tree(g, Math.round(mid - h * 0.25), h);
+    for (const l of t.lights) lights.push({ ...l, y: l.y + 2 });
   }
   // far away: shrink it (soft, so small detail melts away), then make it a night shadow
   const S = T.size;
@@ -268,8 +275,8 @@ export function buildLimerick(logoFn) {
   fg.imageSmoothingQuality = 'high';
   fg.drawImage(c, 0, 0, far.width, far.height);
   silhouette(far);
-  for (const [fx, fy] of flags) { // the city flag stays red and white, so it can be seen
-    FLAG.forEach((row, yy) => [...row].forEach((ch, xx) => { fg.fillStyle = ch === 'R' ? '#a8202e' : '#d8d4e0'; fg.fillRect(Math.round(fx * S) + xx, Math.round((fy + 2) * S) + yy, 1, 1); }));
+  for (const [fx, fy] of flags) { // the flag keeps its green and white, so it can be seen
+    FLAG.forEach((row, yy) => [...row].forEach((ch, xx) => { fg.fillStyle = ch === 'G' ? '#2a8a4a' : '#d8d4e0'; fg.fillRect(Math.round(fx * S) + xx, Math.round((fy + 2) * S) + yy, 1, 1); }));
   }
   return { img: enlarge(far, K), width: far.width * K, height: far.height * K, lights: lights.map((l) => ({ ...l, x: l.x * S * K, y: l.y * S * K })) };
 }
