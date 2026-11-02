@@ -111,8 +111,6 @@ const SIDE = {
     '..ogwwwwwwwwwwwwwgo...',
     '..owwwwwwwwwwwwwwwo...',
     '..oggwwwwwwwwwwgggo...',
-    '....ossssssssssso.....',
-    '...oossssssssssso.....',
     '..ogssssssssssssso....',
     '..ogssssssssssessoo...',
     '.owgsssSSsssssessnno..',
@@ -133,8 +131,6 @@ const SIDE = {
     '..ogwwwwwwwwwwwwwgo...',
     '..owwwwwwwwwwwwwwwo...',
     '..oggwwwwwwwwwwgggo...',
-    '....ossssssssssso.....',
-    '...oossssssssssso.....',
     '..ogssssssssssssso....',
     '..ogssssssssssessoo...',
     '.owgsssSSssssesesnno..',
@@ -178,7 +174,7 @@ const SIDE = {
   ],
 };
 SIDE[2] = SIDE[1];
-const BRIM_UP = 1; // the hatted side faces start with one extra brim row, drawn above the anchor
+const BRIM_UP = -1; // the hatted side faces are drawn 1 row below the anchor (the hat sits low on the head)
 const BALD_LIFT = SIDE.bald.length - (SIDE[0].length - BRIM_UP);
 
 function paint(c, rows, x0, y0) {

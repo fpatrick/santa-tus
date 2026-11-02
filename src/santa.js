@@ -264,7 +264,7 @@ function hatCanvas(scale) {
 // Where the hat and the bag sit on Santa, in screen pixels from his centre (for the crash).
 export function partOffset(which, scale = 4, bagSize = 1) {
   const px = ART_K * factor(scale);
-  if (which === 'hat') return { x: (138 - UNITS.w / 2) * px, y: (TOP + 1 - UNITS.h / 2) * px };
+  if (which === 'hat') return { x: (138 - UNITS.w / 2) * px, y: (TOP + 9 - UNITS.h / 2) * px };
   return { x: (BAG_ANCHOR.x - 44 * bagSize - UNITS.w / 2) * px, y: (BAG_ANCHOR.y - 60 * bagSize - UNITS.h / 2) * px };
 }
 
