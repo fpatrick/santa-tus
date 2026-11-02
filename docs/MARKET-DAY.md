@@ -29,6 +29,7 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 
 ## During the day
 
+- **No F keys on the keyboard?** Hold **F** and press **2** (= F2), or hold **F** and press **9** (= F9).
 - **New player:** take the cash, press **F2**, type the code, press **1** (€2) or **2** (€5).
 - **Hand-over:** give exactly what the screen lists (prize, ticket numbers, cash), then press **Enter**.
 - **Wrong button?** At "CLICK TO FLY", press **F9**, code, **1** (Undo), **Enter**.

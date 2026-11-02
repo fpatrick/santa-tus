@@ -63,8 +63,11 @@ def boot(pg, url):
     pg.wait_for_function("!document.querySelector('#overlay.on') || document.querySelector('#overlay h1').textContent.includes('WELCOME')")
 
 
-def pay(pg, key):
-    pg.keyboard.press("F2")
+def pay(pg, key, alt=False):
+    if alt:  # keyboards without F keys: hold F, press 2
+        pg.keyboard.down("f"); pg.keyboard.press("2"); pg.keyboard.up("f")
+    else:
+        pg.keyboard.press("F2")
     pg.wait_for_selector(".dots")
     pg.keyboard.type("PAID")
     pg.keyboard.press("Enter")
@@ -112,7 +115,7 @@ def run():
             print("ok - S2-S10 path: €2, best 12, sticker, nickname, hand-over (T4)")
 
             # T12: Chrome closed after try 1 of €5: reopens with 2 tries left and the best kept (D3)
-            pay(pg, "2")
+            pay(pg, "2", alt=True)  # also checks "hold F + 2"
             finish_try(pg, 7)
             pg.wait_for_function("santa.scene === 'flight' && santa.flight.state === 'ready' && santa.hud.triesLeft === 2", timeout=10000)
             pg.goto("about:blank")

@@ -94,7 +94,7 @@ https://fpatrick.github.io/santa-tus/ . On the test link there is no server, so 
 - Nothing is ever deleted: undo, hide and new day only mark or archive (D5).
 - Test-mode plays go to the `test` ledger, never to `live` (D7).
 - Flashing effects stay at or under 3 per second (A4, `CONFIG.fx.maxFlashPerSec`).
-- Players only need the mouse. Staff keys: F2 = start a paid game, F9 = staff panel (both need the code).
+- Players only need the mouse. Staff keys: F2 = start a paid game, F9 = staff panel (both need the code). No F keys: hold F + 2, hold F + 9.
 
 ## Saved events (short)
 

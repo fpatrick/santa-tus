@@ -13,12 +13,12 @@ Test link: **https://fpatrick.github.io/santa-tus/**
 
 | Key | What it does |
 | --- | --- |
-| **F2** (or a click in the top-left corner) | Start a paid game. Type the code `PAID`, then Enter. |
+| **F2**, or hold **F** + press **2** (or a click in the top-left corner) | Start a paid game. Type the code `PAID`, then Enter. |
 | **1** / **2** | On the payment screen: €2 = 1 try / €5 = 3 tries |
 | **Mouse click** (or Space) | Fly |
 | **Enter** | Confirm (hand-over, nickname, messages) |
 | **Esc** | Cancel, or skip the nickname |
-| **F9** | Staff panel (code `PAID`). Undo, free play, test mode, backup, export, sound, draw, new day. |
+| **F9**, or hold **F** + press **9** | Staff panel (code `PAID`). Undo, free play, test mode, backup, export, sound, draw, new day. |
 
 ## What to test
 

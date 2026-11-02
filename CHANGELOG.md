@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.14.1 (2026-11-02): Keyboards without F keys: hold F + press 2 = F2 (start a paid game), hold F + press 9 = F9 (staff panel).
 - 0.14.0 (2026-11-02): Crash scene (C1-C4): Santa tumbles, loses his hat, his bag rolls away; the camera zooms in, he stands up and tells the player what happens next (free restart, tries left, prizes to collect, or game over) with a mood pose and sound. Replaces the TRY OVER box. New test T32.
 - 0.13.1 (2026-11-02): Santa's hat is now one piece of red cloth that flops back; textures on his clothes: knitted hat, velvet coat, fluffy fur, beard strands.
 - 0.13.0 (2026-11-02): Santa, sleigh and bag are now detailed pixel art (1 pixel = 1 screen pixel in the game); hat all red with warm white fur; the bag is tied into the sleigh with ropes; Santa laughs with an open mouth after each chimney.

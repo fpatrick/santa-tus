@@ -183,11 +183,20 @@ function staffApi() {
 }
 
 // ---------- input ----------
+// Is the hold key (F) down right now? For "F + 2" and "F + 9" on keyboards without F keys.
+let holdDown = false;
+const K = CONFIG.keys;
+addEventListener('keyup', (e) => { if (e.key.toLowerCase() === K.holdKey) holdDown = false; });
+addEventListener('blur', () => { holdDown = false; });
+
 function onKey(e) {
   unlockSound();
   if (screens.handleKey(e)) return;
-  if (e.key === CONFIG.keys.staffCode) { e.preventDefault(); if (app.scene === 'attract') startPaid(); return; }
-  if (e.key === CONFIG.keys.staffPanel) { e.preventDefault(); openStaff(); return; }
+  if (e.key.toLowerCase() === K.holdKey) { holdDown = true; return; }
+  const code = e.key === K.staffCode || (holdDown && e.key === K.staffCodeAlt);
+  const panel = e.key === K.staffPanel || (holdDown && e.key === K.staffPanelAlt);
+  if (code) { e.preventDefault(); holdDown = false; if (app.scene === 'attract') startPaid(); return; }
+  if (panel) { e.preventDefault(); holdDown = false; openStaff(); return; }
   if ((e.key === ' ' || e.key === 'ArrowUp') && app.scene === 'flight') { e.preventDefault(); app.flight.flap(); }
   if ((e.key === ' ' || e.key === 'Enter') && app.scene === 'flight' && app.flight.state === 'crashed') { e.preventDefault(); app.flight.click(); }
   if ((e.key === ' ' || e.key === 'Enter') && app.scene === 'wheel') { e.preventDefault(); app.wheel.click(); }

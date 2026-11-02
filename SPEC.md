@@ -69,7 +69,7 @@ Order after each try (from `rules.js nextStep`): chimney 20 ticket -> wheel -> c
 | ID | Screen | Who | Where in code |
 | --- | --- | --- | --- |
 | S1 | Title (attract mode): logo, prices, prizes + odds, top 10 + legends + jackpot, demo flight | nobody | attract.js |
-| S2 | Staff code: F2 or a click in the top-left corner. Dots. Enter checks, Esc cancels. A wrong code just clears. | staff | screens.staffCode |
+| S2 | Staff code: F2 (or hold F + press 2) or a click in the top-left corner. Dots. Enter checks, Esc cancels. A wrong code just clears. | staff | screens.staffCode |
 | S3 | Payment: €2 (key 1), €5 (key 2), Cancel (Esc) | staff | screens.payment |
 | S4 | Get ready: "CLICK TO FLY", tries left, best | player | game.js HUD |
 | S5 | Play: chimney count, level, tries left, best, next goal. A new level plays a sound only (no text). A warning glow between chimney and presents just before each level change | player | game.js, flow.flightHooks |
@@ -78,7 +78,7 @@ Order after each try (from `rules.js nextStep`): chimney 20 ticket -> wheel -> c
 | S8 | Chimney 10 choice: big tiles, mouse | player | screens.choice |
 | S9 | Nickname: only for the best players list, LEGEND or MASTER. Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
 | S10 | Hand-over: prize, ticket numbers, cash. Enter saves and goes back to S1 | staff | screens.handover |
-| S11 | Staff panel: F9 + code | staff | staff.staffPanel |
+| S11 | Staff panel: F9 (or hold F + press 9) + code | staff | staff.staffPanel |
 | S12 | Draw: rolling numbers, winning ticket, jackpot, or "goes to charity" | staff | staff.drawScreen |
 | S13 | Health check at every start: server, database, USB, clock, screen, fonts, sound, settings | nobody | main.healthCheck |
 

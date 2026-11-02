@@ -4,7 +4,8 @@
 export const CONFIG = {
   // K1: the staff code, typed on the staff keyboard. Shown as dots.
   staffCode: 'PAID',
-  keys: { staffCode: 'F2', staffPanel: 'F9' },
+  // Keyboards without F keys: hold the letter, then press the number (F + 2 = F2, F + 9 = F9).
+  keys: { staffCode: 'F2', staffPanel: 'F9', holdKey: 'f', staffCodeAlt: '2', staffPanelAlt: '9' },
 
   // Market day. Times use the laptop clock (24 h).
   event: { date: '2026-11-26', open: '09:00', drawTime: '12:45', lastGameWarn: '12:30', close: '13:00' },
