@@ -27,6 +27,7 @@ export function createFlight(hooks = {}) {
     f.level = 1;
     f.angle = 0;
     f.bag = 1;
+    f.laughAt = -99;
     f.state = 'ready';
   };
 
@@ -66,6 +67,7 @@ export function createFlight(hooks = {}) {
     while (f.score < f.course.length && sx > f.course[f.score].x + CW / 2) {
       f.score += 1;
       f.course[f.score - 1].collectAt = f.t; // its presents fly into the bag
+      f.laughAt = f.t; // Santa laughs: ho ho ho!
       if (hooks.onScore) hooks.onScore(f.score);
       if (f.score >= cfg.thresholds.beat) {
         f.state = 'beat';
@@ -99,7 +101,9 @@ export function createFlight(hooks = {}) {
       drawChimney(ctx, ch, sx, gapAt(ch, f.flyT), { passed: ch.i <= f.score, t: f.t, warn, collect });
     }
     drawRoof(ctx, f.dist);
-    drawSanta(ctx, ph.santaX, f.y, f.angle, 4, f.bag);
+    const lt = f.t - (f.laughAt ?? -99);
+    const mouth = lt < sc.laughSecs ? (Math.floor(lt * sc.laughSpeed) % 2 ? 2 : 1) : 0; // open, half, open...
+    drawSanta(ctx, ph.santaX, f.y, f.angle, 4, f.bag, mouth);
     drawSnow(ctx, dt, lv.n);
     if (hud) drawHud(ctx, f, lv, hud);
   };

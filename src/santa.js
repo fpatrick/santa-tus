@@ -1,7 +1,9 @@
-// santa.js: the detailed Santa, his sleigh and his TUS bag, drawn with shapes and shading.
-// The model is designed in a 260 x 200 unit box (Santa faces right). It is drawn ONCE per size
-// into a canvas with its dark outline, then only moved and turned, so it never flickers.
-// scale 4 (in the game) = 104 x 80 px, the same size as the old pixel Santa.
+// santa.js: the detailed pixel-art Santa, his sleigh and his TUS bag (tied on with ropes).
+// The model is designed with shapes in a 260 x 216 unit box (Santa faces right), then turned into
+// pixel art (see "pixel art" below). Each size and face is made ONCE and cached, so nothing flickers.
+// scale 4 (in the game) = 1 screen pixel per art pixel; the title screen shows it 3x bigger.
+
+import { pixelate, stampText, enlarge } from './pixelart.js';
 
 const INK = '#1a0a14';
 const UNITS = { w: 260, h: 216 };
@@ -93,12 +95,14 @@ function sleigh(g) {
   // nose curl detail
   g.beginPath(); g.arc(238, 98, 7, 0, Math.PI * 2);
   g.fillStyle = '#f2c75a'; g.fill(); g.lineWidth = 2; g.strokeStyle = INK; g.stroke();
+  // brass cleats on the rim: the bag ropes are tied here
+  for (const cx of [26, 92]) shape(g, (gg) => gg.rect(cx - 6, 116, 12, 8), lin(g, 0, 116, 0, 124, [[0, '#fff1a8'], [1, '#a8741a']]), 2);
   // green velvet seat edge peeking out
   shape(g, (gg) => gg.rect(36, 114, 120, 10), lin(g, 0, 114, 0, 124, [[0, '#3dcc72'], [1, '#126b34']]), 2);
 }
 
 // ---------- Santa ----------
-function santa(g) {
+function santa(g, mouth = 0) {
   // back arm (dark) holding the sleigh edge
   shape(g, (gg) => { gg.moveTo(112, 84); gg.bezierCurveTo(100, 100, 102, 112, 112, 118); gg.lineTo(124, 112); gg.closePath(); }, '#8e1224', 3);
   // coat body
@@ -114,34 +118,47 @@ function santa(g) {
   g.beginPath(); g.ellipse(176, 100, 16, 40, 0, 0, Math.PI * 2); g.fill(); // body shadow on the far side
   g.restore();
   // fur trim down the front + belt with gold buckle
-  shape(g, (gg) => gg.rect(150, 70, 12, 50), lin(g, 150, 0, 162, 0, [[0, '#ffffff'], [1, '#c9d2f0']]), 2);
+  shape(g, (gg) => gg.rect(150, 70, 12, 50), lin(g, 150, 0, 162, 0, [[0, '#ffffff'], [1, '#e2d6c4']]), 2);
   shape(g, (gg) => gg.rect(104, 104, 78, 10), '#1c1018', 2);
   shape(g, (gg) => gg.rect(146, 101, 18, 16), lin(g, 0, 101, 0, 117, [[0, '#fff1a8'], [1, '#c98a14']]), 2);
   g.fillStyle = '#1c1018';
   g.fillRect(151, 106, 8, 6);
-  g.fillStyle = '#c9d2f0';
+  g.fillStyle = '#e2d6c4';
   for (const by of [78, 90]) { g.beginPath(); g.arc(156, by, 2.2, 0, Math.PI * 2); g.fill(); }
   // front arm reaching to the reins, white cuff, black glove
   shape(g, (gg) => { gg.moveTo(160, 74); gg.bezierCurveTo(186, 70, 200, 80, 206, 92); gg.lineTo(196, 100); gg.bezierCurveTo(188, 90, 176, 88, 164, 92); gg.closePath(); },
     lin(g, 160, 70, 206, 100, [[0, '#ff5b6c'], [1, '#a5122a']]), 3);
-  shape(g, (gg) => { gg.ellipse(202, 95, 7, 10, -0.6, 0, Math.PI * 2); }, '#f4f7ff', 2);
+  shape(g, (gg) => { gg.ellipse(202, 95, 7, 10, -0.6, 0, Math.PI * 2); }, '#ffffff', 2);
   shape(g, (gg) => { gg.ellipse(212, 99, 7, 6.5, 0, 0, Math.PI * 2); }, lin(g, 206, 92, 220, 106, [[0, '#8a5a3a'], [1, '#3a2014']]), 2);
   // reins to the front of the sleigh
   g.strokeStyle = '#6b3a14';
   g.lineWidth = 3;
   g.beginPath(); g.moveTo(220, 100); g.quadraticCurveTo(240, 104, 258, 90); g.stroke();
-  // head: face, cheek, eye, nose
+  head(g, mouth);
+}
+
+// Head, beard and hat. mouth: 0 = closed, 1 = laughing wide open, 2 = laughing half open.
+// When he laughs his head tips back a little and his eyes close happily.
+function head(g, mouth) {
+  g.save();
+  if (mouth) { g.translate(150, 70); g.rotate(mouth === 1 ? -0.14 : -0.07); g.translate(-150, -70); }
+  // face
   shape(g, (gg) => gg.arc(150, 44, 20, 0, Math.PI * 2), lin(g, 132, 30, 170, 60, [[0, '#ffd9bd'], [1, '#e8a27c']]), 3);
-  g.fillStyle = 'rgba(255,90,110,0.55)';
-  g.beginPath(); g.ellipse(160, 50, 6, 4, 0, 0, Math.PI * 2); g.fill();
-  g.fillStyle = INK;
-  g.beginPath(); g.ellipse(160, 40, 2.6, 3.4, 0, 0, Math.PI * 2); g.fill();
-  g.fillStyle = '#ffffff';
-  g.fillRect(160, 38.5, 1.2, 1.2);
-  g.strokeStyle = '#d9d9e8'; g.lineWidth = 2.5;
-  g.beginPath(); g.moveTo(155, 33); g.quadraticCurveTo(161, 30, 166, 34); g.stroke(); // eyebrow
-  shape(g, (gg) => gg.arc(170, 46, 5, 0, Math.PI * 2), '#ff8f8f', 2); // nose
-  // beard: big and curly, with grey shading strands
+  g.fillStyle = mouth ? 'rgba(255,70,90,0.8)' : 'rgba(255,90,110,0.55)';
+  g.beginPath(); g.ellipse(160, 50, 7, 5, 0, 0, Math.PI * 2); g.fill();
+  if (mouth) { // happy closed eye
+    g.strokeStyle = INK; g.lineWidth = 3;
+    g.beginPath(); g.moveTo(155, 42); g.quadraticCurveTo(160, 35, 165, 42); g.stroke();
+  } else {
+    g.fillStyle = INK;
+    g.beginPath(); g.ellipse(160, 40, 3, 4, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ffffff';
+    g.fillRect(160, 38, 1.5, 1.5);
+  }
+  g.strokeStyle = '#f2ebe0'; g.lineWidth = 3;
+  g.beginPath(); g.moveTo(154, mouth ? 31 : 33); g.quadraticCurveTo(161, 28, 167, 33); g.stroke(); // eyebrow
+  shape(g, (gg) => gg.arc(170, 46, 5.5, 0, Math.PI * 2), '#ff7f7f', 2); // nose
+  // beard: big and curly, warm white with soft shading strands
   const beard = (gg) => {
     gg.moveTo(132, 48);
     gg.bezierCurveTo(128, 64, 132, 84, 146, 92);
@@ -150,27 +167,46 @@ function santa(g) {
     gg.bezierCurveTo(168, 58, 160, 58, 156, 54);
     gg.bezierCurveTo(150, 58, 140, 56, 132, 48);
   };
-  shape(g, beard, lin(g, 0, 48, 0, 98, [[0, '#ffffff'], [1, '#c6cde6']]), 3);
-  g.strokeStyle = 'rgba(120,130,170,0.5)';
-  g.lineWidth = 1.5;
-  for (let i = 0; i < 7; i++) {
+  shape(g, beard, lin(g, 0, 48, 0, 98, [[0, '#ffffff'], [1, '#e2d6c4']]), 3);
+  g.strokeStyle = 'rgba(160,130,105,0.45)';
+  g.lineWidth = 2;
+  for (let i = 0; i < 6; i++) {
     g.beginPath();
-    g.moveTo(138 + i * 5, 60 + (i % 2) * 4);
-    g.quadraticCurveTo(140 + i * 5, 74, 146 + i * 3, 86);
+    g.moveTo(138 + i * 6, 62 + (i % 2) * 4);
+    g.quadraticCurveTo(140 + i * 6, 76, 146 + i * 3, 88);
     g.stroke();
   }
+  // open mouth (ho ho ho!): dark inside, red tongue, white teeth
+  if (mouth) {
+    const ry = mouth === 1 ? 9 : 5;
+    shape(g, (gg) => gg.ellipse(162, 64, 9, ry, 0, 0, Math.PI * 2), '#3a0a14', 2.5);
+    g.fillStyle = '#e8435a';
+    g.beginPath(); g.ellipse(162, 64 + ry * 0.5, 6, ry * 0.45, 0, 0, Math.PI * 2); g.fill();
+    g.fillStyle = '#ffffff';
+    g.fillRect(155, 64 - ry + 1, 14, 2.5);
+  }
   // moustache
-  shape(g, (gg) => { gg.moveTo(148, 54); gg.bezierCurveTo(156, 48, 170, 50, 178, 58); gg.bezierCurveTo(170, 58, 162, 60, 158, 56); gg.bezierCurveTo(154, 60, 146, 60, 148, 54); }, '#ffffff', 2);
-  // hat: red, flopping back, fur brim, pompom
+  shape(g, (gg) => { gg.moveTo(146, 54); gg.bezierCurveTo(156, 47, 170, 49, 180, 58); gg.bezierCurveTo(170, 59, 162, 61, 158, 56); gg.bezierCurveTo(154, 61, 144, 61, 146, 54); }, '#ffffff', 2.5);
+  // hat: all red, a tall cone flopping back over his head, warm white fur brim and pompom
   shape(g, (gg) => {
-    gg.moveTo(130, 34);
-    gg.bezierCurveTo(132, 10, 160, 4, 172, 26);
-    gg.bezierCurveTo(150, 16, 120, 14, 98, 30);
-    gg.bezierCurveTo(108, 26, 120, 28, 130, 34);
-  }, lin(g, 100, 10, 172, 34, [[0, '#a5122a'], [0.6, '#e8293f'], [1, '#ff5b6c']]), 3);
-  shape(g, (gg) => { gg.moveTo(126, 36); gg.bezierCurveTo(140, 20, 166, 20, 176, 30); gg.lineTo(174, 38); gg.bezierCurveTo(160, 30, 142, 32, 130, 44); gg.closePath(); },
-    lin(g, 0, 22, 0, 44, [[0, '#ffffff'], [1, '#c9d2f0']]), 3);
-  shape(g, (gg) => gg.arc(96, 32, 9, 0, Math.PI * 2), lin(g, 88, 24, 104, 40, [[0, '#ffffff'], [1, '#bcc6e6']]), 3);
+    gg.moveTo(128, 36);
+    gg.bezierCurveTo(128, 8, 150, -2, 170, 12);
+    gg.bezierCurveTo(178, 18, 178, 28, 176, 32);
+    gg.lineTo(128, 36);
+    gg.closePath();
+  }, lin(g, 128, 0, 176, 36, [[0, '#a5122a'], [0.5, '#e8293f'], [1, '#c8182e']]), 3);
+  shape(g, (gg) => {
+    gg.moveTo(140, 12);
+    gg.bezierCurveTo(124, 4, 104, 8, 96, 24);
+    gg.bezierCurveTo(108, 18, 122, 20, 134, 28);
+    gg.closePath();
+  }, lin(g, 96, 4, 140, 28, [[0, '#8e0f22'], [1, '#d61f35']]), 3);
+  g.fillStyle = 'rgba(255,255,255,0.18)';
+  g.beginPath(); g.ellipse(156, 14, 10, 4, -0.4, 0, Math.PI * 2); g.fill();
+  shape(g, (gg) => { gg.moveTo(124, 34); gg.bezierCurveTo(140, 22, 166, 22, 180, 30); gg.lineTo(178, 40); gg.bezierCurveTo(162, 32, 142, 34, 128, 46); gg.closePath(); },
+    lin(g, 0, 22, 0, 46, [[0, '#ffffff'], [1, '#e2d6c4']]), 3);
+  shape(g, (gg) => gg.arc(94, 26, 9, 0, Math.PI * 2), lin(g, 86, 18, 102, 34, [[0, '#ffffff'], [1, '#e2d6c4']]), 3);
+  g.restore();
 }
 
 // ---------- the TUS bag ----------
@@ -206,6 +242,13 @@ function bag(g) {
   g.lineWidth = 4; g.strokeStyle = '#f2c75a';
   g.beginPath(); g.moveTo(26, 34); g.quadraticCurveTo(48, 42, 70, 34); g.stroke();
   g.beginPath(); g.moveTo(66, 36); g.quadraticCurveTo(74, 46, 70, 54); g.stroke();
+  // two ropes over the bag, tied down inside the sleigh (their ends go behind the sleigh side)
+  for (const [x0, x1] of [[28, 84], [68, 58]]) {
+    g.lineWidth = 6; g.strokeStyle = INK;
+    g.beginPath(); g.moveTo(x0, 36); g.quadraticCurveTo((x0 + x1) / 2 + (x1 > x0 ? 14 : -14), 80, x1, 126); g.stroke();
+    g.lineWidth = 3.5; g.strokeStyle = '#d9b26a';
+    g.beginPath(); g.moveTo(x0, 36); g.quadraticCurveTo((x0 + x1) / 2 + (x1 > x0 ? 14 : -14), 80, x1, 126); g.stroke();
+  }
   // TUS patch, stitched on, in the same red and gold as the sleigh
   shape(g, (gg) => { gg.rect(16, 58, 64, 34); }, lin(g, 0, 58, 0, 92, [[0, '#fff3dc'], [1, '#e6cfa2']]), 3);
   g.setLineDash([3, 3]);
@@ -213,62 +256,65 @@ function bag(g) {
   g.lineWidth = 1.5;
   g.strokeRect(20, 62, 56, 26);
   g.setLineDash([]);
-  g.font = '15px "Press Start 2P"';
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  g.fillStyle = '#6e0816';
-  g.fillText('TUS', 49.5, 77.5);
-  g.fillStyle = '#c8182e';
-  g.fillText('TUS', 48, 76);
 }
 
-const BAG_UNITS = { w: 96, h: 120 };
-const BAG_ANCHOR = { x: 92, y: 118 + TOP }; // bottom right of the bag sits here on the sleigh (model units)
+const BAG_UNITS = { w: 96, h: 130 };
+const BAG_POINT = { x: 88, y: 112 }; // this point of the bag (bottom right of the sack) ...
+const BAG_ANCHOR = { x: 98, y: 132 + TOP }; // ... sits here, just behind the sleigh side
 
-function santaCanvas(scale) {
-  const key = `santa|${scale}`;
+// ---------- pixel art ----------
+// The model is drawn small (1 art pixel = 2.5 model units), then snapped to hard pixels with a
+// limited set of colours and a 1-pixel dark outline, then enlarged with square pixels.
+const ART_K = 0.4;
+const factor = (scale) => Math.max(1, Math.round(scale / 4)); // game (4) = 1, title (12) = 3
+
+function santaCanvas(scale, mouth) {
+  const key = `santa|${scale}|${mouth}`;
   if (!cache.has(key)) {
-    cache.set(key, canvasFor(scale, UNITS.w, UNITS.h, (g) => {
+    const art = canvasFor(ART_K * 10, UNITS.w, UNITS.h, (g) => {
       g.translate(0, TOP);
       g.save();
-      g.translate(150, 122); // Santa is 20% bigger, so he reads well at game size
+      g.translate(150, 122); // Santa is 20% bigger than the sleigh, so he reads well at game size
       g.scale(1.2, 1.2);
       g.translate(-150, -122);
-      santa(g);
+      santa(g, mouth);
       g.restore();
       sleigh(g);
-    }));
+    });
+    cache.set(key, enlarge(pixelate(art), factor(scale)));
   }
   return cache.get(key);
 }
 
-function bagCanvas(scale) {
-  const key = `bag|${scale}`;
-  if (!cache.has(key)) cache.set(key, canvasFor(scale, BAG_UNITS.w, BAG_UNITS.h, bag));
+// The bag is drawn again for each size step, so its pixels stay the same size as Santa's.
+function bagCanvas(scale, size) {
+  const key = `bag|${scale}|${size}`;
+  if (!cache.has(key)) {
+    const k = ART_K * size;
+    const art = pixelate(canvasFor(k * 10, BAG_UNITS.w, BAG_UNITS.h, bag));
+    stampText(art, 'TUS', (PAD + 48) * k, (PAD + 75) * k, Math.max(1, Math.floor(size * 1.6)), '#c8182e', '#6e0816');
+    cache.set(key, enlarge(art, factor(scale)));
+  }
   return cache.get(key);
 }
 
-// Fonts load after the first frame: drop the cache once so "TUS" uses the pixel font.
-if (globalThis.document && document.fonts) document.fonts.ready.then(() => cache.clear());
-
-// Draws Santa centred on (x, y), turned by `angle`. scale 4 = game size. bag = bag size (1 = normal).
-export function drawSanta(ctx, x, y, angle = 0, scale = 4, bagSize = 1) {
-  const k = scale / 10;
-  const body = santaCanvas(scale);
-  const sack = bagCanvas(scale);
+// Draws Santa centred on (x, y), turned by `angle`. scale 4 = game size. bagSize = bag size (1 = normal).
+// mouth: 0 = closed, 1 = laughing wide open, 2 = laughing half open (flight hands this in).
+export function drawSanta(ctx, x, y, angle = 0, scale = 4, bagSize = 1, mouth = 0) {
+  const f = factor(scale);
+  const px = ART_K * f; // screen pixels per model unit
+  const size = Math.round(bagSize * 10) / 10;
+  const body = santaCanvas(scale, mouth);
+  const sack = bagCanvas(scale, size);
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   ctx.rotate(angle);
-  ctx.imageSmoothingEnabled = true;
-  ctx.imageSmoothingQuality = 'high';
-  const ox = -(UNITS.w / 2 + PAD) * k;
-  const oy = -(UNITS.h / 2 + PAD) * k;
-  // the bag grows from its bottom-right corner, which stays on the sleigh
-  const ax = ox + (PAD + BAG_ANCHOR.x) * k;
-  const ay = oy + (PAD + BAG_ANCHOR.y) * k;
-  const bw = sack.width * bagSize;
-  const bh = sack.height * bagSize;
-  ctx.drawImage(sack, ax - bw + PAD * k * bagSize, ay - bh + PAD * k * bagSize, bw, bh);
+  ctx.imageSmoothingEnabled = angle !== 0; // square pixels when level, smooth only while turning
+  const ox = -Math.round((UNITS.w / 2 + PAD) * px);
+  const oy = -Math.round((UNITS.h / 2 + PAD) * px);
+  const ax = ox + (PAD + BAG_ANCHOR.x) * px;
+  const ay = oy + (PAD + BAG_ANCHOR.y) * px;
+  ctx.drawImage(sack, Math.round(ax - (PAD + BAG_POINT.x) * px * size), Math.round(ay - (PAD + BAG_POINT.y) * px * size));
   ctx.drawImage(body, ox, oy);
   ctx.restore();
 }

@@ -19,7 +19,7 @@ Every payment gets one set of prizes, decided by its best try.
 - **R1 Prices:** €2 = 1 try, €5 = 3 tries [`prices`]. Staff choose one after typing the code.
 - **R2 Best try counts:** inside one payment, the highest chimney reached in any try decides the prizes.
 - **R3 Free restart:** crash before chimney 5 and the try restarts without using it, at most 3 times per try [`freeRestart`] (*proposal*, on).
-- **R4 The course:** 50 chimneys in 5 levels. Harder at 10, 20, 30, 40; a sound announces each level (no text on screen). Each level has its own sky colour and more snow (almost none at level 1, a storm at level 5) [`scenery`]. Bottom: brick chimneys. Top: a stack of big and small Christmas presents (patterned paper, ribbons, bows); when Santa passes, the presents fly into his TUS bag, which grows with each chimney. Passing 50 beats the game and ends the try.
+- **R4 The course:** 50 chimneys in 5 levels. Harder at 10, 20, 30, 40; a sound announces each level (no text on screen). Each level has its own sky colour and more snow (almost none at level 1, a storm at level 5) [`scenery`]. Bottom: brick chimneys. Top: a stack of big and small Christmas presents (patterned paper, ribbons, bows); when Santa passes, the presents fly into his TUS bag, which grows with each chimney, and Santa laughs (mouth opens, no sound) [`scenery.laughSecs`]. Passing 50 beats the game and ends the try.
 
 | Level | Chimneys | Feel | What changes [`levels`] | Target pass rate (*proposal*) |
 | --- | --- | --- | --- | --- |
@@ -85,7 +85,7 @@ Order after each try (from `rules.js nextStep`): chimney 20 ticket -> wheel -> c
 **Leaderboard panel (L2):** "JACKPOT UNTIL NOW" (biggest), "DRAW AT 12:45" + countdown on the event day, this player's prizes (chimney 10 prize, wheel spin, jackpot tickets; shown until the next game starts), "BEST PLAYERS" top 15 (rank, name with LEGEND/MASTER tag, chimneys).
 Panel text is at least 28 px. **Players never need the keyboard** (mouse or a USB arcade button set as a click).
 
-**Attract mode:** A1 1980s arcade look (Press Start 2P + VT323 pixel fonts in `assets/fonts`, neon on a night sky, scanlines, detailed Santa in a red and gold sleigh with a burlap TUS bag, the TUS logo on a town building).
+**Attract mode:** A1 1980s arcade look (Press Start 2P + VT323 pixel fonts in `assets/fonts`, neon on a night sky, scanlines, detailed pixel-art Santa (all-red hat) in a red and gold sleigh, his burlap TUS bag tied on with ropes, the TUS logo on a town building).
 A2 four scenes of 8 s, then a demo that crashes [`attract`]. A3 prices 64 px+, nothing under 32 px. A4 nothing flashes more than 3 times a second.
 A5 music [`music`]: Silent Night (music box) loops on the title screen. During a payment a soft Jingle Bells chorus plays under every screen (quieter while the wheel spins). When Santa flies, the full Jingle Bells starts at the first click and is timed to Santa's distance: intro + verse end at chimney 10, chorus at 20, chorus a key higher at 30 (no loop before 30, T31). After 30, verse + chorus loop two keys higher. Crash = music stops. Mute in the staff panel. A6 every word comes from `config.text`.
 

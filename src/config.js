@@ -94,6 +94,8 @@ export const CONFIG = {
       ['#05030f', '#1a0636', '#3a0a4a'],
     ],
     snow: [{ count: 6, speed: 35 }, { count: 30, speed: 70 }, { count: 90, speed: 130 }, { count: 220, speed: 230 }, { count: 420, speed: 380 }],
+    laughSecs: 0.7, // Santa laughs (mouth opens) for this long after each chimney
+    laughSpeed: 9, // mouth changes per second while he laughs (ho-ho-ho)
     bagGrow: 0.03,
     bagMax: 2.4,
   },
