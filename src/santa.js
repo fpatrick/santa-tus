@@ -4,52 +4,11 @@
 // scale 4 (in the game) = 1 screen pixel per art pixel; the title screen shows it 3x bigger.
 
 import { pixelate, stampText, enlarge, texture } from './pixelart.js';
+import { INK, PAD, lin, shape, maskCtx, canvasFor } from './drawkit.js';
 
-const INK = '#1a0a14';
 const UNITS = { w: 260, h: 216 };
 const TOP = 16; // extra room above, because Santa is drawn a bit bigger than the sleigh
-const PAD = 12; // room for the outline and the runner curls
 const cache = new Map();
-
-function lin(g, x0, y0, x1, y1, stops) {
-  const gr = g.createLinearGradient(x0, y0, x1, y1);
-  stops.forEach(([o, c]) => gr.addColorStop(o, c));
-  return gr;
-}
-
-// mat = the material, for the texture pass: 'hat', 'coat', 'fur' or 'hair' (nothing = no texture).
-function shape(g, draw, fill, line = 3, mat = '') {
-  const raw = g.__raw || g;
-  raw.beginPath();
-  draw(raw);
-  raw.fillStyle = g.__raw ? (MASK[mat] || '#000000') : fill;
-  raw.fill();
-  if (line) { raw.lineWidth = line; raw.strokeStyle = g.__raw ? '#000000' : INK; raw.stroke(); }
-}
-
-// Mask drawing: every shape is painted in its material colour, everything else black.
-// The texture pass reads it to know which art pixels are hat, coat, fur or hair.
-const MASK = { hat: '#ff0000', coat: '#00ff00', fur: '#0000ff', hair: '#ffff00' };
-function maskCtx(raw) {
-  return new Proxy(raw, {
-    get(t, p) { if (p === '__raw') return t; const v = t[p]; return typeof v === 'function' ? v.bind(t) : v; },
-    set(t, p, v) { t[p] = p === 'fillStyle' || p === 'strokeStyle' ? '#000000' : v; return true; },
-  });
-}
-
-function canvasFor(scale, wu, hu, paint) {
-  const k = scale / 10;
-  const c = document.createElement('canvas');
-  c.width = Math.ceil((wu + PAD * 2) * k);
-  c.height = Math.ceil((hu + PAD * 2) * k);
-  const g = c.getContext('2d');
-  g.scale(k, k);
-  g.translate(PAD, PAD);
-  g.lineJoin = 'round';
-  g.lineCap = 'round';
-  paint(g);
-  return c;
-}
 
 // ---------- the sleigh ----------
 function sleigh(g) {
