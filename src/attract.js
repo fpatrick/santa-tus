@@ -66,7 +66,7 @@ function next(a) {
 
 function logo(ctx, a) {
   const bob = Math.sin(a.t * 2.5) * 16;
-  drawSanta(ctx, W / 2, 320 + bob, Math.sin(a.t * 2) * 0.08, 12);
+  drawSanta(ctx, W / 2, 320 + bob, Math.sin(a.t * 2) * 0.08, 10);
   ctx.font = '130px "Press Start 2P"';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#7d1b30';

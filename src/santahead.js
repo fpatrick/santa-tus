@@ -16,10 +16,7 @@ export function head(g, mouth, hat = true) {
     g.strokeStyle = INK; g.lineWidth = 3;
     g.beginPath(); g.moveTo(155, 42); g.quadraticCurveTo(160, 35, 165, 42); g.stroke();
   } else {
-    g.fillStyle = INK;
-    g.beginPath(); g.ellipse(160, 40, 3, 4, 0, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#ffffff';
-    g.fillRect(160, 38, 1.5, 1.5);
+    // open eye: stamped later as crisp pixels (pixelart.js stampEye)
   }
   g.strokeStyle = '#f2ebe0'; g.lineWidth = 3;
   g.beginPath(); g.moveTo(154, mouth ? 31 : 33); g.quadraticCurveTo(161, 28, 167, 33); g.stroke(); // eyebrow

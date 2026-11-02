@@ -5,7 +5,7 @@
 
 import { CONFIG } from './config.js';
 import { getAudio } from './sound.js';
-import { FLIGHT, LOBBY, MENU, sectionEvents, sectionBeats, flightMap, freq } from './songs.js';
+import { FLIGHT, LOBBY, MENU, CRASH, sectionEvents, sectionBeats, flightMap, freq } from './songs.js';
 
 const AHEAD = 0.3; // seconds of music planned ahead
 const cache = new Map();
@@ -53,6 +53,8 @@ export function stop(fade = 0.1) {
 export const music = {
   menu: () => start('menu', MENU, wallClock(CONFIG.music.menuBpm)),
   lobby: () => start('lobby', LOBBY, wallClock(CONFIG.music.lobbyBpm)),
+  // crash scene music: sad minor chorus, or the happy chorus when Santa has prizes to give
+  crash: (mood) => (mood === 'happy' ? start('lobby', LOBBY, wallClock(CONFIG.music.lobbyBpm)) : start('crash', CRASH, wallClock(CONFIG.music.crashBpm))),
   flight: (course) => start('flight', FLIGHT, { kind: 'flight', map: flightMap(course, CONFIG) }),
   stop,
   // Wheel: music goes quiet so the wheel sounds stand out.

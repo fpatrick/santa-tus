@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG } from '../src/config.js';
 import * as R from '../src/rules.js';
-import { crashMessage, joinList } from '../src/messages.js';
+import { crashMessage, joinList, readTime } from '../src/messages.js';
 import { newSession, forceWheel } from './helpers.mjs';
 
 const first = () => 0; // always the first line of each list
@@ -86,4 +86,11 @@ test('T32 C4: nothing won: Santa is sad, close call and charity thanks', () => {
 test('joinList makes a readable list', () => {
   assert.equal(joinList(['A']), 'A');
   assert.equal(joinList(['A', 'B', 'C']), 'A, B AND C');
+});
+
+test('T32: a long speech box stays longer than a short one', () => {
+  const short = { state: 'tries', title: 'NICE TRY!', lines: ['GO AGAIN!'] };
+  const long = { state: 'tries', title: 'NICE TRY!', lines: ['BUT FIRST: A SPIN ON THE WHEEL, 3 JACKPOT TICKETS AND THE LEGEND TAG!', 'SO CLOSE! ONLY 2 MORE TO 40. 2 MORE TRIES LEFT!'] };
+  assert.ok(readTime(short) >= CONFIG.crash.read.tries);
+  assert.ok(readTime(long) > readTime(short) + 3, `long text: ${readTime(long).toFixed(1)} s`);
 });

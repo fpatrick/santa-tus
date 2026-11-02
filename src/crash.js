@@ -9,6 +9,7 @@ import { drawStandingSanta } from './santastand.js';
 import { outlined } from './game.js';
 import * as fx from './fx.js';
 import { sfx } from './sound.js';
+import { readTime } from './messages.js';
 
 const C = CONFIG.crash;
 const ROOF = CONFIG.world.height - CONFIG.world.roof;
@@ -52,7 +53,7 @@ export function createCrash(x, y, angle, bagSize) {
       fx.burst(screen(s, standX(s), ROOF - 10).x, screen(s, standX(s), ROOF - 10).y, { count: 26, colors: ['#ffffff', '#dfe8ff'], speed: 380, size: 9, gravity: 600, life: 0.8 });
       if (s.msg.mood === 'sad') sfx.sad(); else if (s.msg.mood === 'happy') sfx.milestone(2); else sfx.cheer();
     }
-    const end = s.standAt + C.stand + C.read[s.msg.state];
+    const end = s.standAt + C.stand + readTime(s.msg);
     if (s.done && (s.t >= end || s.clicked)) { const r = s.done; s.done = null; r(); }
   };
 
@@ -190,7 +191,7 @@ function speech(ctx, s, since) {
   ctx.textAlign = 'left';
   outlined(ctx, msg.title, x + 30, y + 30, msg.title.length > 16 ? 30 : 40, color, 'left');
   // typewriter
-  let chars = Math.floor(Math.max(0, since - 0.25) * 45);
+  let chars = Math.floor(Math.max(0, since - 0.25) * C.typeChars);
   ctx.font = '26px "Press Start 2P"';
   ctx.fillStyle = '#1a0a14';
   body.forEach((line, k) => {
@@ -231,3 +232,4 @@ export function applyZoom(ctx, s) {
   ctx.translate(-f.x, -f.y);
   ctx.imageSmoothingEnabled = false;
 }
+

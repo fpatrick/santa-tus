@@ -3,7 +3,7 @@
 // pixel art (see "pixel art" below). Each size and face is made ONCE and cached, so nothing flickers.
 // scale 4 (in the game) = 1 screen pixel per art pixel; the title screen shows it 3x bigger.
 
-import { pixelate, stampText, enlarge, texture } from './pixelart.js';
+import { pixelate, stampText, enlarge, texture, stampEye } from './pixelart.js';
 import { INK, PAD, lin, shape, maskCtx, canvasFor } from './drawkit.js';
 import { head, drawHat } from './santahead.js';
 
@@ -167,8 +167,8 @@ const BAG_ANCHOR = { x: 98, y: 132 + TOP }; // ... sits here, just behind the sl
 // ---------- pixel art ----------
 // The model is drawn small (1 art pixel = 2.5 model units), then snapped to hard pixels with a
 // limited set of colours and a 1-pixel dark outline, then enlarged with square pixels.
-const ART_K = 0.4;
-const factor = (scale) => Math.max(1, Math.round(scale / 4)); // game (4) = 1, title (12) = 3
+const ART_K = 0.24; // art pixels per model unit (chunky arcade pixels)
+const factor = (scale) => Math.max(1, Math.round(scale / 2)); // game (4) = 2x2 screen pixels, title (10) = 5
 
 // empty = the sleigh without Santa (he got out after a crash).
 function santaCanvas(scale, mouth, hat = true, empty = false) {
@@ -187,6 +187,8 @@ function santaCanvas(scale, mouth, hat = true, empty = false) {
     const art = pixelate(canvasFor(ART_K * 10, UNITS.w, UNITS.h, paint));
     const mask = canvasFor(ART_K * 10, UNITS.w, UNITS.h, (g) => paint(maskCtx(g)));
     texture(art, mask); // knitted hat, velvet coat, fluffy fur, hair strands
+    // the open eye, as crisp anime pixels (model point 160, 44 after Santa's 1.2x scale)
+    if (!empty && !mouth) stampEye(art, (PAD + 150 + (160 - 150) * 1.2) * ART_K, (PAD + TOP + 122 + (44 - 122) * 1.2) * ART_K, true);
     cache.set(key, enlarge(art, factor(scale)));
   }
   return cache.get(key);
@@ -216,7 +218,7 @@ export function drawSanta(ctx, x, y, angle = 0, scale = 4, bagSize = 1, mouth = 
   ctx.save();
   ctx.translate(Math.round(x), Math.round(y));
   ctx.rotate(angle);
-  ctx.imageSmoothingEnabled = angle !== 0; // square pixels when level, smooth only while turning
+  ctx.imageSmoothingEnabled = angle !== 0 && scale < 8; // big (title): always sharp pixels; small: smooth only while turning
   const ox = -Math.round((UNITS.w / 2 + PAD) * px);
   const oy = -Math.round((UNITS.h / 2 + PAD) * px);
   const ax = ox + (PAD + BAG_ANCHOR.x) * px;

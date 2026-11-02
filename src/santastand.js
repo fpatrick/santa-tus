@@ -3,14 +3,14 @@
 // frame 0/1 = two steps of the waving / cheering animation. Same pixel-art pipeline as santa.js.
 
 import { INK, PAD, lin, shape, maskCtx, canvasFor } from './drawkit.js';
-import { pixelate, texture, enlarge } from './pixelart.js';
+import { pixelate, texture, enlarge, stampEye } from './pixelart.js';
 
 const W = 150;
 const H = 230;
 const FEET = { x: 75, y: 222 };
-const ART_K = 0.4;
+const ART_K = 0.24; // art pixels per model unit (chunky arcade pixels)
 const cache = new Map();
-const factor = (scale) => Math.max(1, Math.round(scale / 4));
+const factor = (scale) => Math.max(1, Math.round(scale / 2));
 const RED = (g, x0, y0, x1, y1) => lin(g, x0, y0, x1, y1, [[0, '#ff5b6c'], [0.5, '#d61f35'], [1, '#7a0a1a']]);
 const FUR = (g, y0, y1) => lin(g, 0, y0, 0, y1, [[0, '#ffffff'], [1, '#e2d6c4']]);
 
@@ -98,7 +98,7 @@ function face(g, pose, frame) {
   g.strokeStyle = INK; g.fillStyle = INK; g.lineWidth = 3.5;
   for (const x of [64, 86]) {
     if (happy) { g.beginPath(); g.moveTo(x - 5, 66); g.quadraticCurveTo(x, 59, x + 5, 66); g.stroke(); } // ^ ^
-    else { g.beginPath(); g.ellipse(x, sad ? 67 : 64, 3.5, 4.5, 0, 0, Math.PI * 2); g.fill(); }
+    // open eyes: stamped later as crisp pixels (pixelart.js stampEye)
   }
   g.strokeStyle = '#f2ebe0'; g.lineWidth = 4;
   if (sad) { // brows up in the middle
@@ -116,6 +116,7 @@ function standCanvas(pose, frame, scale) {
     const paint = (g) => body(g, pose, frame);
     const art = pixelate(canvasFor(ART_K * 10, W, H, paint));
     texture(art, canvasFor(ART_K * 10, W, H, (g) => paint(maskCtx(g))));
+    if (pose !== 'happy') for (const x of [64, 86]) stampEye(art, (PAD + x) * ART_K, (PAD + (pose === 'sad' ? 73 : 65)) * ART_K, x > 75);
     cache.set(key, enlarge(art, factor(scale)));
   }
   return cache.get(key);

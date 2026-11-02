@@ -54,7 +54,9 @@ async function flyOnce(app, name, p) {
     if (!res.beat && R.isFreeRestart(res.pillars, restarts, CONFIG)) {
       restarts += 1;
       const info = { pillars: res.pillars, freeRestart: true, restartsLeft: CONFIG.freeRestart.max - restarts };
-      await app.flight.playCrash(crashMessage(p, info, CONFIG)); // C1
+      const m = crashMessage(p, info, CONFIG);
+      music.crash(m.mood);
+      await app.flight.playCrash(m); // C1
       continue;
     }
     const prevBest = p.best;
@@ -63,7 +65,9 @@ async function flyOnce(app, name, p) {
       music.lobby();
       await screens.message(CONFIG.text.beat, [`ALL ${TH.beat} CHIMNEYS!`], { secs: CONFIG.timing.tryOver + 1, cls: 'gold' });
     } else {
-      await app.flight.playCrash(crashMessage(p, { pillars: res.pillars, prevBest }, CONFIG)); // C2-C4
+      const m = crashMessage(p, { pillars: res.pillars, prevBest }, CONFIG);
+      music.crash(m.mood); // losing music under the crash scene
+      await app.flight.playCrash(m); // C2-C4
       music.lobby();
     }
     return;

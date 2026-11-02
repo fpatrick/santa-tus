@@ -55,6 +55,14 @@ export const LOBBY = {
   loopFrom: 0,
 };
 
+// After a crash (C2, C4): the Jingle Bells chorus in a minor key, slow, on a music box. A little sad,
+// but still Christmas. When there are prizes (C3, happy Santa) the normal soft chorus plays instead.
+const minor = (t) => t.replace(/E(\d)/g, 'Eb$1').replace(/A(\d)/g, 'Ab$1').replace(/B(\d)/g, 'Bb$1');
+export const CRASH = {
+  sections: [sec('crash', minor(JB_CHORUS), 'Cm Cm Cm Cm Fm Cm Fm G7 Cm Cm Cm Cm Fm Cm G7 Cm', 4, { lead: 'bell', bass: 'waltz', drums: 'none', up: 0 })],
+  loopFrom: 0,
+};
+
 // Title screen: Silent Night as a music box, loops.
 export const MENU = {
   sections: [sec('silent', SILENT, SILENT_CHORDS, 3, { lead: 'bell', bass: 'waltz', drums: 'none', up: 0 })],

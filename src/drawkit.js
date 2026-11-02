@@ -43,4 +43,3 @@ export function canvasFor(scale, wu, hu, paint) {
   paint(g);
   return c;
 }
-

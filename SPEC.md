@@ -96,7 +96,7 @@ A5 music [`music`]: Silent Night (music box) loops on the title screen. During a
 When Santa crashes, the try is saved first (D1), then a short scene plays instead of a "TRY OVER" box:
 he tumbles onto the roof, his hat flies off and his bag rolls away and spills presents. After 1 second
 the camera zooms in, Santa climbs out of the sleigh (bald, no hat!) and a big speech box shows what he says.
-A click (or Enter / Space) skips it after 1.2 s [`crash`]. Words: `text.crash` (one line of each list is picked at random).
+It stays at least `read[state]` seconds and longer for long texts (typing time + words / `wordsPerSec` + `readExtra`); a click (or Enter / Space) skips it after 1.2 s [`crash`]. Music: a slow minor-key Jingle Bells music box (C1, C2, C4), or the happy chorus when Santa has prizes (C3). Words: `text.crash` (one line of each list is picked at random).
 
 | ID | When | Santa | Says (examples) |
 | --- | --- | --- | --- |

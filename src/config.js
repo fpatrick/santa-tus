@@ -79,7 +79,7 @@ export const CONFIG = {
   // A5: background music (src/songs.js). volume is relative to the sound volume.
   // Title screen: Silent Night. Flying: Jingle Bells, timed to end at chimney 30, then it loops a key higher.
   // menuBpm/lobbyBpm/loopBpm = beats per minute. wheelDuck = music volume while the wheel spins.
-  music: { on: true, volume: 0.5, menuBpm: 84, lobbyBpm: 132, loopBpm: 250, wheelDuck: 0.25 },
+  music: { on: true, volume: 0.5, menuBpm: 84, lobbyBpm: 132, loopBpm: 250, crashBpm: 96, wheelDuck: 0.25 },
 
   // FX safety (A4): never more than 3 flashes per second.
   fx: { maxFlashPerSec: 3, particleCap: 900 },
@@ -106,7 +106,8 @@ export const CONFIG = {
 
   // C1-C4: the crash scene. Seconds: fall = tumble before the zoom, zoom = zoom-in time, zoomTo = zoom level,
   // stand = Santa getting up, read = how long the speech box stays (per state), minRead = before a click skips.
-  crash: { fall: 1.0, zoom: 0.6, zoomTo: 2.4, stand: 0.5, read: { restart: 2.4, tries: 3.4, prizes: 4.4, over: 4.8 }, minRead: 1.2 },
+  crash: { fall: 1.0, zoom: 0.6, zoomTo: 2.4, stand: 0.5, read: { restart: 2.4, tries: 3.4, prizes: 4.4, over: 4.8 }, minRead: 1.2,
+    wordsPerSec: 3, typeChars: 45, readExtra: 1 }, // long texts stay longer: typing time + words / wordsPerSec + readExtra
 
   // Words on the screens (A6). Keep them short: big pixel text.
   text: {

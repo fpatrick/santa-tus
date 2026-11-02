@@ -7,6 +7,7 @@
 //   over    (C4): no tries left, nothing won. Santa is sad, and thanks the player for the charity.
 
 import * as R from './rules.js';
+import { CONFIG } from './config.js';
 
 const pick = (list, rnd) => (Array.isArray(list) ? list[Math.floor(rnd() * list.length)] : list);
 
@@ -78,4 +79,12 @@ export function crashMessage(p, info, cfg, rnd = Math.random) {
   }
   const lines = [v.gap > 0 && v.gap <= 3 && goal === cfg.thresholds.choice ? fill(T.overClose, v) : pick(T.over, rnd), T.thanks];
   return { state: 'over', mood: 'sad', title: pick(T.overTitle, rnd), lines };
+}
+
+// How long the speech box stays: at least read[state], longer for long texts (slow readers, 2 m away).
+export function readTime(msg, C = CONFIG.crash) {
+  const text = [msg.title, ...msg.lines].join(' ');
+  const words = text.split(/\s+/).filter(Boolean).length;
+  const typing = 0.25 + text.length / C.typeChars;
+  return Math.max(C.read[msg.state], typing + words / C.wordsPerSec + C.readExtra);
 }

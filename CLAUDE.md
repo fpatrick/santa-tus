@@ -36,15 +36,15 @@ The person you work with writes simple English as a second language. Answer in s
 | Santa's head, faces, beard and hat (or bald head without it) | `src/santahead.js` |
 | Santa standing after a crash: poses ok / happy / sad | `src/santastand.js` |
 | Crash scene: tumble, hat flies, bag rolls, zoom, speech box (C1-C4) | `src/crash.js` |
-| What Santa says after a crash: picks the state and builds the lines (C1-C4) | `src/messages.js` (words in `config.js` `text.crash`) |
-| Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures | `src/pixelart.js` |
+| What Santa says after a crash, and how long the box stays (C1-C4) | `src/messages.js` (words in `config.js` `text.crash`) |
+| Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures, anime eye | `src/pixelart.js` |
 | Prize and wheel icons (pixel art maps) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
 | The wheel, click to spin, its spin (R7) | `src/wheel.js` |
 | Wheel sounds (Christmas chest opening) | `src/wheelsound.js` |
 | Particles, rays, coins, fireworks, shake, flash, `celebrate(tier)` | `src/fx.js` |
 | Sound effects | `src/sound.js` |
-| Songs as notes (Jingle Bells, Silent Night) and their timing to the chimneys | `src/songs.js` |
+| Songs as notes (Jingle Bells, Silent Night, sad crash tune) and their timing to the chimneys | `src/songs.js` |
 | Music player: instruments, modes (menu, lobby, flight), volume duck | `src/music.js` |
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
 | Staff panel and the draw (S11, S12, K2, K3) | `src/staff.js` |
@@ -63,7 +63,7 @@ The person you work with writes simple English as a second language. Answer in s
 
 | Command | What | When |
 | --- | --- | --- |
-| `npm test` | 38 rule, ledger, course, music and crash-message tests (Node, about 3 s) | after every change |
+| `npm test` | 39 rule, ledger, course, music and crash-message tests (Node, about 3 s) | after every change |
 | `npm run test:server` | 9 server tests (Python) | after a change to `server/` |
 | `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, about 40 s) | after a change to screens, flow, store, main |
 

@@ -3,9 +3,9 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG } from '../src/config.js';
 import { buildCourse, seeded } from '../src/course.js';
-import { FLIGHT, LOBBY, MENU, parseNotes, midi, chordTones, sectionEvents, sectionBeats, flightMap } from '../src/songs.js';
+import { FLIGHT, LOBBY, MENU, CRASH, parseNotes, midi, chordTones, sectionEvents, sectionBeats, flightMap } from '../src/songs.js';
 
-const all = [...FLIGHT.sections, ...LOBBY.sections, ...MENU.sections];
+const all = [...FLIGHT.sections, ...LOBBY.sections, ...MENU.sections, ...CRASH.sections];
 
 test('A5: every part has full bars, known notes and known chords', () => {
   for (const s of all) {

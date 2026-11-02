@@ -20,7 +20,7 @@ from playwright.sync_api import sync_playwright
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 FAST = """(async () => { const { CONFIG } = await import('./src/config.js');
   Object.assign(CONFIG.timing, { tryOver: 0.3, healthOk: 0.2, awardShow: 0.3, banner: 0.3 });
-  Object.assign(CONFIG.crash, { fall: 0.1, zoom: 0.1, stand: 0.1, minRead: 0.1, read: { restart: 0.3, tries: 0.3, prizes: 0.3, over: 0.3 } });
+  Object.assign(CONFIG.crash, { fall: 0.1, zoom: 0.1, stand: 0.1, minRead: 0.1, read: { restart: 0.3, tries: 0.3, prizes: 0.3, over: 0.3 }, wordsPerSec: 999, typeChars: 9999, readExtra: 0 });
   CONFIG.wheel.spinSeconds = 0.6; })()"""
 
 
