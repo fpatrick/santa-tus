@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.16.4 (2026-11-02): Santa's hat is smaller so it fits his head (title screen and game), and the bag now has the TUS castle logo embroidered in gold thread instead of the word TUS; it grows with the bag and the ropes go around it.
 - 0.16.3 (2026-11-02): Santa's face redesigned in a cartoon style: round bald head (no more flat top), round red nose, rosy cheeks, and a soft cloud beard made of shaded puffs (side and front views).
 - 0.16.2 (2026-11-02): Long crash titles now shrink to fit the speech box. Santa's faces redrawn in the classic jolly Santa style: one big full white beard flowing from the hair over the chest, curly moustache with a smile, rosy cheeks, soft blue-grey curl shading, wavy tufted bottom; the same style in the sleigh, in the crash tumble (bald) and standing.
 - 0.16.1 (2026-11-02): More human Santa faces: side view shows hair at the back, an ear, a skin cheek and a beard that starts at the jaw (no more mask look); bald front view with small side hair, ears and a pointed beard (no more sheep look).

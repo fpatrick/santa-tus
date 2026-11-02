@@ -3,7 +3,7 @@
 // pixel art (see "pixel art" below). Each size and face is made ONCE and cached, so nothing flickers.
 // scale 4 (in the game) = 1 screen pixel per art pixel; the title screen shows it 3x bigger.
 
-import { pixelate, stampText, enlarge, texture } from './pixelart.js';
+import { pixelate, stampEmbroidery, enlarge, texture } from './pixelart.js';
 import { stampSideFace } from './santaface.js';
 import { INK, PAD, lin, shape, maskCtx, canvasFor } from './drawkit.js';
 import { head, drawHat } from './santahead.js';
@@ -144,22 +144,37 @@ function bag(g, loose = false) {
   g.lineWidth = 4; g.strokeStyle = '#f2c75a';
   g.beginPath(); g.moveTo(26, 34); g.quadraticCurveTo(48, 42, 70, 34); g.stroke();
   g.beginPath(); g.moveTo(66, 36); g.quadraticCurveTo(74, 46, 70, 54); g.stroke();
-  // two ropes over the bag, tied down inside the sleigh (their ends go behind the sleigh side)
-  for (const [x0, x1] of [[28, 84], [68, 58]]) {
-    g.lineWidth = 6; g.strokeStyle = INK;
-    const y1 = loose ? 104 : 126;
-    g.beginPath(); g.moveTo(x0, 36); g.quadraticCurveTo((x0 + x1) / 2 + (x1 > x0 ? 14 : -14), 80, x1, y1); g.stroke();
-    g.lineWidth = 3.5; g.strokeStyle = '#d9b26a';
-    g.beginPath(); g.moveTo(x0, 36); g.quadraticCurveTo((x0 + x1) / 2 + (x1 > x0 ? 14 : -14), 80, x1, y1); g.stroke();
-  }
-  // TUS patch, stitched on, in the same red and gold as the sleigh
-  shape(g, (gg) => { gg.rect(16, 58, 64, 34); }, lin(g, 0, 58, 0, 92, [[0, '#fff3dc'], [1, '#e6cfa2']]), 3);
-  g.setLineDash([3, 3]);
-  g.strokeStyle = '#c8182e';
-  g.lineWidth = 1.5;
-  g.strokeRect(20, 62, 56, 26);
-  g.setLineDash([]);
+  bagRopes(g, loose);
 }
+
+// Two ropes over the bag, tied down inside the sleigh (their ends go behind the sleigh side).
+// Drawn on their own too, as a mask, so the ropes stay on top of the embroidered logo.
+function bagRopes(g, loose) {
+  for (const [x0, cx, x1] of [[28, -6, 56], [68, 96, 80]]) { // down the two sides, clear of the logo
+    const y1 = loose ? 104 : 126;
+    g.lineWidth = 6; g.strokeStyle = INK;
+    g.beginPath(); g.moveTo(x0, 36); g.quadraticCurveTo(cx, 80, x1, y1); g.stroke();
+    g.lineWidth = 3.5; g.strokeStyle = '#d9b26a';
+    g.beginPath(); g.moveTo(x0, 36); g.quadraticCurveTo(cx, 80, x1, y1); g.stroke();
+  }
+}
+
+// The TUS logo (the castle from world.js tusLogo) as a 10 x 13 stitch map: 1 cell = 83 units of the original.
+const TUS_LOGO = [
+  '##..##..##',
+  '##########',
+  '##########',
+  '###....###',
+  '##......##',
+  '##......##',
+  '..........',
+  '##......##',
+  '##......##',
+  '..######..',
+  '##......##',
+  '..######..',
+  '##..##..##',
+];
 
 const BAG_UNITS = { w: 96, h: 130 };
 const BAG_POINT = { x: 88, y: 112 }; // this point of the bag (bottom right of the sack) ...
@@ -204,7 +219,9 @@ function bagCanvas(scale, size, loose = false) {
   if (!cache.has(key)) {
     const k = ART_K * size;
     const art = pixelate(canvasFor(k * 10, BAG_UNITS.w, BAG_UNITS.h, (g) => bag(g, loose)));
-    stampText(art, 'TUS', (PAD + 48) * k, (PAD + 75) * k, Math.max(1, Math.floor(size * 1.6)), '#c8182e', '#6e0816');
+    // the TUS logo embroidered in gold thread on the sack; it grows with the bag, and the ropes stay on top
+    const ropes = canvasFor(k * 10, BAG_UNITS.w, BAG_UNITS.h, (g) => bagRopes(maskCtx(g), loose));
+    stampEmbroidery(art, TUS_LOGO, (PAD + 48) * k, (PAD + 69) * k, size, ropes);
     cache.set(key, enlarge(art, factor(scale)));
   }
   return cache.get(key);

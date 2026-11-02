@@ -108,6 +108,7 @@ const FRONT = {
 
 const SIDE = {
   0: [
+    'ogwwwwwwwwwwwwwwwwgo..',
     'owwwwwwwwwwwwwwwwwwo..',
     'ogggwwwwwwwwwwwggggo..',
     '....ossssssssssso.....',
@@ -129,6 +130,7 @@ const SIDE = {
     '..........oGGoo.......',
   ],
   1: [
+    'ogwwwwwwwwwwwwwwwwgo..',
     'owwwwwwwwwwwwwwwwwwo..',
     'ogggwwwwwwwwwwwggggo..',
     '....ossssssssssso.....',
@@ -176,7 +178,8 @@ const SIDE = {
   ],
 };
 SIDE[2] = SIDE[1];
-const BALD_LIFT = SIDE.bald.length - SIDE[0].length;
+const BRIM_UP = 1; // the hatted side faces start with one extra brim row, drawn above the anchor
+const BALD_LIFT = SIDE.bald.length - (SIDE[0].length - BRIM_UP);
 
 function paint(c, rows, x0, y0) {
   const g = c.getContext('2d');
@@ -196,7 +199,7 @@ export function stampFace(c, x0, y0, mood = 'ok') {
 // Side face with its top-left at (x0, y0). mouth 0 = smile, 1/2 = laughing; bald = hat lost (crash).
 export function stampSideFace(c, x0, y0, mouth = 0, bald = false) {
   if (bald) paint(c, SIDE.bald, x0, y0 - BALD_LIFT);
-  else paint(c, SIDE[mouth] || SIDE[0], x0, y0);
+  else paint(c, SIDE[mouth] || SIDE[0], x0, y0 - BRIM_UP);
 }
 
 export const FACE_SIZE = { w: FRONT.ok[0].length, h: FRONT.ok.length };

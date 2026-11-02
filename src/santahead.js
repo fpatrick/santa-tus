@@ -57,7 +57,12 @@ export function head(g, mouth, hat = true, face = true) {
 }
 
 // The hat on its own (also used when it flies off in a crash).
+const HAT_K = 0.8; // the hat is drawn a bit smaller than this model, so it fits the round sprite head
 export function drawHat(g) {
+  g.save();
+  g.translate(150, 34); // the middle of the brim stays in place
+  g.scale(HAT_K, HAT_K);
+  g.translate(-150, -34);
   // hat: ONE piece of red cloth: it rises from the brim, peaks, then flops back and down to the pompom.
   const hat = (gg) => {
     gg.moveTo(178, 30);
@@ -78,6 +83,7 @@ export function drawHat(g) {
   shape(g, (gg) => { gg.moveTo(122, 31); gg.bezierCurveTo(140, 21, 166, 21, 182, 27); gg.lineTo(181, 36); gg.bezierCurveTo(162, 30, 142, 32, 126, 44); gg.closePath(); },
     lin(g, 0, 24, 0, 47, [[0, '#ffffff'], [1, '#e2d6c4']]), 3, 'fur');
   shape(g, (gg) => gg.arc(96, 26, 9, 0, Math.PI * 2), lin(g, 88, 18, 104, 34, [[0, '#ffffff'], [1, '#e2d6c4']]), 3, 'fur');
+  g.restore();
 }
 
 // No hat: a shiny bald top with fluffy white hair around it.

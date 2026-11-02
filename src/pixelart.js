@@ -52,6 +52,40 @@ export function stampText(c, text, cx, cy, size, color, shadow) {
   });
 }
 
+// Embroidery: a stitch map ('#' = thread) stitched onto the art, centred on (cx, cy), `size` art pixels per
+// 10 cells (it grows with the bag). Gold satin stitches with a light top edge and a shaded bottom edge,
+// on a dark thread outline. Pixels where `cover` (a mask canvas, same size as the art) is drawn are left alone.
+const THREAD = { light: [255, 233, 160], main: [242, 199, 90], stitch: [214, 166, 62], shade: [168, 116, 36], edge: [62, 26, 10] };
+export function stampEmbroidery(c, map, cx, cy, size, cover) {
+  const g = c.getContext('2d');
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  const img = g.getImageData(0, 0, c.width, c.height);
+  const d = img.data;
+  const mask = cover ? cover.getContext('2d').getImageData(0, 0, c.width, c.height).data : null;
+  const w = Math.max(map[0].length, Math.round(map[0].length * size));
+  const h = Math.round((w * map.length) / map[0].length);
+  const x0 = Math.round(cx - w / 2);
+  const y0 = Math.round(cy - h / 2);
+  const on = (x, y) => x >= 0 && y >= 0 && x < w && y < h && map[Math.floor((y * map.length) / h)][Math.floor((x * map[0].length) / w)] === '#';
+  for (let y = -1; y <= h; y++) {
+    for (let x = -1; x <= w; x++) {
+      const X = x0 + x;
+      const Y = y0 + y;
+      if (X < 0 || Y < 0 || X >= c.width || Y >= c.height) continue;
+      const i = (Y * c.width + X) * 4;
+      if (d[i + 3] < 255 || (mask && mask[i + 3] >= 120)) continue; // off the sack, or under a rope
+      let col = null;
+      if (on(x, y)) {
+        if (!on(x, y - 1)) col = THREAD.light;
+        else if (!on(x, y + 1)) col = THREAD.shade;
+        else col = (x - y + 99) % 3 === 0 ? THREAD.stitch : THREAD.main; // slanted satin stitches
+      } else if (on(x - 1, y) || on(x + 1, y) || on(x, y - 1) || on(x, y + 1)) col = THREAD.edge;
+      if (col) [d[i], d[i + 1], d[i + 2]] = col;
+    }
+  }
+  g.putImageData(img, 0, 0);
+}
+
 export function enlarge(src, f) {
   const c = document.createElement('canvas');
   c.width = src.width * f;
