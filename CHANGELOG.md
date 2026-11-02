@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.16.1 (2026-11-02): More human Santa faces: side view shows hair at the back, an ear, a skin cheek and a beard that starts at the jaw (no more mask look); bald front view with small side hair, ears and a pointed beard (no more sheep look).
 - 0.16.0 (2026-11-02): New cute Santa face, hand-made pixel by pixel (santaface.js) from the side (sleigh) and from the front (crash scene): small dark eyes, no brows, pink blush, round nose, soft smile, clean white beard; happy ^ ^ eyes when he laughs.
 - 0.15.1 (2026-11-02): Santa's eyes: small, dark brown with a white shine and a pink blush below (no more blue anime eyes).
 - 0.15.0 (2026-11-02): Crash speech box stays longer for longer texts (C1-C4); cute pixel anime eyes on Santa; chunkier arcade pixels and fewer colour bands (textures kept); sad minor-key Jingle Bells music box under the crash scene (happy chorus when there are prizes).

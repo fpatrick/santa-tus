@@ -65,12 +65,10 @@ function body(g, pose, frame) {
 function face(g, pose, frame) {
   const sad = pose === 'sad';
   const happy = pose === 'happy';
-  shape(g, (gg) => gg.arc(75, 68, 26, 0, Math.PI * 2), lin(g, 50, 44, 100, 94, [[0, '#ffd9bd'], [1, '#e8a27c']]), 3);
+  shape(g, (gg) => gg.arc(75, 70, 22, 0, Math.PI * 2), lin(g, 50, 44, 100, 94, [[0, '#ffd9bd'], [1, '#e8a27c']]), 3);
   g.fillStyle = 'rgba(255,255,255,0.5)'; // shiny bald top: he lost his hat!
   g.beginPath(); g.ellipse(66, 50, 9, 4, -0.3, 0, Math.PI * 2); g.fill();
-  for (const [x, y, r] of [[49, 62, 9], [52, 50, 7], [101, 62, 9], [98, 50, 7]]) {
-    shape(g, (gg) => gg.arc(x, y, r, 0, Math.PI * 2), FUR(g, y - r, y + r), 2.5, 'hair');
-  }
+  // (hair, eyes, nose and beard come from the hand-made pixel face in santaface.js)
   // cheeks
   g.fillStyle = happy ? 'rgba(255,70,90,0.85)' : 'rgba(255,105,130,0.75)'; // round pink blush, under the eyes
   for (const x of [55, 95]) { g.beginPath(); g.ellipse(x, 77, 7, 5, 0, 0, Math.PI * 2); g.fill(); }
