@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.17.1 (2026-11-02): new art style rule ART.md (A0-A10): all design is 16-bit HD pixel art; CLAUDE.md and the change command point to it.
 - 0.17.0 (2026-11-02): the wheel is now a Christmas slot machine (R7): lit marquee sign, a lever pulled on the click, fast peg clatter, chiptune Jingle Bells, drum roll and a coin payout. Slices say JACKPOT TICKETS +2 / +5. New 16-bit HD icons (pot of gold for jackpot tickets, €10 notes, free try arrow). Spin 5.5 s, 9 turns.
 - 0.16.7 (2026-11-02): after each chimney Santa laughs again: a big wide-open mouth for 1 second (no ho-ho-ho flapping).
 - 0.16.6 (2026-11-02): Santa's hat sits 2 pixels lower on his head.

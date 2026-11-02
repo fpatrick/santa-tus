@@ -19,6 +19,11 @@ The person you work with writes simple English as a second language. Answer in s
 9. Keep each file under about 300 lines (`server/server.py` may go to about 450, it must stay one file). Split a file when it grows.
 10. Report what changed in 2 or 3 lines. Never paste whole files back. After a visual change, take a screenshot (Playwright) and look at it instead of guessing.
 
+## Art style: 16-bit HD, always
+
+**Before any design, sprite, icon, colour, animation look or other visual change, read `ART.md` and follow it.**
+Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zoomed screenshot (ART.md, last part).
+
 ## Where to change what
 
 | To change... | Edit |

@@ -2,6 +2,7 @@ Make this change to Santa TUS: $ARGUMENTS
 
 Follow CLAUDE.md exactly:
 1. Use the "Where to change what" table to pick the files. Read only those (Grep SPEC.md for any rule ID named).
+   If the change is visual (design, sprite, icon, colour, look), read ART.md first and follow it: always 16-bit HD pixel art.
 2. Make small, exact edits. Words and numbers go in src/config.js.
 3. If a rule changes: SPEC.md first, then src/rules.js, then its test.
 4. Run `npm test` (plus `npm run test:server` for server changes, `npm run test:flow` for screen or flow changes).
