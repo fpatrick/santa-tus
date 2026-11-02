@@ -30,8 +30,10 @@ The person you work with writes simple English as a second language. Answer in s
 | Flying, gravity, collisions, HUD | `src/game.js` |
 | Course building and the fairness check (R4, T26) | `src/course.js` |
 | Sky per level, snow per level, town, TUS logo, rooftop | `src/world.js` |
-| Chimneys, presents (and their flight into the bag), level warning | `src/chimney.js` |
-| Santa, his TUS bag, prize and wheel icons (pixel art maps) | `src/sprites.js` |
+| Chimneys, the present stack (and its flight into the bag), level warning | `src/chimney.js` |
+| The presents themselves: big and small boxes, patterns, ribbons, bows | `src/gifts.js` |
+| Santa, his sleigh and his TUS bag (detailed, drawn with shapes) | `src/santa.js` |
+| Prize and wheel icons (pixel art maps) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
 | The wheel, click to spin, its spin (R7) | `src/wheel.js` |
 | Wheel sounds (Christmas chest opening) | `src/wheelsound.js` |

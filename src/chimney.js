@@ -4,24 +4,12 @@
 // Textures are drawn once into small canvases and reused, so drawing stays fast.
 
 import { CONFIG } from './config.js';
+import { gifts, drawGift, rand } from './gifts.js';
 
 const CW = CONFIG.world.chimneyW;
 const ROOF = CONFIG.world.height - CONFIG.world.roof;
-const GIFT_COLORS = [
-  ['#d62839', '#ffd23f'], ['#1f9e55', '#d62839'], ['#ffd23f', '#d62839'], ['#2a6fdb', '#f4f7ff'],
-  ['#8e3bd6', '#ffd23f'], ['#f4f7ff', '#d62839'], ['#e86a1a', '#1f9e55'],
-];
 const bricks = [];
 
-function rand(seed) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0;
-    let t = Math.imul(a ^ (a >>> 15), a | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
 
 // A tall brick texture with mixed brick colours, mortar and soot.
 function brickTexture(v) {
@@ -61,54 +49,6 @@ function brickTexture(v) {
   g.fillRect(0, 0, CW, 60);
   bricks[v] = c;
   return c;
-}
-
-// The presents of one chimney, from the gap upwards (bottom present first).
-function gifts(ch) {
-  if (ch._gifts) return ch._gifts;
-  const r = rand(ch.i * 131 + 7);
-  const list = [];
-  let h = 0;
-  while (h < 1000) {
-    const gh = 58 + Math.floor(r() * 5) * 9;
-    const gw = CW - 8 + Math.floor(r() * 4) * 8;
-    list.push({ w: gw, h: gh, dx: Math.round((r() - 0.5) * 10), y: h, col: GIFT_COLORS[Math.floor(r() * GIFT_COLORS.length)], dots: r() < 0.35 });
-    h += gh;
-  }
-  ch._gifts = list;
-  return list;
-}
-
-// One present centred on (0, 0) of the current transform.
-function drawGift(g, p) {
-  const { w, h, col: [box, rib] } = p;
-  const x = -w / 2;
-  const y = -h / 2;
-  g.fillStyle = '#07051c';
-  g.fillRect(x - 3, y - 3, w + 6, h + 6);
-  g.fillStyle = box;
-  g.fillRect(x, y, w, h);
-  g.fillStyle = 'rgba(0,0,0,0.22)';
-  g.fillRect(x + w * 0.72, y, w * 0.28, h);
-  g.fillStyle = 'rgba(255,255,255,0.18)';
-  g.fillRect(x, y, w, 10); // lid
-  g.fillStyle = 'rgba(0,0,0,0.25)';
-  g.fillRect(x, y + 10, w, 3);
-  if (p.dots) {
-    g.fillStyle = 'rgba(255,255,255,0.35)';
-    for (let yy = y + 20; yy < y + h - 6; yy += 16) for (let xx = x + 8; xx < x + w - 6; xx += 18) g.fillRect(xx, yy, 5, 5);
-  }
-  g.fillStyle = rib;
-  g.fillRect(-7, y, 14, h); // ribbon down
-  g.fillRect(x, -6, w, 12); // ribbon across
-  g.fillStyle = 'rgba(0,0,0,0.2)';
-  g.fillRect(3, y, 4, h);
-  // bow on the side
-  g.fillStyle = rib;
-  g.beginPath();
-  g.ellipse(-16, y + 4, 12, 7, -0.5, 0, Math.PI * 2);
-  g.ellipse(16, y + 4, 12, 7, 0.5, 0, Math.PI * 2);
-  g.fill();
 }
 
 function stackImage(ch) {
