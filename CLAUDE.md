@@ -39,7 +39,7 @@ The person you work with writes simple English as a second language. Answer in s
 | Crash scene: tumble, hat flies, bag rolls, zoom, speech box (C1-C4) | `src/crash.js` |
 | What Santa says after a crash, and how long the box stays (C1-C4) | `src/messages.js` (words in `config.js` `text.crash`) |
 | Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures, embroidery (logo on the bag), cute eye | `src/pixelart.js` |
-| Prize and wheel icons (pixel art maps) | `src/sprites.js` |
+| Prize tile icons (pixel art maps; the wheel icons are in wheelicons.js) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
 | The wheel logic: click (lever pull) to spin, its spin, peg clicks, the payout (R7) | `src/wheel.js` |
 | How the wheel looks: slot-machine sign, lever, wood wheel, labels, rim bulbs, pointer | `src/wheelart.js` |
