@@ -184,7 +184,7 @@ function santaCanvas(scale, mouth, hat = true, empty = false) {
       g.translate(150, 122); // Santa is 20% bigger than the sleigh, so he reads well at game size
       g.scale(1.2, 1.2);
       g.translate(-150, -122);
-      if (!empty) santa(g, mouth, hat, !hat); // with the hat on, the face comes from the pixel sprite
+      if (!empty) santa(g, mouth, hat, false); // the face always comes from the pixel sprite
       g.restore();
       sleigh(g);
     };
@@ -192,7 +192,7 @@ function santaCanvas(scale, mouth, hat = true, empty = false) {
     const mask = canvasFor(ART_K * 10, UNITS.w, UNITS.h, (g) => paint(maskCtx(g)));
     texture(art, mask); // knitted hat, velvet coat, fluffy fur, hair strands
     // the face: a clean hand-made pixel sprite (santaface.js); the model face is too small to convert well
-    if (!empty && hat) stampSideFace(art, FACE_AT.x, FACE_AT.y, mouth);
+    if (!empty) stampSideFace(art, FACE_AT.x, FACE_AT.y, mouth, !hat);
     cache.set(key, enlarge(art, factor(scale)));
   }
   return cache.get(key);

@@ -8,7 +8,7 @@ import { INK, lin, shape } from './drawkit.js';
 // face = false: only the hat is drawn here; the face is a hand-made pixel sprite (santaface.js).
 export function head(g, mouth, hat = true, face = true) {
   g.save();
-  if (!face) { drawHat(g); g.restore(); return; }
+  if (!face) { if (hat) drawHat(g); g.restore(); return; }
   if (mouth) { g.translate(150, 70); g.rotate(mouth === 1 ? -0.14 : -0.07); g.translate(-150, -70); }
   // face
   shape(g, (gg) => gg.arc(150, 44, 20, 0, Math.PI * 2), lin(g, 132, 30, 170, 60, [[0, '#ffd9bd'], [1, '#e8a27c']]), 3);

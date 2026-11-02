@@ -114,7 +114,7 @@ function standCanvas(pose, frame, scale) {
     const art = pixelate(canvasFor(ART_K * 10, W, H, paint));
     texture(art, canvasFor(ART_K * 10, W, H, (g) => paint(maskCtx(g))));
     // the hand-made pixel face over the head (head centre x 75, top y 42 in the model)
-    stampFace(art, (PAD + 75) * ART_K - 8, (PAD + 42 + (pose === 'sad' ? 6 : 0)) * ART_K, pose);
+    stampFace(art, (PAD + 75) * ART_K - 12, (PAD + 47 + (pose === 'sad' ? 6 : 0)) * ART_K, pose);
     cache.set(key, enlarge(art, factor(scale)));
   }
   return cache.get(key);

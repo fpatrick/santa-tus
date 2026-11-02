@@ -189,7 +189,9 @@ function speech(ctx, s, since) {
   ctx.fillRect(x, y, w, h);
   ctx.textBaseline = 'top';
   ctx.textAlign = 'left';
-  outlined(ctx, msg.title, x + 30, y + 30, msg.title.length > 16 ? 30 : 40, color, 'left');
+  let size = 40; // the title shrinks until it fits inside the box
+  do { ctx.font = `${size}px "Press Start 2P"`; size -= 2; } while (ctx.measureText(msg.title).width > w - 60 && size > 16);
+  outlined(ctx, msg.title, x + 30, y + 30, size + 2, color, 'left');
   // typewriter
   let chars = Math.floor(Math.max(0, since - 0.25) * C.typeChars);
   ctx.font = '26px "Press Start 2P"';

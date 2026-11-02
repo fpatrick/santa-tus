@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.16.2 (2026-11-02): Long crash titles now shrink to fit the speech box. Santa's faces redrawn in the classic jolly Santa style: one big full white beard flowing from the hair over the chest, curly moustache with a smile, rosy cheeks, soft blue-grey curl shading, wavy tufted bottom; the same style in the sleigh, in the crash tumble (bald) and standing.
 - 0.16.1 (2026-11-02): More human Santa faces: side view shows hair at the back, an ear, a skin cheek and a beard that starts at the jaw (no more mask look); bald front view with small side hair, ears and a pointed beard (no more sheep look).
 - 0.16.0 (2026-11-02): New cute Santa face, hand-made pixel by pixel (santaface.js) from the side (sleigh) and from the front (crash scene): small dark eyes, no brows, pink blush, round nose, soft smile, clean white beard; happy ^ ^ eyes when he laughs.
 - 0.15.1 (2026-11-02): Santa's eyes: small, dark brown with a white shine and a pink blush below (no more blue anime eyes).
