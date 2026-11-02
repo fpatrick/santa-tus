@@ -5,6 +5,7 @@ import { CONFIG } from './config.js';
 import { buildCourse, gapAt, levelFor } from './course.js';
 import { drawSky, drawSnow, drawRoof, drawChimney, ROOF_Y } from './world.js';
 import { drawSanta } from './sprites.js';
+import { createCrash, applyZoom } from './crash.js';
 
 const cfg = CONFIG;
 const ph = cfg.physics;
@@ -28,6 +29,7 @@ export function createFlight(hooks = {}) {
     f.angle = 0;
     f.bag = 1;
     f.laughAt = -99;
+    f.crash = null;
     f.state = 'ready';
   };
 
@@ -51,7 +53,7 @@ export function createFlight(hooks = {}) {
       return;
     }
     if (f.state === 'crashed') {
-      if (f.y < ROOF_Y - 40) { f.vy = Math.min(f.vy + ph.gravity * dt, ph.maxFall); f.y += f.vy * dt; f.angle += 6 * dt; }
+      if (f.crash) f.crash.update(dt); // crash.js: tumble, hat, bag, zoom, Santa speaks
       return;
     }
     // flying
@@ -83,13 +85,23 @@ export function createFlight(hooks = {}) {
   function crash(fl) {
     fl.state = 'crashed';
     fl.vy = -200;
+    fl.crash = createCrash(ph.santaX, fl.y, fl.angle, fl.bag);
     if (hooks.onCrash) hooks.onCrash(fl.score, ph.santaX, fl.y);
   }
+
+  // C1-C4: flow.js hands in Santa's message; resolves when the crash scene is over.
+  f.playCrash = (msg) => {
+    if (f.state !== 'crashed') { f.state = 'crashed'; f.crash = createCrash(ph.santaX, f.y, f.angle, f.bag); }
+    return f.crash.play(msg);
+  };
+  f.click = () => { if (f.crash) f.crash.click(); };
 
   f.render = (ctx, dt, hud) => {
     const lv = levelFor(Math.min(f.score + 1, cfg.thresholds.beat), cfg);
     const sc = cfg.scenery;
     f.bag += (Math.min(sc.bagMax, 1 + f.score * sc.bagGrow) - f.bag) * Math.min(1, dt * 3); // the bag grows
+    const zoomed = f.crash && f.crash.msg;
+    if (zoomed) { ctx.save(); applyZoom(ctx, f.crash); }
     drawSky(ctx, f.t, f.dist, lv.n);
     const bag = { x: ph.santaX - 44, y: f.y - 8 };
     for (const ch of f.course) {
@@ -103,9 +115,12 @@ export function createFlight(hooks = {}) {
     drawRoof(ctx, f.dist);
     const lt = f.t - (f.laughAt ?? -99);
     const mouth = lt < sc.laughSecs ? (Math.floor(lt * sc.laughSpeed) % 2 ? 2 : 1) : 0; // open, half, open...
-    drawSanta(ctx, ph.santaX, f.y, f.angle, 4, f.bag, mouth);
+    if (f.crash) f.crash.drawActors(ctx);
+    else drawSanta(ctx, ph.santaX, f.y, f.angle, 4, f.bag, mouth);
+    if (zoomed) ctx.restore();
     drawSnow(ctx, dt, lv.n);
-    if (hud) drawHud(ctx, f, lv, hud);
+    if (hud && !zoomed) drawHud(ctx, f, lv, hud);
+    if (f.crash) f.crash.drawOverlay(ctx);
   };
 
   return f;

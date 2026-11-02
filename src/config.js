@@ -103,6 +103,10 @@ export const CONFIG = {
   // S6 + screen timings in seconds.
   timing: { tryOver: 3, healthOk: 2.5, banner: 2.2, awardShow: 3.2 },
 
+  // C1-C4: the crash scene. Seconds: fall = tumble before the zoom, zoom = zoom-in time, zoomTo = zoom level,
+  // stand = Santa getting up, read = how long the speech box stays (per state), minRead = before a click skips.
+  crash: { fall: 1.0, zoom: 0.6, zoomTo: 2.4, stand: 0.5, read: { restart: 2.4, tries: 3.4, prizes: 4.4, over: 4.8 }, minRead: 1.2 },
+
   // Words on the screens (A6). Keep them short: big pixel text.
   text: {
     title: 'SANTA TUS',
@@ -133,5 +137,28 @@ export const CONFIG = {
     testMode: 'TEST MODE: PLAYS ARE NOT COUNTED',
     serverDown: 'SERVER DOWN: RESULTS KEPT IN BROWSER, WILL SEND LATER',
     ageNote: '', // open decision 8, for example 'PAID PLAY 18+'
+    // C1-C4: what Santa says after a crash. One line of each list is picked at random.
+    // {tries} = "2 MORE TRIES", {chimney} = where he crashed, {gap} = chimneys to the next goal,
+    // {goal} = next goal, {prizes} = prize list, {n} = a number, {draw} = draw time.
+    crash: {
+      restartTitle: ['OOPS!', 'WHOOPS!', 'HO HO... OUCH!'],
+      restart: ["THAT ONE DOESN'T COUNT. FLY AGAIN!", 'SLIPPERY ROOF! THIS TRY IS FREE.', 'JUST A WARM-UP. HAVE ANOTHER GO!'],
+      restartLeft: 'FREE RESTARTS LEFT: {n}',
+      triesTitle: ["THAT'S OK!", 'NICE TRY!', 'SHAKE IT OFF!'],
+      tries: ["YOU STILL HAVE {tries}. LET'S GO AGAIN!", 'CHIMNEY {chimney}! {tries} TO BEAT IT.', "I'M FINE! {tries} - LET'S FLY!"],
+      triesClose: 'SO CLOSE! ONLY {gap} MORE TO {goal}. {tries} LEFT!',
+      triesNewBest: 'NEW BEST: CHIMNEY {chimney}! {tries} TO GO EVEN HIGHER!',
+      triesSafe: 'YOUR CHIMNEY 10 PRIZE IS SAFE! {tries} TO WIN EVEN MORE!',
+      first: 'BUT FIRST: {prizes}!',
+      prizesTitle: ['GAME OVER... BUT YOU WON!', 'WHAT A RIDE!', 'HO HO HO! A WINNER!'],
+      prizes: "LET'S GET YOUR PRIZES: {prizes}!",
+      ticketsOnly: 'KEEP YOUR {n} JACKPOT {TICKETS} SAFE. THE DRAW IS AT {draw}!',
+      overTitle: ['GAME OVER', 'OH NO... GAME OVER', 'GAME OVER, MY FRIEND'],
+      over: ['THE CHIMNEYS WON THIS TIME...', 'I LOST MY HAT AND MY PRESENTS!', 'THAT ROOF CAME OUT OF NOWHERE!'],
+      overClose: 'SO CLOSE! CHIMNEY 10 WAS ONLY {gap} AWAY.',
+      thanks: 'THANK YOU FOR HELPING KIDS WITH DIABETES AT UHL!',
+      prize: { spin: 'A SPIN ON THE WHEEL', legend: '3 JACKPOT TICKETS AND THE LEGEND TAG', master: 'THE MASTER TAG', choice: 'A PRIZE FROM CHIMNEY 10', consolation: 'A STICKER' },
+      skip: 'CLICK TO CONTINUE',
+    },
   },
 };

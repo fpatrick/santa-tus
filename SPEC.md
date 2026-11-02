@@ -73,7 +73,7 @@ Order after each try (from `rules.js nextStep`): chimney 20 ticket -> wheel -> c
 | S3 | Payment: €2 (key 1), €5 (key 2), Cancel (Esc) | staff | screens.payment |
 | S4 | Get ready: "CLICK TO FLY", tries left, best | player | game.js HUD |
 | S5 | Play: chimney count, level, tries left, best, next goal. A new level plays a sound only (no text). A warning glow between chimney and presents just before each level change | player | game.js, flow.flightHooks |
-| S6 | Try over: chimney and best, "FREE RESTART!" (R3), "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce |
+| S6 | Try over: the crash scene C1-C4 (Santa speaks), or "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce, crash.js |
 | S7 | Wheel: shows "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
 | S8 | Chimney 10 choice: big tiles, mouse | player | screens.choice |
 | S9 | Nickname: only for the best players list, LEGEND or MASTER. Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
@@ -90,6 +90,22 @@ A2 four scenes of 8 s, then a demo that crashes [`attract`]. A3 prices 64 px+, n
 A5 music [`music`]: Silent Night (music box) loops on the title screen. During a payment a soft Jingle Bells chorus plays under every screen (quieter while the wheel spins). When Santa flies, the full Jingle Bells starts at the first click and is timed to Santa's distance: intro + verse end at chimney 10, chorus at 20, chorus a key higher at 30 (no loop before 30, T31). After 30, verse + chorus loop two keys higher. Crash = music stops. Mute in the staff panel. A6 every word comes from `config.text`.
 
 **Version badge:** every screen shows "BETA v0.9.x · NOT THE FINAL GAME" while `STAGE` in `src/version.js` is not FINAL.
+
+## Crash scene (C1-C4)
+
+When Santa crashes, the try is saved first (D1), then a short scene plays instead of a "TRY OVER" box:
+he tumbles onto the roof, his hat flies off and his bag rolls away and spills presents. After 1 second
+the camera zooms in, Santa climbs out of the sleigh (bald, no hat!) and a big speech box shows what he says.
+A click (or Enter / Space) skips it after 1.2 s [`crash`]. Words: `text.crash` (one line of each list is picked at random).
+
+| ID | When | Santa | Says (examples) |
+| --- | --- | --- | --- |
+| C1 | Crash before chimney 5, free restart (R3) | smiles, waves | "WHOOPS! That one doesn't count. Fly again! Free restarts left: 2" |
+| C2 | Tries left | smiles, waves (cheers with arms up if a prize is coming first) | "So close! Only 2 more to 10. 2 more tries left!" / "New best: chimney 14!" / "Your chimney 10 prize is safe!" / "But first: a spin on the wheel!" |
+| C3 | No tries left, prizes to collect (or jackpot tickets kept) | laughs and jumps | "WHAT A RIDE! Let's get your prizes: a spin on the wheel and a prize from chimney 10!" / "Keep your 2 jackpot tickets safe. The draw is at 12:45!" |
+| C4 | No tries left, nothing won | sad, a tear, sad trombone | "GAME OVER. So close! Chimney 10 was only 2 away. Thank you for helping kids with diabetes at UHL!" |
+
+Never "play again?" (R17). The title-screen demo shows only the tumble (no zoom, no speech).
 
 ## Staff controls
 
@@ -185,6 +201,7 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T28 | start file inside the ZIP | "Unzip the folder first" | W |
 | T29 | new version over the old folder | data still there | S |
 | T30 | test link, no server | plays, banner, browser only | F |
+| T32 | crash messages | C1-C4 state, mood and lines are right; no "play again" | N |
 | T31 | flight music | ends exactly at chimney 30, no loop before; tempo 140-260 bpm | N |
 
 ## Open decisions (from the analysis)

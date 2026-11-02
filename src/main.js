@@ -189,6 +189,7 @@ function onKey(e) {
   if (e.key === CONFIG.keys.staffCode) { e.preventDefault(); if (app.scene === 'attract') startPaid(); return; }
   if (e.key === CONFIG.keys.staffPanel) { e.preventDefault(); openStaff(); return; }
   if ((e.key === ' ' || e.key === 'ArrowUp') && app.scene === 'flight') { e.preventDefault(); app.flight.flap(); }
+  if ((e.key === ' ' || e.key === 'Enter') && app.scene === 'flight' && app.flight.state === 'crashed') { e.preventDefault(); app.flight.click(); }
   if ((e.key === ' ' || e.key === 'Enter') && app.scene === 'wheel') { e.preventDefault(); app.wheel.click(); }
 }
 
@@ -196,7 +197,7 @@ function onPointer(e) {
   unlockSound();
   if (e.target.id === 'hotspot' && app.scene === 'attract') { startPaid(); return; }
   if (screens.isOpen()) return;
-  if (app.scene === 'flight' && e.button === 0) { e.preventDefault(); app.flight.flap(); }
+  if (app.scene === 'flight' && e.button === 0) { e.preventDefault(); if (app.flight.state === 'crashed') app.flight.click(); else app.flight.flap(); }
   if (app.scene === 'wheel' && e.button === 0) app.wheel.click();
 }
 

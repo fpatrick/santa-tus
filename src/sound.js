@@ -155,6 +155,17 @@ export const sfx = {
     kick(t, 0.6);
   },
   restart() { if (ok()) seq([['C5', 1], ['G5', 1], ['C6', 2]], now(), 0.08, { vol: 0.12 }); },
+  // Crash scene: Santa pops up out of the snow.
+  pop() { if (ok()) { const t = now(); noise(t, 0.18, { vol: 0.2, freq: 900, slide: 3 }); tone(300, t, 0.12, { vol: 0.1, slide: 3 }); } },
+  // Crash scene, nothing won: a sad trombone "wah wah wah waaah".
+  sad() {
+    if (!ok()) return;
+    const t = now();
+    [['G3', 0], ['F#3', 0.42], ['F3', 0.84]].forEach(([n, at]) => tone(hz(n), t + at, 0.38, { type: 'sawtooth', vol: 0.09, vib: 0.01 }));
+    tone(hz('E3'), t + 1.26, 1.1, { type: 'sawtooth', vol: 0.09, vib: 0.03, slide: 0.94 });
+  },
+  // Crash scene, tries left: a cheerful "you can do it" jingle.
+  cheer() { if (ok()) { const t = now(); seq([['G4', 1], ['C5', 1], ['E5', 1], ['G5', 2], ['E5', 1], ['G5', 3]], t, 0.09, { vol: 0.11 }); for (let i = 0; i < 4; i++) noise(t + i * 0.18, 0.05, { vol: 0.08, freq: 7000, type: 'highpass' }); } },
   tick(intensity = 0.5) {
     if (!ok()) return;
     const t = now();

@@ -8,6 +8,7 @@ import * as screens from './screens.js';
 import * as fx from './fx.js';
 import { sfx } from './sound.js';
 import { music } from './music.js';
+import { crashMessage } from './messages.js';
 
 const TH = CONFIG.thresholds;
 const MILESTONE_TIER = { 10: 1, 20: 2, 30: 3, 40: 3, 50: 4 };
@@ -52,18 +53,18 @@ async function flyOnce(app, name, p) {
     if (res.aborted || p.status !== 'open') return;
     if (!res.beat && R.isFreeRestart(res.pillars, restarts, CONFIG)) {
       restarts += 1;
-      sfx.restart();
-      await screens.message(CONFIG.text.freeRestart, ['THIS TRY IS NOT USED.'], { secs: 1.6, cls: 'gold' });
+      const info = { pillars: res.pillars, freeRestart: true, restartsLeft: CONFIG.freeRestart.max - restarts };
+      await app.flight.playCrash(crashMessage(p, info, CONFIG)); // C1
       continue;
     }
-    await app.commit(name, R.tryBody(p, res.pillars, restarts));
-    music.lobby();
+    const prevBest = p.best;
+    await app.commit(name, R.tryBody(p, res.pillars, restarts)); // D1: saved before Santa speaks
     if (res.beat) {
+      music.lobby();
       await screens.message(CONFIG.text.beat, [`ALL ${TH.beat} CHIMNEYS!`], { secs: CONFIG.timing.tryOver + 1, cls: 'gold' });
     } else {
-      const lines = [`CHIMNEY ${res.pillars}`, `BEST SO FAR: ${p.best}`];
-      if (R.triesLeft(p) > 0) lines.push(`TRIES LEFT: ${R.triesLeft(p)}`);
-      await screens.message('TRY OVER', lines, { secs: CONFIG.timing.tryOver });
+      await app.flight.playCrash(crashMessage(p, { pillars: res.pillars, prevBest }, CONFIG)); // C2-C4
+      music.lobby();
     }
     return;
   }
@@ -144,7 +145,7 @@ export function flightHooks(app) {
       sfx.crash();
       fx.burst(x, y, { count: 40, colors: ['#f4f7ff', '#ff3b4f', '#ffd23f'], speed: 500, size: 8 });
       fx.shake(10, 0.35);
-      setTimeout(() => app.endFlight({ pillars: n, beat: false }), 1000);
+      app.endFlight({ pillars: n, beat: false }); // the crash scene plays while the try is saved
     },
     onBeat: (n) => {
       music.stop(0.4);
