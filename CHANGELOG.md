@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.15.1 (2026-11-02): Santa's eyes: small, dark brown with a white shine and a pink blush below (no more blue anime eyes).
 - 0.15.0 (2026-11-02): Crash speech box stays longer for longer texts (C1-C4); cute pixel anime eyes on Santa; chunkier arcade pixels and fewer colour bands (textures kept); sad minor-key Jingle Bells music box under the crash scene (happy chorus when there are prizes).
 - 0.14.2 (2026-11-02): Test link: every publish adds the version to the file links, so browsers load the new game instead of old saved files.
 - 0.14.1 (2026-11-02): Keyboards without F keys: hold F + press 2 = F2 (start a paid game), hold F + press 9 = F9 (staff panel).

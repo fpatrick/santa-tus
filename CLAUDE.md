@@ -37,7 +37,7 @@ The person you work with writes simple English as a second language. Answer in s
 | Santa standing after a crash: poses ok / happy / sad | `src/santastand.js` |
 | Crash scene: tumble, hat flies, bag rolls, zoom, speech box (C1-C4) | `src/crash.js` |
 | What Santa says after a crash, and how long the box stays (C1-C4) | `src/messages.js` (words in `config.js` `text.crash`) |
-| Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures, anime eye | `src/pixelart.js` |
+| Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures, cute eye | `src/pixelart.js` |
 | Prize and wheel icons (pixel art maps) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
 | The wheel, click to spin, its spin (R7) | `src/wheel.js` |

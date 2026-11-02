@@ -99,18 +99,18 @@ export function texture(art, mask) {
 
 const clamp = (v) => Math.max(0, Math.min(255, Math.round(v)));
 
-// A cute anime eye, 4 x 5 art pixels: dark eye, big white shine at the top, blue iris at the bottom,
-// one lash pixel sticking out. (cx, cy) = centre in art pixels. right = lash on the right side.
-const EYE = ['KKKKL', 'WWKK.', 'WWKK.', 'KBBK.', '.BB..'];
-const EYE_RGB = { K: [26, 16, 64], W: [255, 255, 255], B: [59, 111, 216], L: [26, 10, 20] };
+// A small cute eye (2 x 3 art pixels): dark brown with one white shine pixel, and a pink blush
+// pixel pair below it. (cx, cy) = centre in art pixels. right = shine and blush lean to the right side.
+const EYE = ['KK', 'WK', 'KK', '..', 'PP'];
+const EYE_RGB = { K: [40, 22, 26], W: [255, 255, 255], P: [255, 128, 150] };
 export function stampEye(c, cx, cy, right = true) {
   const g = c.getContext('2d');
   g.setTransform(1, 0, 0, 1, 0, 0);
-  const x0 = Math.round(cx - 2);
-  const y0 = Math.round(cy - 2.5);
+  const x0 = Math.round(cx - 1);
+  const y0 = Math.round(cy - 1.5);
   EYE.forEach((row, y) => [...row].forEach((ch, x) => {
     if (ch === '.') return;
-    const px = right ? x : 3 - x;
+    const px = right ? x : 1 - x;
     g.fillStyle = `rgb(${EYE_RGB[ch].join(',')})`;
     g.fillRect(x0 + px, y0 + y, 1, 1);
   }));
