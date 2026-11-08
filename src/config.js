@@ -7,13 +7,14 @@ export const CONFIG = {
   // Keyboards without F keys: hold the letter, then press the number (F + 2 = F2, F + 9 = F9).
   keys: { staffCode: 'F2', staffPanel: 'F9', holdKey: 'f', staffCodeAlt: '2', staffPanelAlt: '9' },
 
-  // Market day. Times use the laptop clock (24 h).
-  event: { date: '2026-11-26', open: '09:00', drawTime: '12:45', lastGameWarn: '12:30', close: '13:00' },
+  // Market day. Times use the laptop clock (24 h). R26: the warning and the last payment only apply on `date`.
+  event: { date: '2026-11-26', open: '09:00', lastGameWarn: '12:30', lastPayment: '12:35', drawTime: '12:45', close: '13:00' },
 
-  // R1: prices. key = staff keyboard key on the payment screen.
+  // R1: prices. key = staff keyboard key on the payment screen (pressed after the payment is received).
   prices: [
-    { id: 'p2', amount: 2, tries: 1, key: '1', label: '€2 = 1 TRY', badge: '' },
-    { id: 'p5', amount: 5, tries: 3, key: '2', label: '€5 = 3 TRIES', badge: 'BEST VALUE' },
+    { id: 'p1', amount: 2.5, tries: 1, key: '1', label: '€2.50 = 1 TRY', badge: '' },
+    { id: 'p3', amount: 6.5, tries: 3, key: '2', label: '€6.50 = 3 TRIES', badge: '' },
+    { id: 'p5', amount: 10, tries: 5, key: '3', label: '€10 = 5 TRIES', badge: 'BEST VALUE' },
   ],
   freePlay: { tries: 1 }, // K2: a €0 payment after a technical problem
 
@@ -22,27 +23,55 @@ export const CONFIG = {
 
   // Chimney numbers that unlock prizes (R5, R6, R8, R20, R21).
   thresholds: { choice: 10, ticket: 20, legend: 30, mythic: 40, beat: 50 },
-  tickets: { p20: 0, p30: 3 }, // R6 (chimney 20 = a spin on the wheel, no ticket), R8
-  consolation: { on: false, item: 'STICKER' }, // R11 (proposal, off by default)
+  tickets: { p30: 3, swap: 2 }, // R8: draw tickets at chimney 30. R23: tickets instead of a 2nd sponsor prize
+  consolation: { on: false, item: 'SWEET' }, // R11 (proposal, off by default)
 
-  // R5: the pillar 10 choice. Set enabled: false to hide a tile (open decision 5).
+  // R5: the chimney 10 choice. Set enabled: false to hide a tile.
   choice: [
-    { id: 'cookie', label: 'COOKIE', icon: 'cookie', enabled: true },
-    { id: 'token', label: '3D TOKEN', icon: 'token', enabled: true },
-    { id: 'sticker', label: 'STICKER', icon: 'sticker', enabled: true },
+    { id: 'sweet', label: 'SWEET', icon: 'sweet', enabled: true },
     { id: 'free', label: 'FREE TRY', icon: 'free', enabled: true },
   ],
 
-  // R7: the wheel. odds must add up to 100. pieces = how many slices it shows
-  // (same total odds). tier 1-4 sets how big the effects and sounds are.
-  // short = text on the slice (\n = new line), icon = picture on the slice (wheelicons.js).
+  // R22: sponsor prizes. count = items at the start of the day (staff can change them in F9).
+  // pick = the winner picks one item that is left. sponsor = the name shown on the prize screens.
+  sponsors: {
+    gold: { name: 'GOLD', color: '#ffd23f', pick: false, give: 'GOLD: GIVE {item}',
+      items: [{ id: 'lidl20', label: 'LIDL €20 VOUCHER', sponsor: 'LIDL', count: 3 }] },
+    silver: { name: 'SILVER', title: 'DAY OUT FOR 4', color: '#d8e0f0', pick: true, give: 'SILVER: PLAYER PICKS CINEMA OR BOWLING',
+      items: [
+        { id: 'vue4', label: 'VUE CINEMA, 4 TICKETS', sponsor: 'VUE CINEMA', count: 1 },
+        { id: 'bowl4', label: 'FUNWORLD BOWLING, 4 GAMES', sponsor: 'FUNWORLD BOWLING', count: 1 },
+      ] },
+    bronze: { name: 'BRONZE', color: '#e0894a', pick: true, give: 'BRONZE: PLAYER PICKS FROM THE TABLE',
+      items: [
+        { id: 'shirtS', label: 'ROCKNSHOP SHIRT (S)', sponsor: 'ROCKNSHOP', count: 1 },
+        { id: 'shirtL', label: 'ROCKNSHOP SHIRT (L)', sponsor: 'ROCKNSHOP', count: 1 },
+        { id: 'shirtXL', label: 'ROCKNSHOP SHIRT (XL)', sponsor: 'ROCKNSHOP', count: 1 },
+        { id: 'works', label: 'THE WORKS GIFT', sponsor: 'THE WORKS', count: 2 },
+        { id: 'scents', label: 'SERENITY SCENTS GIFT', sponsor: 'SERENITY SCENTS', count: 3 },
+        { id: 'gem', label: 'VINTAGE GEM GIFT', sponsor: 'VINTAGE GEM', count: 1 },
+      ] },
+  },
+  drawOrder: ['bronze', 'silver', 'gold'], // R14: the items first (in this order), the jackpot last
+
+  // R7: the wheel. odds = base chance in % (must add up to 100). pieces = how many slices it shows.
+  // tier 1-4 sets how big the effects and sounds are. short = text on the slice (\n = new line), icon = wheelicons.js.
+  // R24: sponsor = the tier it gives (no items left: its chance goes to `fallbackTo`).
+  // The cash slice has odds 0: it turns on at `onWhenEmpty` % (taken from fallbackTo) when a tier is empty, max `maxWins` a day.
   wheel: {
     outcomes: [
-      { id: 'free', label: 'FREE TRY', short: 'FREE TRY', icon: 'free', odds: 40, pieces: 2, tier: 1, color: '#27c8ff', tickets: 0, cash: 0, freeTry: true },
-      { id: 't2', label: 'JACKPOT TICKETS +2', short: 'JACKPOT\nTICKETS +2', icon: 'jackpot', odds: 30, pieces: 2, tier: 2, color: '#3dff8b', tickets: 2, cash: 0 },
-      { id: 't5', label: 'JACKPOT TICKETS +5', short: 'JACKPOT\nTICKETS +5', icon: 'jackpotBig', odds: 28, pieces: 2, tier: 3, color: '#c35cff', tickets: 5, cash: 0 },
-      { id: 'cash', label: '€10 CASH', short: '€10', icon: 'cash', odds: 2, pieces: 1, tier: 4, color: '#ffd23f', tickets: 0, cash: 10 },
+      { id: 'jackpot', label: 'JACKPOT', short: 'JACKPOT', icon: 'coin', odds: 3, pieces: 1, tier: 4, color: '#ffd23f', jackpot: true },
+      { id: 'gold', label: 'GOLD PRIZE', short: 'GOLD\nPRIZE', icon: 'gold', odds: 4, pieces: 1, tier: 4, color: '#ffb81f', sponsor: 'gold' },
+      { id: 'silver', label: 'SILVER PRIZE', short: 'SILVER\nPRIZE', icon: 'silver', odds: 5, pieces: 1, tier: 3, color: '#b8c4dc', sponsor: 'silver' },
+      { id: 'bronze', label: 'BRONZE PRIZE', short: 'BRONZE\nPRIZE', icon: 'bronze', odds: 20, pieces: 2, tier: 3, color: '#d9733a', sponsor: 'bronze' },
+      { id: 'free', label: 'FREE TRY', short: 'FREE TRY', icon: 'free', odds: 30, pieces: 3, tier: 1, color: '#27c8ff', freeTry: true },
+      { id: 't2', label: '+2 TICKETS', short: '+2\nTICKETS', icon: 'ticket', odds: 38, pieces: 4, tier: 2, color: '#3dff8b', tickets: 2 },
+      { id: 'cash', label: '€10 CASH', short: '€10', icon: 'note', odds: 0, onWhenEmpty: 2, maxWins: 3, pieces: 1, tier: 4, color: '#ff5a6a', cash: 10 },
     ],
+    fallbackTo: 't2',
+    soldOut: 'SOLD OUT\n+2 TICKETS', // on an empty tier's slice
+    jackpotDone: 'DRAW ONLY\n+2 TICKETS', // on the jackpot slice after 2 wheel wins or after the draw
+    soldOutColor: '#5a5f78',
     tierNames: ['', 'NICE!', 'GREAT!', 'AMAZING!', 'LEGENDARY!'],
     spinSeconds: 5.5, // how long the spin lasts
     turns: 9, // full turns before it stops
@@ -52,8 +81,9 @@ export const CONFIG = {
     sound: { eighth: 0.065, rollSecs: 1.6, coins: [0, 8, 16, 26, 60], coinGap: 0.04 },
   },
 
-  // R13: jackpot = base + percent of all takings.
-  jackpot: { base: 10, percent: 10 },
+  // R13: the jackpot. start euro at the first paid game of the day, +step every stepMins nobody wins it, max euro.
+  // It runs only for the time from event.open to event.drawTime after the first paid game (R25, D10).
+  jackpot: { start: 10, step: 10, stepMins: 60, max: 30, wheelMaxWins: 2 },
 
   // L1, L2, S9
   // L1: a tie goes to the latest player. Rank tags before the name: LEGEND (passed 30), MYTHIC (passed 40),
@@ -125,9 +155,9 @@ export const CONFIG = {
     bestTry: 'BEST TRY COUNTS',
     charity: 'ALL PROFIT GOES TO PAEDIATRIC DIABETES, UHL',
     winTitle: 'WHAT YOU CAN WIN',
-    win10: 'SMALL PRIZE OR A FREE TRY',
+    win10: 'A SWEET OR A FREE TRY',
     win20: 'A SPIN ON THE WHEEL',
-    win30: '3 JACKPOT TICKETS + LEGEND',
+    win30: '3 DRAW TICKETS + LEGEND',
     win40: 'MYTHIC TAG',
     win50: 'GODLIKE TAG',
     oddsTitle: 'WHEEL ODDS',
@@ -135,15 +165,40 @@ export const CONFIG = {
     clickToFly: 'CLICK TO FLY',
     goals: { 10: 'PRIZE', 20: 'SPIN THE WHEEL', 30: 'LEGEND', 40: 'MYTHIC', 50: 'GODLIKE' },
     milestones: { 10: 'PRIZE UNLOCKED!', 20: 'SPIN THE WHEEL!', 30: 'LEGEND!', 40: 'MYTHIC!', 50: 'GODLIKE!' },
-    jackpot: 'JACKPOT UNTIL NOW',
-    ticket: 'JACKPOT TICKET', // used everywhere a ticket is named
-    tickets: 'JACKPOT TICKETS',
+    jackpot: 'JACKPOT',
+    // R13: {start}, {step}, {max} = euro, {draw} = draw time. jackpotNext: {step}, {mins}.
+    jackpotRule: 'STARTS AT {start}. GROWS {step} EVERY HOUR NOBODY WINS IT. MAX {max}. WIN IT ON THE WHEEL OR IN THE {draw} DRAW.',
+    jackpotNext: '+{step} IN {mins} MIN',
+    jackpotMax: 'MAX',
+    jackpotWaits: 'STARTS WITH THE FIRST GAME',
+    jackpotDrawn: 'DRAWN',
+    ticket: 'DRAW TICKET', // used everywhere a ticket is named
+    tickets: 'DRAW TICKETS',
+    sponsorsTitle: 'PRIZES FROM OUR SPONSORS',
+    sponsorsHow: 'WIN THEM ON THE WHEEL (PASS {n} CHIMNEYS) OR IN THE {draw} DRAW',
+    itemsLeft: 'ITEMS LEFT',
+    lastGames: 'LAST GAMES! THE DRAW IS AT {draw}',
+    lateTitle: 'NO NEW PAYMENTS',
+    late: 'THE LAST PAYMENT TIME ({time}) IS OVER.',
+    lateDraw: 'THE DRAW IS DONE: NEW TICKETS ARE NOT IN IT.',
+    alreadyWon: 'ALREADY WON A PRIZE TODAY?',
+    alreadyWonHint: 'Y = GIVE +{n} TICKETS INSTEAD · N = GIVE THE PRIZE',
+    soldOutNow: 'SOLD OUT: GIVE +{n} TICKETS INSTEAD',
+    wheelBack: 'YOUR WHEEL RESULT',
+    // S10 hand-over words. {n} = count, {TICKETS} = TICKET/TICKETS, {range} = "#0012-#0013", {amount} = euro.
+    giveTickets: 'GIVE {n} {TICKETS} {range}',
+    payJackpot: 'PAY JACKPOT {amount}',
+    payCash: 'PAY {amount}',
+    payAgain: 'CONFIRM AGAIN: {what} DONE?',
+    pickTitle: '{give}',
+    sponsorBy: 'SPONSOR: {name}',
     spinWon: 'YOU WON A SPIN ON THE WHEEL!',
     wheelTitle: 'SPIN THE WHEEL!',
     clickToSpin: 'CLICK TO SPIN!',
     freeRestart: 'FREE RESTART!',
     beat: 'YOU BEAT SANTA TUS!',
     noPrize: 'NO PRIZE THIS TIME. THANK YOU FOR PLAYING!',
+    staffPays: 'STAFF WILL GIVE IT AT THE END',
     testVersion: 'TEST VERSION: SCORES ARE KEPT IN THIS BROWSER ONLY',
     testMode: 'TEST MODE: PLAYS ARE NOT COUNTED',
     serverDown: 'SERVER DOWN: RESULTS KEPT IN BROWSER, WILL SEND LATER',
@@ -160,15 +215,15 @@ export const CONFIG = {
       triesClose: 'SO CLOSE! ONLY {gap} MORE TO {goal}. {tries} LEFT!',
       triesNewBest: 'NEW BEST: CHIMNEY {chimney}! {tries} TO GO EVEN HIGHER!',
       triesSafe: 'YOUR CHIMNEY 10 PRIZE IS SAFE! {tries} TO WIN EVEN MORE!',
-      first: 'BUT FIRST: {prizes}!',
       prizesTitle: ['GAME OVER... BUT YOU WON!', 'WHAT A RIDE!', 'HO HO HO! A WINNER!'],
       prizes: "LET'S GET YOUR PRIZES: {prizes}!",
-      ticketsOnly: 'KEEP YOUR {n} JACKPOT {TICKETS} SAFE. THE DRAW IS AT {draw}!',
+      ticketsOnly: 'KEEP YOUR {n} DRAW {TICKETS} SAFE. THE DRAW IS AT {draw}!',
+      waiting: 'WAITING FOR YOU AT THE END: {prizes}!',
       overTitle: ['GAME OVER', 'OH NO... GAME OVER', 'GAME OVER, MY FRIEND'],
       over: ['THE CHIMNEYS WON THIS TIME...', 'I LOST MY HAT AND MY PRESENTS!', 'THAT ROOF CAME OUT OF NOWHERE!'],
       overClose: 'SO CLOSE! CHIMNEY 10 WAS ONLY {gap} AWAY.',
       thanks: 'THANK YOU FOR HELPING KIDS WITH DIABETES AT UHL!',
-      prize: { spin: 'A SPIN ON THE WHEEL', legend: '3 JACKPOT TICKETS AND THE LEGEND TAG', mythic: 'THE MYTHIC TAG', choice: 'A PRIZE FROM CHIMNEY 10', consolation: 'A STICKER' },
+      prize: { spin: 'A SPIN ON THE WHEEL', legend: '3 DRAW TICKETS AND THE LEGEND TAG', mythic: 'THE MYTHIC TAG', choice: 'A SWEET OR A FREE TRY', consolation: 'A SWEET' },
       skip: 'CLICK TO CONTINUE',
     },
   },

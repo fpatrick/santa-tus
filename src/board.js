@@ -1,4 +1,4 @@
-// board.js: the right-hand panel (L2, L3): jackpot until now (rolls up when it grows), "draw at 12:45"
+// board.js: the right-hand panel (L2, L3): the jackpot (rolls up when it grows) with "+€10 IN 34 MIN" (R13), "draw at 12:45"
 // with a countdown, this player's prizes (shown until the next game starts), and the best players
 // with the LEGEND / MYTHIC / GODLIKE pixel badges (rankbadge.js) in front of the names.
 
@@ -14,6 +14,7 @@ export function createBoard(el) {
     <div class="jp">
       <div class="jp-label">${CONFIG.text.jackpot}</div>
       <div class="jp-value">€0</div>
+      <div class="jp-next"></div>
       <div class="jp-draw"></div>
     </div>
     <div class="me"></div>
@@ -23,9 +24,11 @@ export function createBoard(el) {
   const $ = (s) => el.querySelector(s);
   const b = { shown: null, target: 0, lastDraw: null, freshPid: null, key: '' };
 
-  // data = { top: [{pid, name, rank, best}], jackpot, lastDraw, freshPid, player }
+  // data = { top: [{pid, name, rank, best}], jackpot, jp (prizes.jackpotInfo), lastDraw, freshPid, player }
   b.update = (data) => {
     b.last = data;
+    const next = jpNext(data.jp);
+    if ($('.jp-next').textContent !== next) $('.jp-next').textContent = next;
     b.target = data.jackpot;
     if (b.shown === null) b.shown = data.jackpot;
     b.lastDraw = data.lastDraw;
@@ -77,6 +80,16 @@ export function createBoard(el) {
   };
 
   return b;
+}
+
+// R13: "+€10 IN 34 MIN", "MAX", "STARTS WITH THE FIRST GAME" or "DRAWN".
+function jpNext(jp) {
+  const T = CONFIG.text;
+  if (!jp) return '';
+  if (jp.closed) return T.jackpotDrawn;
+  if (!jp.started) return T.jackpotWaits;
+  if (jp.atMax) return T.jackpotMax;
+  return jp.nextMins ? T.jackpotNext.replace('{step}', fmtEuro(CONFIG.jackpot.step)).replace('{mins}', jp.nextMins) : '';
 }
 
 function drawLine(now, lastDraw) {

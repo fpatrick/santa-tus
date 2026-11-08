@@ -21,18 +21,17 @@ export function joinList(items) {
   return `${items.slice(0, -1).join(', ')} AND ${items[items.length - 1]}`;
 }
 
-// The prizes that come next for this payment (not given yet).
+// The prizes that come next for this payment (not given yet). They are all given at the end of the payment (R9),
+// in this order: chimney 10 choice, wheel, chimney 30.
 export function pendingPrizes(p, cfg, pillars) {
   const th = cfg.thresholds;
   const P = cfg.text.crash.prize;
   const out = [];
-  if (p.best >= th.ticket && !p.p20) out.push(P.spin);
+  if (p.best >= th.choice && !p.p10) out.push(P.choice);
+  if (p.best >= th.ticket && !p.wheel) out.push(P.spin);
   if (p.best >= th.legend && !p.p30) out.push(P.legend);
   if (pillars >= th.mythic && pillars === p.best) out.push(P.mythic);
-  if (R.triesLeft(p) <= 0) {
-    if (p.best >= th.choice && !p.p10) out.push(P.choice);
-    if (cfg.consolation.on && p.p10 === 'free' && p.best < th.ticket && !p.consolation) out.push(P.consolation);
-  }
+  if (R.triesLeft(p) <= 0 && cfg.consolation.on && p.p10 === 'free' && p.best < th.ticket && !p.consolation) out.push(P.consolation);
   return out;
 }
 
@@ -65,7 +64,7 @@ export function crashMessage(p, info, cfg, rnd = Math.random) {
     else if (p.best >= cfg.thresholds.choice && !p.p10) line = T.triesSafe;
     else line = pick(T.tries, rnd);
     const lines = [fill(line, v)];
-    if (prizes.length) lines.unshift(fill(T.first, v));
+    if (prizes.length) lines.unshift(fill(T.waiting, v));
     return { state: 'tries', mood: prizes.length ? 'happy' : 'ok', title: pick(T.triesTitle, rnd), lines };
   }
   if (prizes.length) {

@@ -29,8 +29,11 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | To change... | Edit |
 | --- | --- |
 | Prices, staff code, odds, prizes, level speeds and gaps, words on screen, draw time | `src/config.js` only |
-| Who gets which prize, in which order (R1-R21) | `src/rules.js` (+ test in `tests/rules.test.mjs`) |
-| Leaderboard, totals, jackpot, ticket numbers (L1, R12-R14) | `src/ledger.js` |
+| Who gets which prize, in which order (R1-R26) | `src/rules.js` (+ test in `tests/rules.test.mjs`) |
+| Sponsor stock, jackpot growth, live wheel odds and fallbacks, caps, draw order, end-of-day summary (R13, R14, R22-R26) | `src/prizes.js` (+ `tests/prizes.test.mjs`) |
+| Leaderboard, totals, ticket numbers (L1, R12) | `src/ledger.js` |
+| Hand-over: "already won?", sponsor item pick, money confirmed twice (R16, R22, R23) | `src/handover.js` |
+| Prove the prize math: 18 cases x 10,000 days (R25) | `scripts/simulate.js` (results in SPEC.md) |
 | One payment from start to hand-over (screen order) | `src/flow.js` |
 | Flying, gravity, collisions, HUD | `src/game.js` |
 | Course building and the fairness check (R4, T26) | `src/course.js` |
@@ -47,16 +50,17 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures, embroidery (logo on the bag), cute eye | `src/pixelart.js` |
 | Prize tile icons (pixel art maps; the wheel icons are in wheelicons.js) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
-| The wheel logic: click (lever pull) to spin, its spin, peg clicks, the payout (R7) | `src/wheel.js` |
+| The wheel logic: slices from the live odds, sold-out slices, click (lever pull) to spin, peg clicks, the payout (R7, R24) | `src/wheel.js` |
 | How the wheel looks: slot-machine sign, lever, wood wheel, labels, rim bulbs, pointer | `src/wheelart.js` |
-| Wheel prize icons in 16-bit HD pixel art (pot of gold, €10 notes, free try arrow) | `src/wheelicons.js` |
+| Prize icons in 16-bit HD pixel art: jackpot coin, gold / silver / bronze medals, draw tickets, €10 note, sweet, free try arrow | `src/wheelicons.js` |
 | Wheel sounds: Christmas jackpot machine (lever, fast clatter, Jingle Bells, coin payout) | `src/wheelsound.js` |
 | Particles, rays, coins, fireworks, shake, flash, `celebrate(tier)` | `src/fx.js` |
 | Sound effects | `src/sound.js` |
 | Songs as notes (Jingle Bells, Silent Night, sad crash tune) and their timing to the chimneys | `src/songs.js` |
 | Music player: instruments, modes (menu, lobby, flight), volume duck | `src/music.js` |
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
-| Staff panel and the draw (S11, S12, K2, K3) | `src/staff.js` |
+| Staff panel F9: summary, stock, jackpot fix, caps, odds (S11, K2) | `src/staff.js` (actions in `src/staffapi.js`) |
+| The draw, one prize at a time, NOT HERE (S12, K3, R14) | `src/draw.js` |
 | Right-hand panel: jackpot, player prize box, best players (L2) | `src/board.js` |
 | Rank badges LEGEND (gold) / MYTHIC (feral purple) / GODLIKE (red-blue divine) before names (R8, R20, R21) | `src/rankbadge.js` (rank = `rankOf()` in ledger.js) |
 | Saving: server or browser, offline queue (D1, D4, P1) | `src/store.js` |
@@ -73,9 +77,10 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 
 | Command | What | When |
 | --- | --- | --- |
-| `npm test` | 39 rule, ledger, course, music and crash-message tests (Node, about 3 s) | after every change |
+| `npm test` | 55 rule, prize, ledger, course, music and crash-message tests (Node, about 10 s) | after every change |
 | `npm run test:server` | 9 server tests (Python) | after a change to `server/` |
-| `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, about 40 s) | after a change to screens, flow, store, main |
+| `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, T36-T38, T46, T49, about 90 s) | after a change to screens, flow, store, main |
+| `node scripts/simulate.js` | 18 cases x 10,000 market days with the real rules (about 12 min; `--days 500` for a quick check) | after a change to prizes, odds, jackpot or stock |
 
 GitHub runs `npm test` and the server tests on every push before it publishes the test link.
 
@@ -109,5 +114,5 @@ https://fpatrick.github.io/santa-tus/ . On the test link there is no server, so 
 ## Saved events (short)
 
 Every action is one event `{id, n, ts, t, ...}` saved in order. `t` is one of:
-`pay`, `try`, `award` (kind `p10` | `p20` | `wheel` | `p30` | `consolation`), `nick`, `done`, `undo`, `hide`, `draw`, `staff`.
+`pay`, `try`, `award` (kind `p10` | `wheel` | `p30` | `swap` | `consolation`), `item`, `nick`, `done`, `undo`, `hide`, `draw`, `nothere`, `stock`, `jackpot`, `staff`.
 `ledger.js` turns the list of events into the state. Details: SPEC.md "Saved events".

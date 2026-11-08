@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.21.0 (2026-11-08): new prize system. Prices €2.50/1, €6.50/3, €10/5 tries (R1). All prizes at the end of the payment: SWEET or FREE TRY at 10, one wheel spin at 20, 3 draw tickets + LEGEND at 30 (R5-R10). Sponsor prizes in gold/silver/bronze tiers with stock, one per person per day (R22, R23). New wheel odds with sold-out fallbacks, a €10 CASH slice only when a tier is empty, caps (R7, R24). Jackpot €10 + €10 per hour, max €30, worst case €60 a day (R13, R25). Step-by-step 12:45 draw with NOT HERE (R14). 12:30 warning, 12:35 last payment (R26). F9: summary, stock, jackpot fix, caps, live odds. New icons, CSV, odds sheet, 18-case simulation.
 - 0.20.0 (2026-11-02): present stacks are packed with no gaps, with wide and tall (vertical) presents of different sizes and the bows on the front (R4). The town has a little gap between buildings and only 3 trees.
 - 0.19.3 (2026-11-02): the town is packed close together (trees stand in the gaps and overlap the buildings a little), and the castle flies the green and white Limerick flag people use.
 - 0.19.2 (2026-11-02): the Limerick town is further away (smaller, slower, the sky shows through), the trees are only dark shadows with softly fading lights, and King John's Castle flies the Limerick city flag (white castle on red).

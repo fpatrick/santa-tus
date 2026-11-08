@@ -3,7 +3,8 @@
 
 import { CONFIG } from './config.js';
 import { versionLabel, DISCLAIMER, STAGE } from './version.js';
-import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, plainName, rankOf, drawPool, lastActivePayment } from './ledger.js';
+import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, plainName, rankOf, lastActivePayment, fmtEuro } from './ledger.js';
+import { timeState, itemById } from './prizes.js';
 import * as R from './rules.js';
 import { createStore } from './store.js';
 import { createFlight } from './game.js';
@@ -11,11 +12,11 @@ import { createAttract } from './attract.js';
 import { createWheel } from './wheel.js';
 import { createBoard } from './board.js';
 import { initWorld } from './world.js';
-import { buildCsv } from './report.js';
 import * as fx from './fx.js';
-import { initSound, unlockSound, sfx, setMuted, isMuted, soundState } from './sound.js';
+import { initSound, unlockSound, sfx, isMuted, soundState } from './sound.js';
 import * as screens from './screens.js';
-import { staffPanel, drawScreen } from './staff.js';
+import { staffPanel } from './staff.js';
+import { staffApi } from './staffapi.js';
 import { runPayment, flightHooks } from './flow.js';
 import { music } from './music.js';
 
@@ -47,10 +48,9 @@ app.commit = async (name, body) => {
 app.refresh = () => {
   const s = app.ledgers.live;
   const t = totals(s, CONFIG);
-  const th = CONFIG.thresholds;
   app.board.update({
     top: leaderboard(s, CONFIG).map((p) => ({ pid: p.pid, name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
-    jackpot: t.jackpot, lastDraw: t.lastDraw, freshPid: app.freshPid,
+    jackpot: t.jackpotInfo.closed ? (t.lastDraw.amount || 0) : t.jackpot, jp: t.jackpotInfo, lastDraw: t.lastDraw, freshPid: app.freshPid,
     player: playerInfo(lastActivePayment(app.led ? app.led() : s)),
   });
   banners();
@@ -61,10 +61,15 @@ function playerInfo(p) {
   if (!p) return null;
   const tile = p.p10 && CONFIG.choice.find((c) => c.id === p.p10);
   const spin = p.wheel && CONFIG.wheel.outcomes.find((o) => o.id === p.wheel);
+  const item = p.item && itemById(CONFIG, p.item);
+  let spinText = spin ? spin.label : null;
+  if (p.jackpotWon) spinText = `${CONFIG.text.jackpot} ${fmtEuro(p.jackpotWon)}`;
+  if (item) spinText = `${spinText}: ${item.label}`;
+  if (p.swapped) spinText = `${spinText} (+${CONFIG.tickets.swap} TICKETS)`;
   return {
     name: displayName(p, CONFIG), best: p.best, open: p.status === 'open', triesLeft: Math.max(0, R.triesLeft(p)),
-    p10: tile ? (tile.id === 'free' ? 'FREE TRY (INSTEAD OF PRIZE)' : tile.label) : null,
-    spinEarned: p.p20 || p.best >= CONFIG.thresholds.ticket, spin: spin ? spin.label : null, tickets: p.tickets,
+    p10: tile ? (tile.id === 'free' ? 'FREE TRY (INSTEAD OF SWEET)' : tile.label) : null,
+    spinEarned: p.best >= CONFIG.thresholds.ticket, spin: spinText, tickets: p.tickets,
   };
 }
 
@@ -72,7 +77,7 @@ function attractInfo() {
   const s = app.ledgers.live;
   return {
     top: leaderboard(s, CONFIG).map((p) => ({ name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
-    jackpot: totals(s, CONFIG).jackpot, drawTime: CONFIG.event.drawTime,
+    jackpot: totals(s, CONFIG).jackpot, jp: totals(s, CONFIG).jackpotInfo, drawTime: CONFIG.event.drawTime,
   };
 }
 
@@ -81,6 +86,7 @@ function banners() {
   if (app.store.mode === 'browser') out.push(['test', CONFIG.text.testVersion]);
   if (app.test) out.push(['test', CONFIG.text.testMode]);
   if (app.store.mode === 'server' && !app.store.online) out.push(['down', `${CONFIG.text.serverDown} (${app.store.pendingCount()})`]);
+  if (timeState(CONFIG) && !app.test) out.push(['late', CONFIG.text.lastGames.replace('{draw}', CONFIG.event.drawTime)]); // R26
   $('banners').innerHTML = out.map(([c, t]) => `<div class="banner ${c}">${t}</div>`).join('');
 }
 
@@ -110,6 +116,8 @@ function loop(now) {
   fx.updateFx(dt);
   fx.renderFx();
   app.board.tick(dt);
+  app.secs = (app.secs || 0) + dt;
+  if (app.secs >= 1) { app.secs = 0; app.refresh(); } // the jackpot grows with time (R13), the 12:30 banner (R26)
   requestAnimationFrame(loop);
 }
 
@@ -118,10 +126,11 @@ async function startPaid() {
   if (app.flowActive || screens.isOpen()) return;
   if (!(await screens.staffCode())) return;
   const s = app.led();
-  const id = await screens.payment({ testMode: app.test, drawDone: s.draws.length > 0 });
-  if (!id) return;
+  const pick = await screens.payment({ testMode: app.test, late: timeState(CONFIG) === 'late', drawDone: totals(s, CONFIG).jackpotInfo.closed });
+  if (!pick) return;
   const name = app.ledgerName();
-  const ev = await app.commit(name, R.payBody(s, id, CONFIG));
+  if (pick.override) await app.commit(name, R.staffBody('late-payment', 'staff pressed O (R26)'));
+  const ev = await app.commit(name, R.payBody(s, pick.id, CONFIG));
   sfx.confirm();
   runPayment(app, name, s.byPid.get(ev.pid));
 }
@@ -130,56 +139,11 @@ async function openStaff() {
   if (screens.isOpen()) return;
   if (app.flowActive && !(app.scene === 'flight' && app.flight.state === 'ready')) return;
   if (!(await screens.staffCode('STAFF PANEL'))) return;
-  const r = await staffPanel(staffApi());
+  const r = await staffPanel(staffApi(app));
   if (r === 'free') {
     const name = app.ledgerName();
     runPayment(app, name, openPayment(app.led(name)));
   }
-}
-
-function staffApi() {
-  const name = () => app.ledgerName();
-  return {
-    info: () => ({ totals: totals(app.led(), CONFIG), nextTicket: app.led().nextTicket, mode: app.store.mode, test: app.test, muted: isMuted(), pending: app.store.pendingCount() }),
-    undoInfo: () => lastActivePayment(app.led()),
-    undo: async () => {
-      const body = R.undoBody(app.led());
-      if (!body) return null;
-      await app.commit(name(), body);
-      if (app.flowActive) app.endFlight({ aborted: true });
-      return body;
-    },
-    freePlay: async (reason) => {
-      if (app.flowActive || openPayment(app.led())) return false;
-      await app.commit(name(), R.payBody(app.led(), 'free', CONFIG, reason));
-      return true;
-    },
-    setTest: async (on) => {
-      if (app.flowActive) return false;
-      app.test = on;
-      await app.commit(name(), R.staffBody('test-mode', on ? 'on' : 'off'));
-      app.refresh();
-      return true;
-    },
-    backup: async () => { await app.commit(name(), R.staffBody('backup')); return app.store.backup(); },
-    exportCsv: async () => { await app.commit(name(), R.staffBody('export')); return app.store.exportCsv(name(), buildCsv(app.led(), CONFIG, name())); },
-    hide: async (pid) => { if (!app.led().byPid.get(pid)) return false; await app.commit(name(), { t: 'hide', pid }); return true; },
-    toggleSound: () => setMuted(!isMuted()),
-    askCode: () => screens.staffCode('CODE AGAIN FOR NEW DAY'),
-    newDay: async () => {
-      if (app.flowActive) return { ok: false };
-      await app.commit(name(), R.staffBody('new-day'));
-      const r = await app.store.newDay(name());
-      if (r && r.ok) app.ledgers[name()] = buildState([]);
-      app.refresh();
-      return r;
-    },
-    draw: async (reason) => {
-      const s = app.led();
-      const ev = await app.commit(name(), R.drawBody(s, CONFIG, R.secureRandom, reason));
-      await drawScreen(ev, drawPool(s));
-    },
-  };
 }
 
 // ---------- input ----------
@@ -275,7 +239,7 @@ async function boot() {
       app.test = n === 'test';
       banners();
       await screens.message('WELCOME BACK', [`PAYMENT #${p.pid} WAS NOT FINISHED.`, `TRIES LEFT: ${R.triesLeft(p)} · BEST: ${p.best}`], { secs: 3, cls: 'gold' });
-      runPayment(app, n, p);
+      runPayment(app, n, p, { resumed: true });
       break;
     }
   }

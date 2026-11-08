@@ -3,7 +3,9 @@
 
 import { CONFIG } from './config.js';
 import * as R from './rules.js';
-import { displayName, rankFor, rankOf, fmtTickets } from './ledger.js';
+import { rankFor, rankOf, fmtTickets, fmtEuro } from './ledger.js';
+import { liveOdds } from './prizes.js';
+import { runHandover } from './handover.js';
 import * as screens from './screens.js';
 import * as fx from './fx.js';
 import { sfx } from './sound.js';
@@ -14,10 +16,12 @@ const TH = CONFIG.thresholds;
 const MILESTONE_TIER = { 10: 1, 20: 2, 30: 3, 40: 3, 50: 4 };
 
 // app: { led(name), commit(name, body), flight, wheel, setScene(name), refresh() }
-export async function runPayment(app, name, p) {
+// resumed = true after a crash or reload (D3, D11): a saved wheel result is shown again, never spun again.
+export async function runPayment(app, name, p, { resumed = false } = {}) {
   app.flowActive = true;
   music.lobby(); // soft Jingle Bells under every screen of the payment
   try {
+    if (resumed && p.wheel) await screens.message(CONFIG.text.wheelBack, wheelLines(p), { secs: CONFIG.timing.awardShow + 1, cls: 'gold' });
     for (let guard = 0; guard < 200; guard++) {
       if (p.status !== 'open') return; // undone from the staff panel
       const s = app.led(name);
@@ -28,8 +32,7 @@ export async function runPayment(app, name, p) {
       else if (st.step === 'choice') await pickChoice(app, name, p, st.freeTile);
       else if (st.step === 'nick') await askNick(app, name, p);
       else if (st.step === 'handover') {
-        await screens.handover({ items: R.handoverItems(p, CONFIG), pid: p.pid, best: p.best, name: displayName(p, CONFIG) });
-        await app.commit(name, R.doneBody(p));
+        await runHandover(app, name, p);
         app.freshPid = p.pid;
         app.refresh();
         return; // R17: straight back to the title screen
@@ -74,15 +77,10 @@ async function flyOnce(app, name, p) {
   }
 }
 
-// R6, R8, R11: shows the award after it is saved.
+// R8, R11: shows the award after it is saved.
 async function giveAward(app, name, p, kind) {
   const ev = await app.commit(name, R.awardBody(kind, p, app.led(name), CONFIG));
-  if (kind === 'p20') {
-    sfx.milestone(2);
-    fx.celebrate(2, 640, 560, '', '#ffd23f');
-    const lines = ev.tickets.length ? [`${CONFIG.text.tickets}: ${fmtTickets(ev.tickets)}`] : [];
-    await screens.message(CONFIG.text.spinWon, lines, { secs: CONFIG.timing.awardShow, cls: 'gold' });
-  } else if (kind === 'p30') {
+  if (kind === 'p30') {
     sfx.milestone(3);
     fx.celebrate(3, 640, 560, '', '#ffd23f');
     await screens.message('LEGEND!', [`+${ev.tickets.length} ${CONFIG.text.tickets}: ${fmtTickets(ev.tickets)}`, 'LEGEND TAG ON YOUR NAME'], { secs: CONFIG.timing.awardShow + 1, cls: 'gold' });
@@ -92,19 +90,38 @@ async function giveAward(app, name, p, kind) {
   }
 }
 
-// R7: the wheel shows, the player clicks, then the result is picked and saved, then it spins.
+// What the player won on the wheel, in words (the reveal message and "YOUR WHEEL RESULT" after a crash).
+function wheelLines(p) {
+  const o = CONFIG.wheel.outcomes.find((x) => x.id === p.wheel);
+  const lines = [o ? o.label : p.wheel];
+  if (p.jackpotWon) lines[0] = `${CONFIG.text.jackpot} ${fmtEuro(p.jackpotWon)}!`;
+  if (p.sponsor) {
+    const T = CONFIG.sponsors[p.sponsor];
+    lines.push(T.title || T.items.map((it) => it.label).join(' / '));
+    lines.push(`FROM ${[...new Set(T.items.map((it) => it.sponsor))].join(', ')}`);
+  }
+  if (o && o.tickets) lines.push(`+${o.tickets} ${CONFIG.text.tickets}`);
+  if (p.jackpotWon || p.cash || p.sponsor) lines.push(CONFIG.text.staffPays);
+  if (o && o.freeTry) lines.push('ONE MORE TRY!');
+  return lines;
+}
+
+// R6, R7, R24: the wheel shows the live odds; the player clicks, then the result is picked from the live odds
+// (worked out again from the saved log at that moment) and SAVED, then it spins (D1).
 async function spinWheel(app, name, p) {
+  sfx.milestone(2);
+  fx.celebrate(2, 640, 560, '', '#ffd23f');
+  await screens.message(CONFIG.text.spinWon, [], { secs: CONFIG.timing.awardShow, cls: 'gold' });
+  app.wheel.setLayout(liveOdds(app.led(name), CONFIG));
   app.setScene('wheel');
   await app.wheel.waitForClick();
   const ev = await app.commit(name, R.wheelBody(p, app.led(name), CONFIG));
-  const outcome = CONFIG.wheel.outcomes.find((o) => o.id === ev.result);
+  const o = CONFIG.wheel.outcomes.find((x) => x.id === ev.result);
+  const outcome = ev.jackpot ? { ...o, label: `${o.label} ${fmtEuro(ev.jackpot)}` } : o;
   music.duck(true);
   await app.wheel.spin(outcome);
-  const lines = [];
-  if (ev.tickets.length) lines.push(`${CONFIG.text.tickets}: ${fmtTickets(ev.tickets)}`);
-  if (ev.cash) lines.push('STAFF WILL PAY YOU AT THE END');
-  if (ev.freeTry) lines.push('ONE MORE TRY!');
-  await screens.message(outcome.label, lines, { secs: CONFIG.timing.awardShow, cls: 'gold' });
+  const lines = wheelLines(p);
+  await screens.message(lines[0], lines.slice(1), { secs: CONFIG.timing.awardShow + (p.sponsor || p.jackpotWon ? 1.5 : 0), cls: 'gold' });
   music.duck(false);
 }
 

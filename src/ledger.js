@@ -1,6 +1,8 @@
 // ledger.js: turns the saved events into the current state: payments, leaderboard, totals.
 // Pure code: no drawing, no saving, no config changes. Used by the game, the board and the tests.
-// Event types are listed in SPEC.md "Saved events".
+// Event types are listed in SPEC.md "Saved events". Stock, jackpot, odds and the draw are in prizes.js.
+
+import { jackpotInfo, ticketPool } from './prizes.js';
 
 export function emptyState() {
   return { events: [], payments: [], byPid: new Map(), nextTicket: 1, draws: [], staff: [], lastN: 0 };
@@ -10,8 +12,8 @@ function newPayment(ev) {
   return {
     pid: ev.pid, ts: ev.ts, kind: ev.kind, amount: ev.amount || 0, triesBought: ev.tries, reason: ev.reason || '',
     status: 'open', tries: [], extraTries: 0, freeFrom: [], best: 0, bestTs: 0,
-    p10: null, p20: false, wheel: null, p30: false, consolation: false,
-    tickets: [], cash: 0, nick: null, nickAsked: false, hidden: false, legendTs: 0, doneTs: 0,
+    p10: null, p20: false, wheel: null, p30: false, consolation: false, sponsor: null, item: null, swapped: false,
+    tickets: [], cash: 0, jackpotWon: 0, nick: null, nickAsked: false, hidden: false, legendTs: 0, doneTs: 0,
   };
 }
 
@@ -41,6 +43,9 @@ export function applyEvent(s, ev) {
       p.nick = ev.nick || null;
       p.nickAsked = true;
       break;
+    case 'item':
+      if (p) p.item = ev.item;
+      break;
     case 'done':
       if (p && p.status === 'open') { p.status = 'done'; p.doneTs = ev.ts; }
       break;
@@ -51,7 +56,7 @@ export function applyEvent(s, ev) {
       if (p) p.hidden = true;
       break;
     case 'draw':
-      s.draws.push({ ts: ev.ts, ticket: ev.ticket, jackpot: ev.jackpot, count: ev.count, reason: ev.reason || '' });
+      s.draws.push(ev);
       break;
     case 'staff':
       s.staff.push({ ts: ev.ts, action: ev.action, detail: ev.detail || '' });
@@ -67,9 +72,11 @@ function applyAward(s, p, ev) {
   p.tickets.push(...tickets);
   if (tickets.length) s.nextTicket = Math.max(s.nextTicket, Math.max(...tickets) + 1);
   p.cash += ev.cash || 0;
+  p.jackpotWon += ev.jackpot || 0;
   if (ev.freeTry) { p.extraTries += 1; p.freeFrom.push(ev.kind); }
   if (ev.kind === 'p20') p.p20 = true;
-  if (ev.kind === 'wheel') p.wheel = ev.result;
+  if (ev.kind === 'wheel') { p.wheel = ev.result; p.sponsor = ev.sponsor || null; }
+  if (ev.kind === 'swap') p.swapped = true;
   if (ev.kind === 'p30') { p.p30 = true; p.legendTs = ev.ts; }
   if (ev.kind === 'p10') p.p10 = ev.choice;
   if (ev.kind === 'consolation') p.consolation = true;
@@ -143,10 +150,10 @@ export function legends(s, cfg) {
     .sort((a, b) => a.legendTs - b.legendTs);
 }
 
-// R13 + K2 totals. Undone payments never count.
-export function totals(s, cfg) {
+// K2 totals. Undone payments never count. The jackpot comes from prizes.js (R13).
+export function totals(s, cfg, now = Date.now()) {
   const live = s.payments.filter((p) => p.status !== 'undone');
-  const t = { count: {}, moneyIn: 0, cashOut: 0, tickets: 0, payments: live.length, undone: s.payments.length - live.length };
+  const t = { count: {}, moneyIn: 0, cashOut: 0, jackpotOut: 0, tickets: 0, payments: live.length, undone: s.payments.length - live.length };
   for (const pr of cfg.prices) t.count[pr.id] = 0;
   t.count.free = 0;
   for (const p of live) {
@@ -155,21 +162,17 @@ export function totals(s, cfg) {
     t.cashOut += p.cash;
     t.tickets += p.tickets.length;
   }
-  t.jackpot = jackpot(t.moneyIn, cfg);
-  t.lastDraw = s.draws.length ? s.draws[s.draws.length - 1] : null;
+  t.moneyIn = Math.round(t.moneyIn * 100) / 100;
+  const jp = jackpotInfo(s, cfg, now);
+  t.jackpot = jp.value;
+  t.jackpotInfo = jp;
+  t.jackpotOut = jp.paid;
+  t.lastDraw = jp.drawn;
   return t;
 }
 
-export function jackpot(moneyIn, cfg) {
-  return Math.round((cfg.jackpot.base + (moneyIn * cfg.jackpot.percent) / 100) * 100) / 100;
-}
-
 // R14: tickets that can win. Tickets of undone payments are out.
-export function drawPool(s) {
-  const pool = [];
-  for (const p of s.payments) if (p.status !== 'undone') pool.push(...p.tickets);
-  return pool.sort((a, b) => a - b);
-}
+export const drawPool = ticketPool;
 
 export function fmtEuro(v) {
   return Number.isInteger(v) ? `€${v}` : `€${v.toFixed(2)}`;
@@ -177,6 +180,14 @@ export function fmtEuro(v) {
 
 export function fmtTicket(n) {
   return `#${String(n).padStart(4, '0')}`;
+}
+
+// R12: "#0012-#0013" for one run of numbers (the GIVE screens).
+export function fmtRange(list) {
+  const nums = [...list].sort((a, b) => a - b);
+  if (!nums.length) return '';
+  const run = nums.every((v, i) => i === 0 || v === nums[i - 1] + 1);
+  return run && nums.length > 1 ? `${fmtTicket(nums[0])}-${fmtTicket(nums[nums.length - 1])}` : fmtTickets(nums);
 }
 
 // Groups ticket numbers into ranges: [41,42,43,50] -> "#0041 TO #0043, #0050"

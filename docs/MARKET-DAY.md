@@ -15,7 +15,7 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 | Spare laptop with the game installed | If the main laptop fails |
 | Pre-numbered cloakroom ticket book | Draw tickets, from #0001 |
 | Printed A4 odds sheet (`print/odds.html`, Ctrl+P) | R18 |
-| Prizes and a cash float | Small prizes, €10 notes for wheel cash, the jackpot |
+| Prizes and a money float | Sweets, the sponsor prizes on the prize table (gold, silver, bronze), €10 notes for the jackpot (max €30 a win) and the €10 CASH slice |
 | Speakers (optional) | Sound |
 
 ## Morning check (8:30-9:00)
@@ -30,8 +30,8 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 ## During the day
 
 - **No F keys on the keyboard?** Hold **F** and press **2** (= F2), or hold **F** and press **9** (= F9).
-- **New player:** take the cash, press **F2**, type the code, press **1** (€2) or **2** (€5).
-- **Hand-over:** give exactly what the screen lists (prize, ticket numbers, cash), then press **Enter**.
+- **New player:** when the payment is received, press **F2**, type the code, press **1** (€2.50 = 1 try), **2** (€6.50 = 3 tries) or **3** (€10 = 5 tries). After 12:35 the game asks for **O** first (saved in the log).
+- **Hand-over:** give exactly what the screen lists (sweet, sponsor item, ticket numbers, money), then press **Enter**. Sponsor prize: the player picks, you press the item's number. "ALREADY WON A PRIZE TODAY?": you decide, **Y** = 2 tickets instead. Money ("PAY JACKPOT €20", "PAY €10"): pay, then **Enter** twice.
 - **Wrong button?** At "CLICK TO FLY", press **F9**, code, **1** (Undo), **Enter**.
 - **Technical problem, player lost a try?** Staff panel **2** (Free play), type the reason, Enter.
 - **Rude nickname?** Staff panel **6**, type the payment number (shown on the hand-over screen), Enter.
@@ -40,10 +40,10 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 
 ## End of day
 
-1. **12:45**: staff panel **8** (Start the draw), Enter. Read the winning ticket number out loud. If the winner is not there, decide the time limit; a second draw needs a reason.
+1. **12:45**: staff panel **8** (Draw). One prize at a time: bronze items, silver, gold, then the jackpot last. **Enter** draws; read the number out loud. Winner here: **Enter** (next prize). Not here: **N**, type the reason, the same prize is drawn again. **Esc** stops; **8** goes on later.
 2. Staff panel **5** (Export CSV) and **4** (Backup now).
 3. Copy `Documents\SantaTUS-data` to the second USB stick.
-4. Count the cash against "Money in" and "Cash prizes paid" in the staff panel. Give the CSV to the Financial Manager.
+4. Count the money against "Total taken", "Jackpot paid" and "€10 cash paid" in the staff panel. Count the sponsor items left against the panel. Give the CSV to the Financial Manager.
 
 ## Move to the spare laptop (D6, target: under 10 minutes)
 

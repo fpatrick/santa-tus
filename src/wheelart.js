@@ -3,7 +3,7 @@
 // lever on the side that the player "pulls" with the click. wheel.js has the logic and calls these.
 
 import { iconCanvas } from './sprites.js';
-import { wheelIcon } from './wheelicons.js';
+import { wheelIcon, WHEEL_ICONS } from './wheelicons.js';
 import { outlined } from './game.js';
 
 export const CX = 640;
@@ -205,7 +205,7 @@ function face(w) {
       });
       g.translate(RAD * 0.47, 0);
       g.rotate(Math.PI / 2);
-      const ic = p.o.icon in ICON_NAMES ? wheelIcon(p.o.icon, 3) : iconCanvas(p.o.icon, 6);
+      const ic = WHEEL_ICONS.includes(p.o.icon) ? wheelIcon(p.o.icon, 3) : iconCanvas(p.o.icon, 6);
       g.drawImage(ic, -ic.width / 2, -ic.height / 2);
     }
     g.restore();
@@ -213,7 +213,6 @@ function face(w) {
   w.face = c;
   return c;
 }
-const ICON_NAMES = { jackpot: 1, jackpotBig: 1, cash: 1, free: 1 };
 
 function label(g, text, x, y, size) {
   g.font = `${size}px "Press Start 2P"`;

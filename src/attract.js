@@ -1,4 +1,5 @@
-// attract.js: the arcade title screen (S1, A1-A6). Four scenes of about 8 seconds, then a demo
+// attract.js: the arcade title screen (S1, A1-A6). Five scenes of about 8 seconds (logo, prices, prizes + odds,
+// sponsor prizes, jackpot + best players), then a demo
 // where Santa flies by himself and crashes. Every word comes from CONFIG.text (A6).
 
 import { CONFIG } from './config.js';
@@ -6,13 +7,14 @@ import { drawSky, drawSnow, drawRoof } from './world.js';
 import { drawSanta } from './sprites.js';
 import { createFlight, outlined } from './game.js';
 import { fmtEuro } from './ledger.js';
+import { wheelIcon } from './wheelicons.js';
 import { rankBadge, RANK_COLOR } from './rankbadge.js';
 
 const T = CONFIG.text;
 const W = 1280;
-const SCENES = ['logo', 'prices', 'prizes', 'board', 'demo'];
+const SCENES = ['logo', 'prices', 'prizes', 'sponsors', 'board', 'demo'];
 
-// getInfo() returns { top: [{name, rank, best}], jackpot, drawTime }
+// getInfo() returns { top: [{name, rank, best}], jackpot, jp (prizes.jackpotInfo), drawTime }
 export function createAttract(getInfo) {
   const a = { t: 0, i: 0, sceneT: 0, demo: createFlight({}) };
 
@@ -42,6 +44,7 @@ export function createAttract(getInfo) {
       if (name === 'logo') logo(ctx, a);
       if (name === 'prices') prices(ctx, a);
       if (name === 'prizes') prizes(ctx);
+      if (name === 'sponsors') sponsors(ctx);
       if (name === 'board') board(ctx, getInfo());
       drawSnow(ctx, dt, 2);
     }
@@ -81,19 +84,21 @@ function logo(ctx, a) {
 
 function prices(ctx, a) {
   outlined(ctx, 'PRICES', W / 2, 150, 48, '#27c8ff', 'center');
-  const [p1, p2] = CONFIG.prices;
-  priceBox(ctx, 160, 230, 960, 170, p1.label, '#3dff8b');
-  priceBox(ctx, 160, 450, 960, 170, p2.label, '#ffd23f');
-  if (p2.badge) {
-    ctx.save();
-    ctx.translate(1080, 455);
-    ctx.rotate(0.12 + Math.sin(a.t * 3) * 0.04);
-    ctx.fillStyle = '#ff3b4f';
-    ctx.fillRect(-150, -40, 300, 80);
-    outlined(ctx, p2.badge, 0, 12, 30, '#f4f7ff', 'center');
-    ctx.restore();
-  }
-  outlined(ctx, T.bestTry, W / 2, 740, 44, '#f4f7ff', 'center');
+  const colors = ['#3dff8b', '#27c8ff', '#ffd23f'];
+  CONFIG.prices.forEach((p, k) => {
+    const y = 210 + k * 170;
+    priceBox(ctx, 160, y, 960, 140, p.label, colors[k % colors.length]);
+    if (p.badge) {
+      ctx.save();
+      ctx.translate(1080, y + 5);
+      ctx.rotate(0.12 + Math.sin(a.t * 3) * 0.04);
+      ctx.fillStyle = '#ff3b4f';
+      ctx.fillRect(-150, -40, 300, 80);
+      outlined(ctx, p.badge, 0, 12, 30, '#f4f7ff', 'center');
+      ctx.restore();
+    }
+  });
+  outlined(ctx, T.bestTry, W / 2, 790, 44, '#f4f7ff', 'center');
 }
 
 function priceBox(ctx, x, y, w, h, text, color) {
@@ -104,30 +109,73 @@ function priceBox(ctx, x, y, w, h, text, color) {
   ctx.strokeStyle = color;
   ctx.lineWidth = 8;
   ctx.strokeRect(x, y, w, h);
-  outlined(ctx, text, x + w / 2, y + h / 2 + 32, 72, color, 'center');
+  outlined(ctx, text, x + w / 2, y + h / 2 + 26, 54, color, 'center');
 }
 
 function prizes(ctx) {
-  outlined(ctx, T.winTitle, W / 2, 130, 44, '#27c8ff', 'center');
+  outlined(ctx, T.winTitle, W / 2, 120, 44, '#27c8ff', 'center');
   const rows = [[10, T.win10, '#3dff8b'], [20, T.win20, '#27c8ff'], [30, T.win30, '#ffd23f'], [40, T.win40, '#c35cff'], [50, T.win50, '#ff6b7a']];
   rows.forEach(([n, text, color], k) => {
-    const y = 190 + k * 92;
-    outlined(ctx, String(n), 150, y + 40, 60, color, 'center');
-    outlined(ctx, text, 250, y + 30, 32, '#f4f7ff', 'left');
+    const y = 170 + k * 84;
+    outlined(ctx, String(n), 150, y + 40, 56, color, 'center');
+    outlined(ctx, text, 250, y + 30, 30, '#f4f7ff', 'left');
   });
-  outlined(ctx, T.oddsTitle, W / 2, 690, 32, '#ffd23f', 'center');
-  ctx.font = '40px VT323';
+  outlined(ctx, T.oddsTitle, W / 2, 640, 30, '#ffd23f', 'center');
+  ctx.font = '38px VT323';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#f4f7ff';
-  const odds = CONFIG.wheel.outcomes.map((o) => `${o.label} ${o.odds}%`);
-  ctx.fillText(odds.slice(0, 2).join('   '), W / 2, 750);
-  ctx.fillText(odds.slice(2).join('   '), W / 2, 795);
+  const odds = CONFIG.wheel.outcomes.filter((o) => o.odds > 0).map((o) => `${o.label} ${o.odds}%`);
+  ctx.fillText(odds.slice(0, 3).join('   '), W / 2, 690);
+  ctx.fillText(odds.slice(3).join('   '), W / 2, 732);
+  ctx.font = '32px VT323';
+  ctx.fillStyle = '#ffd23f';
+  wrap(ctx, jackpotRule(), W / 2, 790, 1100, 36);
+}
+
+// R13: the jackpot rule in words, numbers from config.
+export function jackpotRule() {
+  const J = CONFIG.jackpot;
+  return T.jackpotRule.replace('{start}', fmtEuro(J.start)).replace('{step}', fmtEuro(J.step)).replace('{max}', fmtEuro(J.max)).replace('{draw}', CONFIG.event.drawTime);
+}
+
+function wrap(ctx, text, x, y, maxW, lineH) {
+  const words = text.split(' ');
+  let line = '';
+  for (const w of words) {
+    const t = line ? `${line} ${w}` : w;
+    if (ctx.measureText(t).width > maxW && line) { ctx.fillText(line, x, y); y += lineH; line = w; } else line = t;
+  }
+  if (line) ctx.fillText(line, x, y);
+}
+
+// R22: the sponsor prizes, gold first (text only; logos later).
+function sponsors(ctx) {
+  outlined(ctx, T.sponsorsTitle, W / 2, 120, 40, '#ffd23f', 'center');
+  let y = 170;
+  for (const tier of ['gold', 'silver', 'bronze']) {
+    const t = CONFIG.sponsors[tier];
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(wheelIcon(tier, 3), 120, y - 6);
+    outlined(ctx, `${t.name}${t.title ? `: ${t.title}` : ''}`, 250, y + 40, 32, t.color, 'left');
+    ctx.font = '34px VT323';
+    ctx.textAlign = 'left';
+    ctx.fillStyle = '#f4f7ff';
+    const names = t.items.map((it) => it.label);
+    wrap(ctx, names.join(' · '), 250, y + 84, 940, 36);
+    y += tier === 'bronze' ? 0 : 200;
+  }
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#c9d2f0';
+  ctx.font = '34px VT323';
+  ctx.fillText(T.sponsorsHow.replace('{n}', CONFIG.thresholds.ticket).replace('{draw}', CONFIG.event.drawTime), W / 2, 820);
 }
 
 function board(ctx, info) {
   outlined(ctx, T.jackpot, W / 2, 110, 36, '#ffd23f', 'center');
   outlined(ctx, fmtEuro(info.jackpot), W / 2, 220, 96, '#fff6c8', 'center');
-  outlined(ctx, `${T.drawAt} ${info.drawTime}`, W / 2, 280, 32, '#f4f7ff', 'center');
+  const jp = info.jp;
+  const next = jp && jp.started && !jp.closed ? (jp.atMax ? T.jackpotMax : jp.nextMins ? T.jackpotNext.replace('{step}', fmtEuro(CONFIG.jackpot.step)).replace('{mins}', jp.nextMins) : '') : '';
+  outlined(ctx, `${next ? `${next} · ` : ''}${T.drawAt} ${info.drawTime}`, W / 2, 280, 32, '#f4f7ff', 'center');
   outlined(ctx, CONFIG.board.title, W / 2, 360, 36, '#3dff8b', 'center');
   ctx.font = '40px VT323';
   if (!info.top.length) {

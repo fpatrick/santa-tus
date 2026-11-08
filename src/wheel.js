@@ -1,36 +1,67 @@
-// wheel.js: the R7 wheel, dressed as a Christmas slot machine (the look is in wheelart.js). It waits for
-// the player to click (the lever is pulled), then flow.js picks the result with a secure random number and
-// SAVES it, then spin() shows it. Effects and sounds grow with the tier of the result (1-4).
+// wheel.js: the R7 wheel, dressed as a Christmas slot machine (the look is in wheelart.js). flow.js gives it the
+// live odds (setLayout, R24): slice sizes = live odds, an empty tier shows "SOLD OUT - +2 TICKETS", the €10 CASH
+// slice appears when a tier is empty. It waits for the player to click (the lever is pulled), then flow.js picks
+// the result with a secure random number and SAVES it, then spin() shows it. Effects grow with the tier (1-4).
 
 import { CONFIG } from './config.js';
 import * as fx from './fx.js';
 import { wheelSfx } from './wheelsound.js';
 import { drawSky, drawSnow } from './world.js';
 import { outlined } from './game.js';
+import { fmtEuro } from './ledger.js';
 import { CX, CY, RAD, TAU, spotlight, drawBuildRays, drawMarquee, drawLever, drawWheel } from './wheelart.js';
 
 const POINTER = -Math.PI / 2;
 const REVEAL_SECS = [0, 2.4, 3, 3.8, 6];
 const T = CONFIG.text;
 
-// Slices: each outcome is cut into `pieces` slices, mixed around the wheel. Sizes follow the odds.
-export function buildPieces(cfg = CONFIG) {
-  const left = cfg.wheel.outcomes.map((o) => ({ o, n: o.pieces }));
+// Slices: each outcome with base odds is cut into `pieces` slices, mixed around the wheel. live = liveOdds()
+// from prizes.js: a slice whose outcome has no chance now shows the sold-out text and gives the fallback, and
+// the cash slice is cut out of the first fallback slice. So the area of each result is exactly its live chance.
+export function buildPieces(cfg = CONFIG, live = null) {
+  const W = cfg.wheel;
+  const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : null;
+  const base = W.outcomes.filter((o) => o.odds > 0);
+  const left = base.map((o) => ({ o, n: o.pieces }));
   const order = [];
   while (left.some((l) => l.n > 0)) {
     for (const l of left) if (l.n > 0) { order.push(l.o); l.n -= 1; }
   }
+  const cashO = W.outcomes.find((o) => o.cash);
+  const cashSize = L && cashO ? (TAU * L[cashO.id]) / 100 : 0;
+  let cut = cashSize > 0;
   let a = 0;
-  return order.map((o, k) => {
-    const size = (TAU * o.odds) / 100 / o.pieces;
-    const p = { o, start: a, size, k };
+  const out = [];
+  order.forEach((o, k) => {
+    const off = L && L[o.id] === 0;
+    const show = off ? { ...o, short: o.jackpot ? W.jackpotDone : W.soldOut, icon: 'ticket', color: W.soldOutColor, off: true } : o;
+    const gives = off ? W.fallbackTo : o.id;
+    let size = (TAU * o.odds) / 100 / o.pieces;
+    if (cut && o.id === W.fallbackTo) {
+      size -= cashSize;
+      out.push({ o: show, gives, start: a, size, k });
+      a += size;
+      out.push({ o: cashO, gives: cashO.id, start: a, size: cashSize, k: k + 1 });
+      a += cashSize;
+      cut = false;
+      return;
+    }
+    out.push({ o: show, gives, start: a, size, k });
     a += size;
-    return p;
   });
+  return out;
 }
 
 export function createWheel() {
   const w = { pieces: buildPieces(), angle: 0, t: 0, phase: 'idle', from: 0, to: 0, dur: 1, result: null, under: -1, peg: -1, lever: -1, flap: 0, resolve: null, revealT: 0, bulbs: 0, face: null, readyT: 0 };
+
+  // R24: the live odds and stock for this spin. The painted face is drawn again only when the slices change.
+  w.setLayout = (live) => {
+    w.live = live;
+    const pieces = buildPieces(CONFIG, live);
+    const key = pieces.map((p) => `${p.gives}:${p.o.short}:${p.size.toFixed(4)}`).join('|');
+    if (key !== w.layoutKey) { w.layoutKey = key; w.pieces = pieces; w.face = null; }
+  };
 
   // Shows the wheel and waits for the player's click (S7).
   w.waitForClick = () => new Promise((resolve) => {
@@ -52,8 +83,10 @@ export function createWheel() {
 
   // Spins to a random spot inside a slice of `outcome`. Resolves when the reveal is over.
   w.spin = (outcome) => new Promise((resolve) => {
-    const mine = w.pieces.filter((p) => p.o.id === outcome.id);
-    const piece = mine[Math.floor(Math.random() * mine.length)];
+    const mine = w.pieces.filter((p) => p.gives === outcome.id); // any slice that gives this result, by its size
+    let r = Math.random() * mine.reduce((acc, p) => acc + p.size, 0);
+    let piece = mine[mine.length - 1];
+    for (const p of mine) { if (r < p.size) { piece = p; break; } r -= p.size; }
     const spot = piece.start + piece.size * (0.2 + Math.random() * 0.6);
     const base = ((POINTER - spot) % TAU + TAU) % TAU;
     w.from = w.angle % TAU;
@@ -115,10 +148,7 @@ export function createWheel() {
       outlined(ctx, T.clickToSpin, 0, 6, 44, '#ffd23f', 'center');
       ctx.restore();
     }
-    ctx.font = '30px VT323';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#c9d2f0';
-    ctx.fillText(CONFIG.wheel.outcomes.map((o) => `${o.label} ${o.odds}%`).join('   '), CX, 1030);
+    drawOddsLine(ctx, w.live);
   };
 
   return w;
@@ -146,4 +176,29 @@ function leverPull(t) {
   if (t < 0) return 0;
   if (t < 0.15) return t / 0.15;
   return Math.max(0, 1 - (t - 0.15) / 0.5);
+}
+
+// S7, R24: the live odds and the items left per tier, always on the wheel screen.
+function drawOddsLine(ctx, live) {
+  const W = CONFIG.wheel;
+  const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : Object.fromEntries(W.outcomes.map((o) => [o.id, o.odds]));
+  const parts = W.outcomes.filter((o) => o.odds > 0 || L[o.id] > 0)
+    .map((o) => (L[o.id] > 0 ? `${o.label} ${L[o.id]}%` : `${o.label} ${(o.jackpot ? W.jackpotDone : W.soldOut).split('\n')[0]}`));
+  ctx.fillStyle = 'rgba(7, 5, 28, 0.78)';
+  ctx.fillRect(20, 968, 1240, 104);
+  const line = parts.join(' · ');
+  let size = 30;
+  do { ctx.font = `${size}px VT323`; size -= 1; } while (ctx.measureText(line).width > 1220 && size > 20);
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f4f7ff';
+  ctx.fillText(line, CX, 1004);
+  if (live) {
+    const t = live.tiers;
+    const tiers = Object.entries(CONFIG.sponsors).map(([k, T]) => `${T.name} ${t[k].free}`).join(' · ');
+    const jp = live.jackpot.closed ? '' : `   ·   ${CONFIG.text.jackpot} ${fmtEuro(live.jackpot.value)}`;
+    ctx.font = '30px VT323';
+    ctx.textAlign = 'right'; // the BETA badge sits bottom-left
+    ctx.fillStyle = '#ffd23f';
+    ctx.fillText(`${CONFIG.text.itemsLeft}: ${tiers}${jp}`, 1250, 1046);
+  }
 }
