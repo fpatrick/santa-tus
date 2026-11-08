@@ -50,10 +50,10 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Pixel-art converter: hard edges, fewer colours, outline, 3x5 font, cloth textures, embroidery (logo on the bag), cute eye | `src/pixelart.js` |
 | Prize tile icons (pixel art maps; the wheel icons are in wheelicons.js) | `src/sprites.js` |
 | Title screen scenes (A1-A6) | `src/attract.js` |
-| The wheel logic: slices from the live odds, sold-out slices, click (lever pull) to spin, peg clicks, the payout (R7, R24) | `src/wheel.js` |
-| How the wheel looks: slot-machine sign, lever, wood wheel, labels, rim bulbs, pointer | `src/wheelart.js` |
+| The wheel logic: slices from the live odds, sold-out slices, click to spin, peg clicks, the payout (R7, R24) | `src/wheel.js` |
+| How the wheel looks, in 16-bit pixel art (3 px per art pixel): slot-machine sign, painted face with brass dividers, pixel labels and icons, wooden rim with bulbs, hub, pointer | `src/wheelart.js` |
 | Prize icons in 16-bit HD pixel art: jackpot coin, gold / silver / bronze medals, draw tickets, €10 note, sweet, free try arrow | `src/wheelicons.js` |
-| Wheel sounds: Christmas jackpot machine (lever, fast clatter, Jingle Bells, coin payout) | `src/wheelsound.js` |
+| Wheel sounds: Christmas jackpot machine (click "ka-chunk", fast clatter, Jingle Bells, coin payout) | `src/wheelsound.js` |
 | Particles, rays, coins, fireworks, shake, flash, `celebrate(tier)` | `src/fx.js` |
 | Sound effects | `src/sound.js` |
 | Songs as notes (Jingle Bells, Silent Night, sad crash tune) and their timing to the chimneys | `src/songs.js` |

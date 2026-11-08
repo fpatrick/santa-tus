@@ -1,6 +1,6 @@
 // wheel.js: the R7 wheel, dressed as a Christmas slot machine (the look is in wheelart.js). flow.js gives it the
 // live odds (setLayout, R24): slice sizes = live odds, an empty tier shows "SOLD OUT - +2 TICKETS", the €10 CASH
-// slice appears when a tier is empty. It waits for the player to click (the lever is pulled), then flow.js picks
+// slice appears when a tier is empty. It waits for the player to click, then flow.js picks
 // the result with a secure random number and SAVES it, then spin() shows it. Effects grow with the tier (1-4).
 
 import { CONFIG } from './config.js';
@@ -9,7 +9,7 @@ import { wheelSfx } from './wheelsound.js';
 import { drawSky, drawSnow } from './world.js';
 import { outlined } from './game.js';
 import { fmtEuro } from './ledger.js';
-import { CX, CY, RAD, TAU, spotlight, drawBuildRays, drawMarquee, drawLever, drawWheel } from './wheelart.js';
+import { CX, CY, RAD, TAU, spotlight, drawBuildRays, drawMarquee, drawWheel } from './wheelart.js';
 
 const POINTER = -Math.PI / 2;
 const REVEAL_SECS = [0, 2.4, 3, 3.8, 6];
@@ -53,7 +53,7 @@ export function buildPieces(cfg = CONFIG, live = null) {
 }
 
 export function createWheel() {
-  const w = { pieces: buildPieces(), angle: 0, t: 0, phase: 'idle', from: 0, to: 0, dur: 1, result: null, under: -1, peg: -1, lever: -1, flap: 0, resolve: null, revealT: 0, bulbs: 0, face: null, readyT: 0 };
+  const w = { pieces: buildPieces(), angle: 0, t: 0, phase: 'idle', from: 0, to: 0, dur: 1, result: null, under: -1, peg: -1, flap: 0, resolve: null, revealT: 0, bulbs: 0, face: null, readyT: 0 };
 
   // R24: the live odds and stock for this spin. The painted face is drawn again only when the slices change.
   w.setLayout = (live) => {
@@ -75,7 +75,6 @@ export function createWheel() {
     const r = w.onClick;
     w.onClick = null;
     w.phase = 'windup';
-    w.lever = 0; // the lever is pulled down, then springs back
     wheelSfx.pull();
     fx.ring(CX, CY, { color: '#ffd23f', max: RAD + 80, life: 0.5 });
     r();
@@ -103,7 +102,6 @@ export function createWheel() {
   w.update = (dt) => {
     w.flap = Math.max(0, w.flap - dt * 8);
     w.bulbs += dt;
-    if (w.lever >= 0) w.lever += dt;
     if (w.phase === 'ready') {
       w.readyT += dt;
       w.angle += dt * 0.25; // turns slowly while it waits
@@ -135,7 +133,6 @@ export function createWheel() {
     spotlight(ctx, w, t);
     drawBuildRays(ctx, w, t);
     drawWheel(ctx, w, CONFIG.wheel.pegs);
-    drawLever(ctx, leverPull(w.lever));
     drawSnow(ctx, dt, 2);
     drawMarquee(ctx, w, T.wheelTitle);
     if (w.phase === 'ready') {
@@ -169,13 +166,6 @@ function reveal(w) {
   fx.popText(CONFIG.wheel.tierNames[o.tier], { x: CX, y: CY - 80, size: 34 + o.tier * 6, color: '#f4f7ff', life, rise: 0, plate: true });
   fx.popText(o.label, { x: CX, y: CY + 20, size: o.label.length > 12 ? 40 + o.tier * 4 : 50 + o.tier * 8, color: o.color, life, rise: 0, plate: true, pulse: o.tier >= 4 });
   if (o.tickets || o.cash) fx.burst(CX, CY, { count: (o.tickets || 10) * 10, kind: 'coin', colors: ['#ffd23f'], speed: 900, size: 22, gravity: 900, life: 2 }); // a coin payout
-}
-
-// How far down the lever is: pulled fast, then it springs back up (seconds since the click).
-function leverPull(t) {
-  if (t < 0) return 0;
-  if (t < 0.15) return t / 0.15;
-  return Math.max(0, 1 - (t - 0.15) / 0.5);
 }
 
 // S7, R24: the live odds and the items left per tier, always on the wheel screen.
