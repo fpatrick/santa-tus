@@ -115,7 +115,7 @@ export const CONFIG = {
   // A5: background music (src/songs.js). volume is relative to the sound volume.
   // Title screen: Silent Night. Flying: Jingle Bells, timed to end at chimney 30, then it loops a key higher.
   // menuBpm/lobbyBpm/loopBpm = beats per minute. wheelDuck = music volume while the wheel spins.
-  music: { on: true, volume: 0.5, menuBpm: 84, lobbyBpm: 132, loopBpm: 250, crashBpm: 96, wheelDuck: 0.25 },
+  music: { on: true, volume: 0.5, menuBpm: 156, lobbyBpm: 132, loopBpm: 250, crashBpm: 96, wheelDuck: 0.25 },
 
   // FX safety (A4): never more than 3 flashes per second.
   fx: { maxFlashPerSec: 3, particleCap: 900 },

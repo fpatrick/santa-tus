@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.21.2 (2026-11-11): A5 new title song: quick, catchy Christmas-waltz Silent Night (hook, bells with fills, key change with the band).
 - 0.21.1 (2026-11-08): the wheel is redrawn in 16-bit pixel art (painted face in colour bands, brass dividers and pegs, pixel words and icons, wooden rim, hub and pointer) and is a little bigger; the lever is gone (S7).
 - 0.21.0 (2026-11-08): new prize system. Prices €2.50/1, €6.50/3, €10/5 tries (R1). All prizes at the end of the payment: SWEET or FREE TRY at 10, one wheel spin at 20, 3 draw tickets + LEGEND at 30 (R5-R10). Sponsor prizes in gold/silver/bronze tiers with stock, one per person per day (R22, R23). New wheel odds with sold-out fallbacks, a €10 CASH slice only when a tier is empty, caps (R7, R24). Jackpot €10 + €10 per hour, max €30, worst case €60 a day (R13, R25). Step-by-step 12:45 draw with NOT HERE (R14). 12:30 warning, 12:35 last payment (R26). F9: summary, stock, jackpot fix, caps, live odds. New icons, CSV, odds sheet, 18-case simulation.
 - 0.20.0 (2026-11-02): present stacks are packed with no gaps, with wide and tall (vertical) presents of different sizes and the bows on the front (R4). The town has a little gap between buildings and only 3 trees.

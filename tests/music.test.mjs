@@ -15,7 +15,19 @@ test('A5: every part has full bars, known notes and known chords', () => {
     for (const n of notes) assert.ok(n.note === 'R' || midi(n.note) != null, `${s.name}: bad note ${n.note}`);
     for (const c of s.chords.split(/\s+/)) assert.ok(chordTones(c).length >= 3, `${s.name}: bad chord ${c}`);
     assert.ok(sectionEvents(s).length > 0);
+    if (!s.counter) continue;
+    const fill = parseNotes(s.counter);
+    assert.equal(fill.reduce((a, n) => a + n.beats, 0), sectionBeats(s), `${s.name}: fills must have full bars`);
+    for (const n of fill) assert.ok(n.note === 'R' || midi(n.note) != null, `${s.name}: bad fill note ${n.note}`);
   }
+});
+
+test('A5: the title song is lively and catches attention (fast, drums, about a minute a loop)', () => {
+  const beats = MENU.sections.reduce((a, s) => a + sectionBeats(s), 0);
+  const secs = (beats / CONFIG.music.menuBpm) * 60;
+  assert.ok(CONFIG.music.menuBpm >= 140, `title tempo ${CONFIG.music.menuBpm} bpm is too slow`);
+  assert.ok(secs > 45 && secs < 80, `title loop is ${secs.toFixed(1)} s`);
+  for (const s of MENU.sections) assert.ok(sectionEvents(s).some((e) => e.kind === 'kick'), `${s.name}: no beat`);
 });
 
 test('T31: Jingle Bells runs from the first click to chimney 30 without looping, then loops', () => {

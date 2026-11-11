@@ -113,6 +113,7 @@ function play(a, ev, t, dur, out, lead) {
   switch (ev.kind) {
     case 'lead': return lead === 'bell' ? bell(a, ev.m, t, dur, 0.16 * v, out) : osc(a, 'square', ev.m, t, dur * 0.9, 0.075 * v, out);
     case 'lead2': return osc(a, 'square', ev.m, t, dur * 0.85, 0.03 * v, out);
+    case 'counter': return bell(a, ev.m, t, dur, 0.08 * v, out);
     case 'bass': return osc(a, 'triangle', ev.m, t, Math.min(dur, 0.6), 0.26 * v, out);
     case 'arp': return lead === 'bell' ? bell(a, ev.m, t, dur, 0.05 * v, out) : osc(a, 'triangle', ev.m, t, dur * 0.7, 0.05 * v, out);
     case 'kick': return kick(a, t, 0.35 * v, out);
