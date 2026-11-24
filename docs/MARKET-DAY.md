@@ -1,6 +1,6 @@
 # Market day: 26 November 2026
 
-Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
+Stall open 9:00-13:00. Set-up from 8:30. 12:45 last-games warning, 12:50 last payment (top score locks), draw at 13:00.
 
 ## Bring
 
@@ -30,7 +30,7 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 ## During the day
 
 - **No F keys on the keyboard?** Hold **F** and press **2** (= F2), or hold **F** and press **9** (= F9).
-- **New player:** when the payment is received, press **F2**, type the code, press **1** (€2.50 = 1 try), **2** (€6.50 = 3 tries) or **3** (€10 = 5 tries + 1 bonus draw entry). Draw entries cannot be bought: keys 4-6 do nothing. After 12:35 the game asks for **O** first (saved in the log).
+- **New player:** when the payment is received, press **F2**, type the code, press **1** (€2.50 = 1 try), **2** (€6.50 = 3 tries) or **3** (€10 = 5 tries + 1 bonus draw entry). Draw entries cannot be bought: keys 4-6 do nothing. After 12:50 the game asks for **O** first (saved in the log).
 - **Draw entries:** all draw entries of a payment come on ONE screen at the end ("YOUR DRAW ENTRIES"). The hand-over says "WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0014": write that on one paper card and give it to the player. A game play is always a TRY, never an entry.
 - **Hand-over:** give exactly what the screen lists (sweet, sponsor item, draw entry numbers, money), then press **Enter**. Sponsor prize: the player picks, you press the item's number (or **N** = +2 draw entries instead, if the player wants none of the items left; the item stays in stock). "ALREADY WON A PRIZE TODAY?": you decide, **Y** = +2 draw entries instead. "PAY €10" (only when all sponsor prizes are gone): pay, then **Enter** twice.
 - **Cash fallback (manual):** it is OFF at the start. Staff panel **C** can switch the €10 CASH slice ON only when GOLD, SILVER and BRONZE are ALL sold out (the button is grey before that). If you add stock back (**S**), it switches OFF by itself. Everything is saved in the log.
@@ -42,7 +42,7 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 
 ## End of day
 
-1. **12:45**: staff panel **8** (Draw). One prize at a time: bronze items, silver, gold (no jackpot this year). **Enter** draws; read the number out loud. Winner here: **Enter** (next prize). Not here: **N**, type the reason, the same prize is drawn again. **Esc** stops; **8** goes on later.
+1. **13:00**: staff panel **8** (Draw). First the top score prize: the screen shows the best player up to 12:50 (One4all €20 voucher); give it and press **Enter** (= GIVEN). Then one prize at a time: bronze items, silver, gold, then GTA 6 for PS5 last. **Enter** draws; read the number out loud. The winner gets the item drawn (no picking). Winner here: **Enter** (GIVEN). Not here: **N** (NOT HERE - DRAW AGAIN), type the reason, the same prize is drawn again. Winners write name and phone on their card, so you can call them first. **Esc** stops; **8** goes on later. Top score only: staff panel **T**.
 2. Staff panel **5** (Export CSV) and **4** (Backup now).
 3. Copy `Documents\SantaTUS-data` to the second USB stick.
 4. Count the money against "Total taken" and "€10 cash paid" in the staff panel. Count the sponsor items left against the panel. Give the CSV to the Financial Manager.

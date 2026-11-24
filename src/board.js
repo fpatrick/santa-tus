@@ -1,4 +1,5 @@
-// board.js: the right-hand panel (L2, L3): the jackpot (rolls up when it grows) with "+€10 IN 34 MIN" (R13), "draw at 12:45"
+// board.js: the right-hand panel (L2, L3): "13:00 DRAW: WIN GTA 6" and the R30 lines (draw entries in the box, items left,
+// the top score prize R29), the jackpot only when it is on (R13), "draw at 13:00"
 // with a countdown, this player's prizes (shown until the next game starts), and the best players
 // with the LEGEND / MYTHIC / GODLIKE pixel badges (rankbadge.js) in front of the names.
 
@@ -16,6 +17,7 @@ export function createBoard(el) {
       <div class="jp-value">€0</div>
       <div class="jp-next"></div>
       <div class="jp-draw"></div>
+      <div class="engage"></div>
     </div>
     <div class="me"></div>
     <div class="board-title">${CONFIG.board.title}</div>
@@ -24,7 +26,7 @@ export function createBoard(el) {
   const $ = (s) => el.querySelector(s);
   const b = { shown: null, target: 0, lastDraw: null, freshPid: null, key: '' };
   if (!CONFIG.JACKPOT_ENABLED) { // R13 off: no jackpot anywhere, the box shows the prize draw time only
-    $('.jp-label').textContent = CONFIG.text.prizeDraw;
+    $('.jp-label').textContent = CONFIG.text.drawHeadline.replace('{draw}', CONFIG.event.drawTime);
     $('.jp-value').style.display = 'none';
     $('.jp-next').style.display = 'none';
   }
@@ -38,6 +40,8 @@ export function createBoard(el) {
     if (b.shown === null) b.shown = data.jackpot;
     b.lastDraw = data.lastDraw;
     $('.me').innerHTML = playerBox(data.player);
+    const eng = engageLines(data.engage);
+    if ($('.engage').innerHTML !== eng) $('.engage').innerHTML = eng;
     const key = JSON.stringify([data.top, data.freshPid]);
     if (key === b.key) return;
     b.key = key;
@@ -115,6 +119,20 @@ function drawLine(now, lastDraw) {
   const ss = left % 60;
   const pad = (v) => String(v).padStart(2, '0');
   return `${CONFIG.text.drawAt} <b>${at}</b> · IN ${hh ? `${hh}:` : ''}${pad(mm)}:${pad(ss)}`;
+}
+
+// R30: the engagement lines. e = { entries, x (X IN 10), tiers: [{ name, free }], top: { name, best } | null, given }
+export function engageLines(e) {
+  if (!e) return '';
+  const T = CONFIG.text;
+  const line = (t, cls = '') => `<div class="${cls}">${esc(t)}</div>`;
+  const tiers = e.tiers.map((t) => (t.free ? T.tierLeft.replace('{tier}', t.name).replace('{n}', t.free) : `${t.name}: ${T.tierSoldOut}`)).join(' · ');
+  const top = T.topScoreRule.replace('{time}', CONFIG.event.lastPayment);
+  return line(T.inTheBox.replace('{n}', e.entries), 'big')
+    + line(T.entryAt10.replace('{n}', CONFIG.thresholds.choice))
+    + (e.x > 0 ? line(T.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', e.x)) : '')
+    + line(tiers, 'tiers')
+    + line(top, 'top') + (e.top ? line(e.given ? T.topScoreDone.replace('{name}', e.top.name).replace('{best}', e.top.best) : T.topScoreNow.replace('{name}', e.top.name).replace('{best}', e.top.best), 'top') : '');
 }
 
 // This player's prizes, so nobody can say they did not get one. Stays until the next game starts.

@@ -4,11 +4,12 @@
 import { CONFIG } from './config.js';
 import * as R from './rules.js';
 import { buildState, openPayment, totals, lastActivePayment } from './ledger.js';
-import { liveOdds, summary, drawState, allItems, stock, timeState, cashSwitch } from './prizes.js';
+import { liveOdds, summary, drawState, allItems, stock, timeState, cashSwitch, topScore } from './prizes.js';
 import { buildCsv } from './report.js';
+import { plainName } from './ledger.js';
 import * as screens from './screens.js';
 import { setMuted, isMuted } from './sound.js';
-import { runDraw } from './draw.js';
+import { runDraw, runTopScore } from './draw.js';
 import { fmtEuro } from './ledger.js';
 
 export function staffApi(app) {
@@ -26,6 +27,7 @@ export function staffApi(app) {
         totals: totals(s, CONFIG), summary: summary(s, CONFIG), live: liveOdds(s, CONFIG), draw: drawState(s, CONFIG),
         items: allItems(CONFIG).map((it) => ({ ...it, left: st.left[it.id] })),
         nextTicket: s.nextTicket, mode: app.store.mode, test: app.test, muted: isMuted(), pending: app.store.pendingCount(),
+        top: (() => { const t = topScore(s, CONFIG); return { ...t, name: t.p ? plainName(t.p, CONFIG) : '' }; })(), // R29
       };
     },
     undoInfo: () => lastActivePayment(app.led()),
@@ -82,6 +84,19 @@ export function staffApi(app) {
         const ev = await app.commit(name(), R.jackpotFixBody(app.led(), CONFIG, value));
         return `Jackpot: ${fmtEuro(ev.before)} -> ${fmtEuro(ev.value)}. Saved.`;
       } catch (err) { return err.message; }
+    },
+    // R29: the top score prize (Enter = GIVEN) and its undo (logged with a reason).
+    giveTop: async () => {
+      if (app.flowActive || openPayment(app.led())) return 'Finish the open payment first.';
+      try {
+        const done = await runTopScore(app, name());
+        app.refresh();
+        return done ? 'Top score prize: saved.' : 'Top score prize: not given yet.';
+      } catch (err) { return err.message; }
+    },
+    undoTop: async (reason) => {
+      await app.commit(name(), R.undoTopBody(reason));
+      return 'The top score prize is undone (saved with the reason). Press T to give it again.';
     },
     undoDraw: async (reason) => {
       await app.commit(name(), R.undoDrawBody(reason));

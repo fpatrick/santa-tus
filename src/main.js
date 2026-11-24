@@ -4,7 +4,7 @@
 import { CONFIG } from './config.js';
 import { versionLabel, DISCLAIMER, STAGE } from './version.js';
 import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, plainName, rankOf, lastActivePayment, fmtEuro } from './ledger.js';
-import { timeState, itemById, drawState, liveOdds } from './prizes.js';
+import { timeState, itemById, drawState, liveOdds, inTen, topScore, topGiven, ticketPool } from './prizes.js';
 import * as R from './rules.js';
 import { createStore } from './store.js';
 import { createFlight } from './game.js';
@@ -52,9 +52,23 @@ app.refresh = () => {
     top: leaderboard(s, CONFIG).map((p) => ({ pid: p.pid, name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
     jackpot: !CONFIG.JACKPOT_ENABLED ? 0 : t.jackpotInfo.closed ? (t.lastDraw.amount || 0) : t.jackpot, jp: t.jackpotInfo, lastDraw: t.lastDraw, freshPid: app.freshPid,
     player: playerInfo(lastActivePayment(app.led ? app.led() : s)),
+    engage: engageInfo(s),
   });
   banners();
 };
+
+// R30, R29: the live engagement lines (always from the live ledger: test mode never counts).
+function engageInfo(s) {
+  const live = liveOdds(s, CONFIG);
+  const t = topScore(s, CONFIG);
+  const g = topGiven(s);
+  const p = g ? s.byPid.get(g.pid) : t.p;
+  return {
+    entries: ticketPool(s).length, x: inTen(live),
+    tiers: Object.entries(CONFIG.sponsors).map(([k, T]) => ({ name: T.name, free: live.tiers[k].free })),
+    top: p ? { name: plainName(p, CONFIG), best: p.best } : null, given: !!g,
+  };
+}
 
 // The player box on the panel: what this payment already got (shown until the next game starts).
 function playerInfo(p) {
@@ -80,6 +94,7 @@ function attractInfo() {
     top: leaderboard(s, CONFIG).map((p) => ({ name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
     jackpot: totals(s, CONFIG).jackpot, jp: totals(s, CONFIG).jackpotInfo, drawTime: CONFIG.event.drawTime,
     live: liveOdds(s, CONFIG), // R7, R24: the title screen shows the live odds and "X IN 10"
+    engage: engageInfo(s), // R30
   };
 }
 

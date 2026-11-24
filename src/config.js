@@ -8,7 +8,8 @@ export const CONFIG = {
   keys: { staffCode: 'F2', staffPanel: 'F9', holdKey: 'f', staffCodeAlt: '2', staffPanelAlt: '9' },
 
   // Market day. Times use the laptop clock (24 h). R26: the warning and the last payment only apply on `date`.
-  event: { date: '2026-11-26', open: '09:00', lastGameWarn: '12:30', lastPayment: '12:35', drawTime: '12:45', close: '13:00' },
+  // lastPayment is also when the top score prize locks (R29). The draw is started by staff, never automatic (R14).
+  event: { date: '2026-11-26', open: '09:00', lastGameWarn: '12:45', lastPayment: '12:50', drawTime: '13:00', close: '13:00' },
 
   // R1: prices. key = staff keyboard key on the payment screen (pressed after the payment is received).
   // Draw entries come ONLY from playing: nobody can buy them. bonus = draw entries that come with the price (key 3).
@@ -42,7 +43,7 @@ export const CONFIG = {
         { id: 'lidl20', label: 'LIDL €20 VOUCHER', sponsor: 'LIDL', count: 3 },
         { id: 'one4all20', label: 'ONE4ALL €20 VOUCHER', sponsor: 'ONE4ALL', count: 1 },
       ] },
-    silver: { name: 'SILVER', title: 'GAMING OR DAY OUT', color: '#d8e0f0', pick: true, give: 'SILVER: PLAYER PICKS GAMING OR A DAY OUT',
+    silver: { name: 'SILVER', title: 'GAMING OR DAY OUT', color: '#d8e0f0', pick: true, give: 'SILVER: PLAYER PICKS GAMING VOUCHER OR DAY OUT',
       items: [
         { id: 'ps10', label: 'PLAYSTATION €10 VOUCHER', sponsor: 'PLAYSTATION', count: 4 },
         { id: 'xbox10', label: 'XBOX €10 VOUCHER', sponsor: 'XBOX', count: 2 },
@@ -58,7 +59,15 @@ export const CONFIG = {
         { id: 'spray', label: 'SERENITY SCENTS ROOM SPRAY', sponsor: 'SERENITY SCENTS', count: 1 },
       ] },
   },
-  // R22: RESERVED, never on the wheel (part 2): GTA 6 for PS5 (12:45 draw), One4all €20 x1 (top score prize).
+  // R22, R29, R14: RESERVED items, never on the wheel and never picked at a hand-over. use 'top' = the top score prize,
+  // use 'draw' = drawn LAST in the 13:00 draw (after bronze, silver, gold). Staff can edit the counts in F9 (S).
+  reserved: {
+    name: 'RESERVED',
+    items: [
+      { id: 'gta6', label: 'GTA 6 FOR PS5', sponsor: 'GTA 6', count: 1, use: 'draw' },
+      { id: 'one4allTop', label: 'ONE4ALL €20 VOUCHER', sponsor: 'ONE4ALL', count: 1, use: 'top' },
+    ],
+  },
   drawOrder: ['bronze', 'silver', 'gold'], // R14: the items first (in this order), the jackpot last
 
   // R7: the wheel. odds = base chance in % (must add up to 100). pieces = how many slices it shows.
@@ -197,6 +206,20 @@ export const CONFIG = {
     prizeDraw: 'PRIZE DRAW',
     ticketsTitle: 'YOUR DRAW ENTRIES',
     spinChance: 'REACH CHIMNEY {n} = SPIN: {x} IN 10 WIN A PRIZE', // R7: x = live gold + silver + bronze chance / 10
+    // R30 engagement lines (title screen and leaderboard). {draw} = draw time, {n} = a number, {tier} = tier name.
+    drawHeadline: '{draw} DRAW: WIN GTA 6',
+    entryAt10: 'REACH CHIMNEY {n} = 1 DRAW ENTRY',
+    inTheBox: 'DRAW ENTRIES IN THE BOX: {n}',
+    tierLeft: '{tier}: {n} LEFT',
+    // R29 top score prize. {time} = last payment time, {name}, {best}.
+    topScoreRule: 'TOP SCORE AT {time} WINS €20 ONE4ALL',
+    topScoreNow: 'NOW: {name} · {best}',
+    topScoreGive: 'TOP SCORE: {name} · CHIMNEY {best}',
+    topScoreItem: 'GIVE: ONE4ALL €20 VOUCHER',
+    topScoreDone: 'TOP SCORE PRIZE GIVEN: {name} · {best}',
+    drawGiven: 'GIVEN',
+    drawNotHere: 'NOT HERE - DRAW AGAIN',
+    drawCardNote: 'WINNERS WRITE NAME AND PHONE ON THEIR CARD: CALL THEM FIRST.',
     onlyOne: 'ONLY 1 LEFT!',
     tierSoldOut: 'SOLD OUT',
     declineItem: 'N = +2 DRAW ENTRIES INSTEAD', // R28: the player wants no item left in this tier

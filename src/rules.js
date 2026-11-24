@@ -3,7 +3,7 @@
 // returns event bodies. The caller saves them (store.js) before it shows anything (D1).
 
 import { rankFor, lastActivePayment } from './ledger.js';
-import { liveOdds, stock, jackpotInfo, drawState, itemById, cashSwitch } from './prizes.js';
+import { liveOdds, stock, jackpotInfo, drawState, itemById, cashSwitch, topScore, topGiven } from './prizes.js';
 
 // R7, K3: a secure random number in [0, 1).
 export function secureRandom() {
@@ -216,6 +216,22 @@ export function drawBody(s, cfg, rnd = secureRandom, now = Date.now()) {
 export function notHereBody(drawEv, reason) {
   if (!reason) throw new Error('A reason is needed (R14)');
   return { t: 'nothere', draw: drawEv.id, ticket: drawEv.ticket, reason };
+}
+
+// R29: staff give the top score prize (the reserved 'top' item). Throws when it was given already, nobody played,
+// or the item is not in stock. Test mode uses its own ledger, so test games never count (D7).
+export function topBody(s, cfg, now = Date.now()) {
+  if (topGiven(s)) throw new Error('The top score prize was already given. Undo it first (R29)');
+  const t = topScore(s, cfg, now);
+  if (!t.p) throw new Error('No top score yet');
+  const it = ((cfg.reserved && cfg.reserved.items) || []).find((x) => x.use === 'top');
+  if (!it || stock(s, cfg).left[it.id] <= 0) throw new Error('The top score voucher is not in stock (F9 S)');
+  return { t: 'top', pid: t.p.pid, nick: t.p.nick || null, best: t.p.best, item: it.id };
+}
+
+export function undoTopBody(reason) {
+  if (!reason) throw new Error('A reason is needed (R29)');
+  return { t: 'undo', what: 'top', reason };
 }
 
 // D13: undo the whole draw (it can then run again).

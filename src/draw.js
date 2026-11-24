@@ -1,12 +1,12 @@
-// draw.js: the 12:45 draw (R14, S12, K3), started by staff in F9, never automatic. One prize at a time, in the
-// order of drawState(): bronze items, silver, gold, then the jackpot last. Each step is SAVED before its number
+// draw.js: the 13:00 draw (R14, S12, K3), started by staff in F9, never automatic. First the top score prize (R29),
+// then one prize at a time, in the order of drawState(): bronze items, silver, gold, then GTA 6 last. Each step is SAVED before its number
 // shows (D1, D13); a stopped draw goes on from where it stopped. N = NOT HERE: a reason is typed (logged) and
 // the same prize is drawn again.
 
 import { CONFIG } from './config.js';
 import * as R from './rules.js';
-import { drawState, itemById } from './prizes.js';
-import { fmtEuro, fmtTicket } from './ledger.js';
+import { drawState, itemById, topScore, topGiven } from './prizes.js';
+import { fmtEuro, fmtTicket, plainName } from './ledger.js';
 import { open, close, setKeys } from './screens.js';
 import * as fx from './fx.js';
 import { sfx } from './sound.js';
@@ -17,11 +17,35 @@ function prizeName(n, s) {
   if (n.prize === 'jackpot') return `${CONFIG.text.jackpot} ${fmtEuro(n.amount != null ? n.amount : s)}`;
   if (n.prize === 'rest') return 'THE ITEMS THAT ARE LEFT';
   const it = itemById(CONFIG, n.item);
-  return `${CONFIG.sponsors[n.tier].name}: ${it.label}`;
+  return n.tier === 'reserved' ? it.label : `${CONFIG.sponsors[n.tier].name}: ${it.label}`;
+}
+
+// R29: the top score prize, before the draw. Enter = GIVEN (saved), Esc = later. Resolves true when it is done.
+export async function runTopScore(app, name) {
+  const s = app.led(name);
+  if (topGiven(s)) return true;
+  const t = topScore(s, CONFIG);
+  if (!t.p) return true; // nobody played: nothing to give
+  const T = CONFIG.text;
+  const who = T.topScoreGive.replace('{name}', plainName(t.p, CONFIG)).replace('{best}', t.p.best);
+  const go = await new Promise((resolve) => {
+    open(`<div class="box gold wide"><h1>${esc(T.topScoreRule.replace('{time}', CONFIG.event.lastPayment))}</h1>
+      <p class="nextprize">${esc(who)}</p><p>${esc(T.topScoreItem)} · PAYMENT #${t.p.pid}</p>
+      <div class="hint"><kbd>ENTER</kbd> = ${esc(T.drawGiven)}. <kbd>ESC</kbd> = later.</div></div>`, 'full clear');
+    setKeys((e) => {
+      if (e.key === 'Enter') { e.preventDefault(); close(); resolve(true); }
+      if (e.key === 'Escape') { e.preventDefault(); close(); resolve(false); }
+    });
+  });
+  if (!go) return false;
+  await app.commit(name, R.topBody(app.led(name), CONFIG));
+  sfx.reveal(3);
+  return true;
 }
 
 // app: { led(name), commit(name, body) }. jackpotNow() = the jackpot value now (for the intro screen).
 export async function runDraw(app, name, jackpotNow) {
+  if (!(await runTopScore(app, name))) return; // R14: first the top score prize
   for (;;) {
     const ds = drawState(app.led(name), CONFIG);
     if (!ds.next) { await info('THE DRAW IS DONE', ['Undo it in the staff panel (U) to run it again.']); return; }
@@ -64,7 +88,7 @@ export function drawScreen(ev, pool) {
     const num = el.querySelector('.drawnum');
     const hint = el.querySelector('.hint');
     const after = () => {
-      hint.innerHTML = '<kbd>ENTER</kbd> the winner is here (next prize) · <kbd>N</kbd> NOT HERE · <kbd>ESC</kbd> stop';
+      hint.innerHTML = `<kbd>ENTER</kbd> ${esc(CONFIG.text.drawGiven)} · <kbd>N</kbd> ${esc(CONFIG.text.drawNotHere)} · <kbd>ESC</kbd> stop<br>${esc(CONFIG.text.drawCardNote)}`;
       let typing = false;
       setKeys((e) => {
         if (typing) {
@@ -80,7 +104,7 @@ export function drawScreen(ev, pool) {
         if (e.key.toLowerCase() === 'n' && ev.ticket != null) {
           e.preventDefault();
           typing = true;
-          el.querySelector('.msg').innerHTML = 'NOT HERE: type the reason, then ENTER: <input class="staff-in" maxlength="60" spellcheck="false">';
+          el.querySelector('.msg').innerHTML = `${esc(CONFIG.text.drawNotHere)}: type the reason, then ENTER: <input class="staff-in" maxlength="60" spellcheck="false">`;
           setTimeout(() => el.querySelector('input').focus(), 20);
         }
       });

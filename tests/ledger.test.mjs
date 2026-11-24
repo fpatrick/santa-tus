@@ -24,7 +24,8 @@ test('T16: a draw with no tickets: the items stay with the team (R14); the jackp
   playPayment(sess, 'p1', { tries: [5] });
   const rest = sess.commit(R.drawBody(sess.s, CONFIG));
   assert.equal(rest.prize, 'rest');
-  assert.equal(rest.items.length, 19); // 7 bronze + 8 silver + 4 gold, in draw order
+  assert.equal(rest.items.length, 20); // 7 bronze + 8 silver + 4 gold + GTA 6 last, in draw order
+  assert.equal(rest.items.at(-1), 'gta6');
   assert.equal(rest.items[0], 'shirt');
   assert.equal(drawState(sess.s, CONFIG).done, true);
   assert.throws(() => R.drawBody(sess.s, CONFIG));
@@ -41,7 +42,7 @@ test('T17: the draw picks only issued tickets, each ticket wins once, and it can
     if (ev.ticket != null) { assert.ok(pool.includes(ev.ticket)); winners.push(ev.ticket); }
   }
   assert.equal(new Set(winners).size, winners.length, 'one ticket wins only once');
-  assert.equal(winners.length, 19); // every item (no jackpot: it is off)
+  assert.equal(winners.length, 20); // every item, GTA 6 last (no jackpot: it is off)
   assert.throws(() => R.drawBody(sess.s, CONFIG));
   assert.throws(() => R.undoDrawBody(''));
   sess.commit(R.undoDrawBody('wrong button'));

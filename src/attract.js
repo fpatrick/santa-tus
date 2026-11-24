@@ -45,7 +45,7 @@ export function createAttract(getInfo) {
       if (name === 'logo') logo(ctx, a);
       if (name === 'prices') prices(ctx, a);
       if (name === 'prizes') prizes(ctx, getInfo());
-      if (name === 'sponsors') sponsors(ctx);
+      if (name === 'sponsors') sponsors(ctx, getInfo());
       if (name === 'board') board(ctx, getInfo());
       drawSnow(ctx, dt, 2);
     }
@@ -161,7 +161,7 @@ function wrap(ctx, text, x, y, maxW, lineH) {
 }
 
 // R22: the sponsor prizes, gold first (text only; logos later).
-function sponsors(ctx) {
+function sponsors(ctx, info = {}) {
   outlined(ctx, T.sponsorsTitle, W / 2, 120, 40, '#ffd23f', 'center');
   let y = 170;
   for (const tier of ['gold', 'silver', 'bronze']) {
@@ -169,6 +169,13 @@ function sponsors(ctx) {
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(wheelIcon(tier, 3), 120, y - 6);
     outlined(ctx, `${t.name}${t.title ? `: ${t.title}` : ''}`, 250, y + 40, 32, t.color, 'left');
+    const left = info.live ? info.live.tiers[tier].free : null; // R30: live items left ("GOLD: 2 LEFT")
+    if (left != null) {
+      ctx.font = '40px VT323';
+      ctx.textAlign = 'right';
+      ctx.fillStyle = left ? '#3dff8b' : '#ff6b7a';
+      ctx.fillText(left ? T.tierLeft.replace('{tier}', t.name).replace('{n}', left).split(': ')[1] : T.tierSoldOut, 1240, y + 40);
+    }
     ctx.font = '34px VT323';
     ctx.textAlign = 'left';
     ctx.fillStyle = '#f4f7ff';
@@ -182,6 +189,23 @@ function sponsors(ctx) {
   ctx.fillText(T.sponsorsHow.replace('{n}', CONFIG.thresholds.ticket).replace('{draw}', CONFIG.event.drawTime), W / 2, 820);
 }
 
+// R30: the draw scene lines (jackpot off): headline, draw time, draw entries in the box, chimney 10, X IN 10, top score.
+function drawLines(ctx, e) {
+  outlined(ctx, T.drawHeadline.replace('{draw}', CONFIG.event.drawTime), W / 2, 100, 48, '#ffd23f', 'center');
+  if (!e) return;
+  outlined(ctx, T.inTheBox.replace('{n}', e.entries), W / 2, 160, 28, '#f4f7ff', 'center');
+  ctx.font = '34px VT323';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#3dff8b';
+  const spin = e.x > 0 ? `   ·   ${T.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', e.x)}` : '';
+  ctx.fillText(`${T.entryAt10.replace('{n}', CONFIG.thresholds.choice)}${spin}`, W / 2, 210);
+  ctx.fillStyle = '#ffd9a0';
+  const top = T.topScoreRule.replace('{time}', CONFIG.event.lastPayment);
+  const now = e.top ? `   ·   ${(e.given ? T.topScoreDone : T.topScoreNow).replace('{name}', e.top.name).replace('{best}', e.top.best)}` : '';
+  ctx.fillText(`${top}${now}`, W / 2, 255);
+  ctx.fillText(`${T.drawAt} ${CONFIG.event.drawTime}`, W / 2, 300);
+}
+
 function board(ctx, info) {
   const jp = info.jp;
   let next = '';
@@ -189,8 +213,8 @@ function board(ctx, info) {
     outlined(ctx, T.jackpot, W / 2, 110, 36, '#ffd23f', 'center');
     outlined(ctx, fmtEuro(info.jackpot), W / 2, 220, 96, '#fff6c8', 'center');
     next = jp && jp.started && !jp.closed ? (jp.atMax ? T.jackpotMax : jp.nextMins ? T.jackpotNext.replace('{step}', fmtEuro(CONFIG.jackpot.step)).replace('{mins}', jp.nextMins) : '') : '';
-  } else outlined(ctx, T.prizeDraw, W / 2, 180, 56, '#ffd23f', 'center');
-  outlined(ctx, `${next ? `${next} · ` : ''}${T.drawAt} ${info.drawTime}`, W / 2, 280, 32, '#f4f7ff', 'center');
+    outlined(ctx, `${next ? `${next} · ` : ''}${T.drawAt} ${info.drawTime}`, W / 2, 280, 32, '#f4f7ff', 'center');
+  } else drawLines(ctx, info.engage); // R30: "13:00 DRAW: WIN GTA 6" and the live lines
   outlined(ctx, CONFIG.board.title, W / 2, 360, 36, '#3dff8b', 'center');
   ctx.font = '40px VT323';
   if (!info.top.length) {

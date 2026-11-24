@@ -7,11 +7,32 @@ const MIN = 60000;
 const live = (s, pid) => { const p = s.byPid.get(pid); return !!p && p.status !== 'undone'; };
 const mins = (hhmm) => { const [h, m] = hhmm.split(':').map(Number); return h * 60 + m; };
 
-// Every sponsor item: [{ tier, id, label, sponsor, count }], tiers in config order.
+// Every sponsor item: [{ tier, id, label, sponsor, count }], tiers in config order, then the reserved items
+// (tier 'reserved': only the draw or the top score gives them, R22, R29).
 export function allItems(cfg) {
   const out = [];
   for (const [tier, t] of Object.entries(cfg.sponsors)) for (const it of t.items) out.push({ tier, ...it });
+  for (const it of (cfg.reserved && cfg.reserved.items) || []) out.push({ tier: 'reserved', ...it });
   return out;
+}
+
+// R29: the valid top score prize event (after the last "undo top"), or null.
+export function topGiven(s) {
+  let undoN = 0;
+  for (const ev of s.events) if (ev.t === 'undo' && ev.what === 'top') undoN = Math.max(undoN, ev.n);
+  return [...s.events].reverse().find((ev) => ev.t === 'top' && ev.n > undoN) || null;
+}
+
+// R29: who leads the top score now. Finished, not undone payments; on the event day only payments made up to the
+// last payment time (it locks then). A tie goes to the latest player (like L1). Returns { p, locked } (p = null: nobody).
+export function topScore(s, cfg, now = Date.now()) {
+  const day = (t) => { const d = new Date(t); const z = (v) => String(v).padStart(2, '0'); return `${d.getFullYear()}-${z(d.getMonth() + 1)}-${z(d.getDate())}`; };
+  const minsOf = (t) => { const d = new Date(t); return d.getHours() * 60 + d.getMinutes(); };
+  const last = mins(cfg.event.lastPayment);
+  const late = (t) => day(t) === cfg.event.date && minsOf(t) > last;
+  const list = s.payments.filter((p) => p.status === 'done' && p.best >= 1 && !late(p.ts))
+    .sort((a, b) => (b.best - a.best) || (b.bestTs - a.bestTs));
+  return { p: list[0] || null, locked: day(now) === cfg.event.date && minsOf(now) >= last };
 }
 export function itemById(cfg, id) { return allItems(cfg).find((it) => it.id === id) || null; }
 
@@ -35,8 +56,10 @@ export function stock(s, cfg) {
   const { won } = drawValidity(s);
   const wonIds = new Set(won.map((d) => d.id));
   const take = (id, bucket) => { if (left[id] == null) return; if (left[id] > 0) left[id] -= 1; bucket[id] += 1; };
+  const top = topGiven(s);
   for (const ev of s.events) { // saved order: staff edits set the count at that moment
     if (ev.t === 'stock' && left[ev.item] != null) left[ev.item] = Math.max(0, Math.floor(ev.left));
+    else if (ev.t === 'top' && top && ev.id === top.id) take(ev.item, given); // R29
     else if (ev.t === 'item' && live(s, ev.pid)) take(ev.item, given);
     else if (ev.t === 'draw' && wonIds.has(ev.id)) {
       if (ev.prize === 'item' && ev.ticket != null) take(ev.item, given);
@@ -44,7 +67,7 @@ export function stock(s, cfg) {
     }
   }
   const tiers = {};
-  for (const tier of Object.keys(cfg.sponsors)) tiers[tier] = { left: 0, reserved: 0, given: 0, team: 0, items: [] };
+  for (const tier of [...Object.keys(cfg.sponsors), ...(cfg.reserved ? ['reserved'] : [])]) tiers[tier] = { left: 0, reserved: 0, given: 0, team: 0, items: [] };
   for (const it of items) {
     const T = tiers[it.tier];
     T.left += left[it.id];
@@ -183,6 +206,9 @@ export function drawState(s, cfg) {
   const st = stock(s, cfg);
   const units = [];
   for (const tier of cfg.drawOrder) for (const it of st.tiers[tier].items) for (let k = 0; k < it.left; k++) units.push({ tier, item: it.id });
+  if (st.tiers.reserved) { // R14: the reserved draw prize (GTA 6) LAST
+    for (const it of st.tiers.reserved.items) if (it.use === 'draw') for (let k = 0; k < it.left; k++) units.push({ tier: 'reserved', item: it.id });
+  }
   let next = null;
   const started = v.draws.length > 0;
   let done;
@@ -204,7 +230,8 @@ export function drawState(s, cfg) {
 export function summary(s, cfg, now = Date.now()) {
   const jp = jackpotInfo(s, cfg, now);
   const st = stock(s, cfg);
-  const out = { taken: 0, payments: 0, cashPaid: 0, sweets: 0, tickets: 0, cards: 0, jackpotPaid: jp.paid, jackpotNow: jp.value, tiers: {} };
+  const out = { taken: 0, payments: 0, cashPaid: 0, sweets: 0, tickets: 0, cards: 0, swaps: 0, byKey: {}, jackpotPaid: jp.paid, jackpotNow: jp.value, tiers: {} };
+  for (const pr of cfg.prices) out.byKey[pr.key] = 0;
   for (const p of s.payments) {
     if (p.status === 'undone') continue;
     out.payments += 1;
@@ -212,10 +239,16 @@ export function summary(s, cfg, now = Date.now()) {
     out.cashPaid += p.cash;
     out.tickets += p.tickets.length;
     if (p.tickets.length) out.cards += 1; // one paper card per payment with at least 1 draw entry
+    if (p.swapped) out.swaps += 1; // "+2 instead" (R23 or R28)
+    const pr = cfg.prices.find((x) => x.id === p.kind);
+    if (pr) out.byKey[pr.key] += 1;
     if (p.p10 === 'sweet' || p.consolation) out.sweets += 1;
   }
   out.taken = Math.round(out.taken * 100) / 100;
   for (const [tier, T] of Object.entries(st.tiers)) out.tiers[tier] = { given: T.given, left: T.left + T.team, reserved: T.reserved };
+  out.top = topGiven(s); // R29: the top score winner (or null)
+  const dv = drawValidity(s); // R14: the draw winners (not "not here", not undone)
+  out.drawWinners = dv.won.filter((d) => d.prize === 'item' && d.ticket != null).map((d) => ({ item: d.item, tier: d.tier, ticket: d.ticket }));
   return out;
 }
 

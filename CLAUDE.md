@@ -59,9 +59,9 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Songs as notes (Jingle Bells, Silent Night, sad crash tune) and their timing to the chimneys | `src/songs.js` |
 | Music player: instruments, modes (menu, lobby, flight), volume duck | `src/music.js` |
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
-| Staff panel F9: summary, stock, cash fallback switch (C), jackpot fix (only when on), caps, odds (S11, K2) | `src/staff.js` (actions in `src/staffapi.js`) |
-| The draw, one prize at a time, NOT HERE (S12, K3, R14) | `src/draw.js` |
-| Right-hand panel: jackpot, player prize box, best players (L2) | `src/board.js` |
+| Staff panel F9: summary, stock (incl. reserved), cash fallback switch (C), top score (T), jackpot fix (only when on), caps, odds (S11, K2) | `src/staff.js` (actions in `src/staffapi.js`) |
+| The draw: top score prize first, then one prize at a time, GTA 6 last, GIVEN / NOT HERE (S12, K3, R14, R29) | `src/draw.js` |
+| Right-hand panel: "13:00 DRAW: WIN GTA 6" + live lines (R30), player prize box, best players (L2) | `src/board.js` |
 | Rank badges LEGEND (gold) / MYTHIC (feral purple) / GODLIKE (red-blue divine) before names (R8, R20, R21) | `src/rankbadge.js` (rank = `rankOf()` in ledger.js) |
 | Saving: server or browser, offline queue (D1, D4, P1) | `src/store.js` |
 | Start-up, keys, mouse, banners, health check, staff actions | `src/main.js` |
@@ -77,7 +77,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 
 | Command | What | When |
 | --- | --- | --- |
-| `npm test` | 66 rule, prize, ledger, course, music and crash-message tests (Node, about 10 s) | after every change |
+| `npm test` | 68 rule, prize, ledger, course, music and crash-message tests (Node, about 10 s) | after every change |
 | `npm run test:server` | 9 server tests (Python) | after a change to `server/` |
 | `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, T36-T38, T46, T47b, T49-T51, T53, about 2 min) | after a change to screens, flow, store, main |
 | `node scripts/simulate.js` | 18 cases x 10,000 market days with the real rules (about 12 min; `--days 500` for a quick check) | after a change to prizes, odds, jackpot or stock |
@@ -114,5 +114,5 @@ https://fpatrick.github.io/santa-tus/ . On the test link there is no server, so 
 ## Saved events (short)
 
 Every action is one event `{id, n, ts, t, ...}` saved in order. `t` is one of:
-`pay`, `try`, `award` (kind `p10` | `wheel` | `swap` | `tickets` | `consolation`; `p30` only in old days), `item`, `nick`, `done`, `undo`, `hide`, `draw`, `nothere`, `stock`, `jackpot`, `staff` (also `cash-fallback`, `cash-paid`).
+`pay`, `try`, `award` (kind `p10` | `wheel` | `swap` | `tickets` | `consolation`; `p30` only in old days), `item`, `nick`, `done`, `undo`, `hide`, `draw`, `nothere`, `stock`, `jackpot`, `top`, `staff` (also `cash-fallback`, `cash-paid`).
 `ledger.js` turns the list of events into the state. Details: SPEC.md "Saved events".
