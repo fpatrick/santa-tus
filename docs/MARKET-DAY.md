@@ -1,6 +1,6 @@
 # Market day: 26 November 2026
 
-Stall open 9:00-13:00. Set-up from 8:30. 12:45 last-games warning, 12:50 last payment (top score locks), draw at 13:00.
+Stall open 9:00-13:00. Set-up from 8:30. 12:45 last-games warning, 12:50 last payment, draw at 13:00.
 
 ## Bring
 
@@ -42,7 +42,7 @@ Stall open 9:00-13:00. Set-up from 8:30. 12:45 last-games warning, 12:50 last pa
 
 ## End of day
 
-1. **13:00**: staff panel **8** (Draw). First the top score prize: the screen shows the best player up to 12:50 (One4all €20 voucher); give it and press **Enter** (= GIVEN). Then one prize at a time: bronze items, silver, gold, then GTA 6 for PS5 last. **Enter** draws; read the number out loud. The winner gets the item drawn (no picking). Winner here: **Enter** (GIVEN). Not here: **N** (NOT HERE - DRAW AGAIN), type the reason, the same prize is drawn again. Winners write name and phone on their card, so you can call them first. **Esc** stops; **8** goes on later. Top score only: staff panel **T**.
+1. **13:00**: staff panel **8** (Draw). One prize at a time: bronze items, silver, gold, then GTA 6 for PS5 last. **Enter** draws; read the number out loud. The winner gets the item drawn (no picking). Winner here: **Enter** (GIVEN). Not here: **N** (NOT HERE - DRAW AGAIN), type the reason, the same prize is drawn again. Winners write name and phone on their card, so you can call them first. **Esc** stops; **8** goes on later.
 2. Staff panel **5** (Export CSV) and **4** (Backup now).
 3. Copy `Documents\SantaTUS-data` to the second USB stick.
 4. Count the money against "Total taken" and "€10 cash paid" in the staff panel. Count the sponsor items left against the panel. Give the CSV to the Financial Manager.

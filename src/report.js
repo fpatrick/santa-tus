@@ -2,7 +2,7 @@
 // Pure code: takes the ledger state, returns text. One row per payment, then the summary, the draw and staff changes.
 
 import { displayName, fmtTicket } from './ledger.js';
-import { summary, itemById, drawValidity, topGiven } from './prizes.js';
+import { summary, itemById, drawValidity } from './prizes.js';
 import { handoverItems } from './rules.js';
 
 const cell = (v) => {
@@ -12,7 +12,6 @@ const cell = (v) => {
 const time = (ts) => (ts ? new Date(ts).toLocaleString('en-IE') : '');
 
 export function buildCsv(s, cfg, label = 'live', now = Date.now()) {
-  const top = topGiven(s);
   const swapWhy = (p) => { // "+2 instead": R23 (already won) or R28 (no item wanted)
     const ev = s.events.find((e) => e.t === 'award' && e.kind === 'swap' && e.pid === p.pid);
     return ev ? (ev.why === 'declined' ? '+2 instead (no item wanted)' : '+2 instead (already won today)') : '';
@@ -20,7 +19,7 @@ export function buildCsv(s, cfg, label = 'live', now = Date.now()) {
   const rows = [[
     'time', 'payment', 'payment_key', 'price_eur', 'status', 'tries_bought', 'tries_played', 'best_chimney', 'nickname',
     'prizes', 'chimney10', 'wheel', 'sponsor_tier', 'sponsor_item', 'sponsor', 'plus2_instead', 'draw_entry_numbers', 'cash10_paid_eur',
-    'jackpot_paid_eur', 'top_score_prize', 'reason',
+    'jackpot_paid_eur', 'reason',
   ]];
   for (const p of s.payments) {
     const it = p.item ? itemById(cfg, p.item) : null;
@@ -30,7 +29,7 @@ export function buildCsv(s, cfg, label = 'live', now = Date.now()) {
     rows.push([
       time(p.ts), p.pid, pr ? pr.key : p.kind, p.amount, p.status, p.triesBought, p.tries.length, p.best, displayName(p, cfg),
       prizes, p.p10 || '', p.wheel || '', p.sponsor || '', it ? it.label : '', it ? it.sponsor : '', swapWhy(p),
-      p.tickets.map(fmtTicket).join(' '), p.cash || 0, p.jackpotWon || 0, top && top.pid === p.pid ? 'ONE4ALL €20 (top score)' : '', p.reason,
+      p.tickets.map(fmtTicket).join(' '), p.cash || 0, p.jackpotWon || 0, p.reason,
     ]);
   }
   const sm = summary(s, cfg, now);
@@ -48,7 +47,6 @@ export function buildCsv(s, cfg, label = 'live', now = Date.now()) {
   for (const [tier, x] of Object.entries(sm.tiers)) rows.push([`${tier} items given / left`, x.given, x.left]);
   rows.push(['draw entries given', sm.tickets]);
   rows.push(['cards used', sm.cards]);
-  rows.push(['top score winner', top ? `${top.nick || `PLAYER ${top.pid}`} (payment ${top.pid})` : 'not given', top ? top.best : '']);
   for (const w of sm.drawWinners) { const it = itemById(cfg, w.item); rows.push(['draw winner', it ? it.label : w.item, fmtTicket(w.ticket)]); }
   const v = drawValidity(s);
   rows.push([]);
@@ -63,7 +61,6 @@ export function buildCsv(s, cfg, label = 'live', now = Date.now()) {
   rows.push(['STAFF CHANGES', 'time', 'what', 'detail']);
   for (const ev of s.events) {
     if (ev.t === 'stock') rows.push(['stock', time(ev.ts), ev.item, `${ev.before} -> ${ev.left}`]);
-    if (ev.t === 'top') rows.push(['top score prize', time(ev.ts), `${ev.nick || `PLAYER ${ev.pid}`} · ${ev.best}`, ev.item]);
     if (ev.t === 'jackpot') rows.push(['jackpot fix', time(ev.ts), `${ev.before} -> ${ev.value}`, '']);
     if (ev.t === 'nothere') rows.push(['not here', time(ev.ts), fmtTicket(ev.ticket), ev.reason]);
     if (ev.t === 'undo') rows.push(['undo', time(ev.ts), ev.what || `payment ${ev.pid}`, ev.reason || '']);

@@ -65,11 +65,11 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 
 | Tier | Items (count) | Who picks |
 | --- | --- | --- |
-| GOLD "€20 VOUCHER" | Lidl €20 voucher (3) · One4all €20 voucher (1) | the winner picks one that is left |
+| GOLD "€20 VOUCHER" | Lidl €20 voucher (3) · One4all €20 voucher (2) | the winner picks one that is left |
 | SILVER "GAMING OR DAY OUT" | PlayStation €10 voucher (4) · Xbox €10 voucher (2) · Vue cinema, 4 tickets (1) · Fun World bowling, 4 games (1) | the winner picks one that is left |
 | BRONZE "GIFT" | Rocknshop shirt (3) · The Works book set (1) · The Works art set (1) · Serenity Scents candle (1) · Serenity Scents room spray (1) | the winner picks one that is left |
 
-- RESERVED, never on the wheel [`reserved`]: GTA 6 for PS5 x1 (the 13:00 draw, last prize) and One4all €20 x1 (the top score prize, R29). They are in the F9 stock list (staff can edit the count) and can only be given by the draw or the top score.
+- RESERVED, never on the wheel [`reserved`]: ONLY GTA 6 for PS5 x1 (the 13:00 draw, last prize). It is in the F9 stock list (staff can edit the count) and can only be given by the draw.
 - The prize screens show the sponsor name (text only; logos later).
 - **R23 One sponsor prize per nickname per day:** a sponsor winner is always asked for a nickname. If that nickname already won a sponsor prize today, staff see "ALREADY WON A PRIZE TODAY? Y = GIVE +2 DRAW ENTRIES INSTEAD" [`tickets.swap`]. Staff decide (Y or N). The default nickname (skipped) is never matched.
 - **R28 No item wanted:** every sponsor prize pick screen (even with only 1 item left) has "N = +2 DRAW ENTRIES INSTEAD", for a player who does not want any item left in that tier. The item stays in stock (the reservation is freed) and it does NOT count as a sponsor prize win for R23 (saved as an `award` kind `swap` with `why: 'declined'`).
@@ -109,15 +109,15 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 
 - **R12 Draw tickets:** On screen, draw tickets are called DRAW ENTRIES (one: DRAW ENTRY) [`text.ticket`, `text.tickets`]; a game play is always a TRY. Code, config and SPEC keep "draw ticket". A payment collects tickets from: each try that reaches 10 (+1), key 3 bonus (+1), chimney 30 (+5), the wheel +2 TICKETS slice (+2), R23 swap (+2). They are all given at the END of the payment, on ONE ticket screen ("YOUR DRAW ENTRIES") that lists where they came from and their numbers; the hand-over says "WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0015"; this is one `award` event (kind `tickets`). Numbers start at #0001 and go up by 1: they never repeat and never skip. Staff give ONE plain paper card per payment and write the range on it (no cloakroom tickets): about 70-110 cards a day. The F9 summary shows "Cards used" (payments with at least 1 draw entry) and "NEXT DRAW ENTRY".
 - **R13 Jackpot: OFF** [`JACKPOT_ENABLED = false`]. When off, the jackpot is hidden everywhere (title screen, panel, wheel, draw, staff summary, odds sheet) and has no wheel slice. The old jackpot code stays (not deleted) for a later year: start €10, +€10 every hour, max €30, at most 2 wheel wins a day [`jackpot`].
-- **R29 Top score prize** [`reserved` item `one4allTop`, `text.topScoreRule`]: the best score of the day (nickname + chimney; a tie goes to the latest player, like L1) wins the reserved One4all €20 voucher. The leaderboard and the title screen show "TOP SCORE AT 12:50 WINS €20 ONE4ALL" and who leads now. It locks at the last payment (12:50 [`event.lastPayment`]): on the event day, payments made after 12:50 (with the O override) do not count. Only finished, not undone payments of the `live` ledger count (test mode never counts). Staff give it at 13:00 from F9 (key T, or as the first step of the draw): Enter = GIVEN, saved as a `top` event (pid, nick, best, item). It cannot be given twice; staff can undo it in F9 (key T again, needs a reason, logged as `undo` what: `top`).
-- **R14 The draw** (13:00 [`event.drawTime`], started by staff in F9 key 8, never automatic). First the top score prize (R29), then the draw:
+- **R29 No top score prize** (24 Nov 2026): the best score of the day wins nothing. The leaderboard (L1, L2) is for bragging rights only.
+- **R14 The draw** (13:00 [`event.drawTime`], started by staff in F9 key 8, never automatic; the draw starts straight away):
   - The prizes, in this order: 1) every bronze item not won yet, 2) every silver item not won yet, 3) every gold item not won yet, 4) GTA 6 for PS5 LAST (the reserved draw item [`reserved`]). Each draw is for one named item: the winner gets the item drawn (no picking).
   - The draw entry number shows in big text. One draw entry can win only once.
   - Staff press Enter = "GIVEN", or N = "NOT HERE - DRAW AGAIN": type a reason (logged) and the same prize is drawn again; that draw entry is out of the rest of the draw. Winners write their name and phone on their card, so staff can call them first.
   - No tickets left: the items still in the list stay with the team.
   - The draw is saved step by step and cannot run twice unless staff undo it in F9 (logged, with a reason). A stopped draw goes on from where it stopped.
   - (Jackpot on only: the jackpot is drawn last and one ticket is always kept for it.)
-- **R26 Times** [`event`]: 12:45 a warning banner for the last games. 12:50 last payment (and the top score lock, R29): after it (and after the draw) the payment screen needs O to go on (logged). 13:00 the draw (R14). Times only apply on the event day (`event.date`), so tests on other days are never blocked.
+- **R26 Times** [`event`]: 12:45 a warning banner for the last games. 12:50 last payment: after it (and after the draw) the payment screen needs O to go on (logged). 13:00 the draw (R14). Times only apply on the event day (`event.date`), so tests on other days are never blocked.
 
 **Fair play**
 
@@ -140,10 +140,10 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 | S9 | Nickname: for the best players list, LEGEND, MYTHIC, GODLIKE and every sponsor winner (R23). Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
 | S10 | Ticket screen (R12): all tickets of the payment with where they came from and the numbers. Then the hand-over (R16): €10 CASH confirmed twice, then the list. (The "already won today?" check and the item pick (R23) come just before the ticket screen.) Enter saves and goes back to S1 | staff | screens.handover, handover.js |
 | S11 | Staff panel: F9 (or hold F + press 9) + code | staff | staff.staffPanel |
-| S12 | Draw (R14): first the top score prize (R29), then one prize at a time, rolling numbers, the winning draw entry in big text, Enter = GIVEN, N = NOT HERE - DRAW AGAIN + reason | staff | draw.js |
+| S12 | Draw (R14): one prize at a time, rolling numbers, the winning draw entry in big text, Enter = GIVEN, N = NOT HERE - DRAW AGAIN + reason | staff | draw.js |
 | S13 | Health check at every start: server, database, USB, clock, screen, fonts, sound, settings | nobody | main.healthCheck |
 
-**R30 Engagement lines** (title screen draw scene and the leaderboard panel) [`text`]: "13:00 DRAW: WIN GTA 6", "REACH CHIMNEY 10 = 1 DRAW ENTRY", "REACH CHIMNEY 20 = SPIN: X IN 10 WIN A PRIZE" (live, R7), "DRAW ENTRIES IN THE BOX: 123" (live: all draw entries given today, not undone), items left per tier ("GOLD: 2 LEFT", live), and "TOP SCORE AT 12:50 WINS €20 ONE4ALL" with the leader now (R29).
+**R30 Engagement lines** (title screen draw scene and the leaderboard panel) [`text`]: "13:00 DRAW: WIN GTA 6", "REACH CHIMNEY 10 = 1 DRAW ENTRY", "REACH CHIMNEY 20 = SPIN: X IN 10 WIN A PRIZE" (live, R7), "DRAW ENTRIES IN THE BOX: 123" (live: all draw entries given today, not undone), and items left per tier ("GOLD: 2 LEFT", live).
 
 **Leaderboard panel (L2):** the R30 lines ("JACKPOT" with "+€10 IN 34 MIN" only when the jackpot is on), "DRAW AT 13:00" + countdown on the event day, this player's prizes (chimney 10 prize, wheel result, draw tickets; shown until the next game starts), "BEST PLAYERS" top 15 (rank, the LEGEND / MYTHIC / GODLIKE badge, name, chimneys).
 Panel text is at least 28 px. **Players never need the keyboard** (mouse or a USB arcade button set as a click).
@@ -173,10 +173,10 @@ Never "play again?" (R17). The title-screen demo shows only the tumble (no zoom,
 ## Staff controls
 
 - **K1** Staff code [`staffCode`], typed on the staff keyboard, shown as dots.
-- **K2 Staff panel** (F9 + code): totals and the end-of-day summary (total taken, payments per key, cards used, sweets given, items given and left per tier (and reserved), "+2 instead" count, €10 cash paid, draw entries given, the top score winner (R29), the draw winners), the cash fallback switch and its counter (€10 cash x/3), (jackpot lines only when the jackpot is on), the live wheel odds, the stock per item, clock, mode, waiting events, version. Actions:
+- **K2 Staff panel** (F9 + code): totals and the end-of-day summary (total taken, payments per key, cards used, sweets given, items given and left per tier (and reserved), "+2 instead" count, €10 cash paid, draw entries given, the draw winners), the cash fallback switch and its counter (€10 cash x/3), (jackpot lines only when the jackpot is on), the live wheel odds, the stock per item, clock, mode, waiting events, version. Actions:
   1 Undo last payment (second Enter; marks it "undone", never deletes) · 2 Free play (€0, needs a reason) · 3 Test mode (separate ledger, banner) ·
-  4 Backup now · 5 Export CSV · 6 Hide a nickname · 7 Sound on/off · 8 Draw (top score first, then the draw; start or go on; warns before 13:00) · 9 New day (code again, archives the day) ·
-  S Stock: set the items left of one item (reserved items too) · T Top score prize: give it (Enter) or undo it (reason) · C Cash fallback on/off (R27, logged) · J Jackpot fix (only when the jackpot is on) · U Undo the draw (needs a reason).
+  4 Backup now · 5 Export CSV · 6 Hide a nickname · 7 Sound on/off · 8 Draw (start or go on; warns before 13:00) · 9 New day (code again, archives the day) ·
+  S Stock: set the items left of one item (reserved items too) · C Cash fallback on/off (R27, logged) · J Jackpot fix (only when the jackpot is on) · U Undo the draw (needs a reason).
   Every manual change is saved as an event with the time (D14). The panel can open at the title screen, or at "CLICK TO FLY" during a payment.
 - **K3 Draw:** follows R14 with `secureRandom()`. The draw is never automatic.
 
@@ -213,8 +213,7 @@ Common fields: `id` (unique), `n` (order number), `ts` (time in ms), `t` (type).
 | `item` | pid, tier, item | the sponsor item staff gave at the hand-over |
 | `nick` | pid, nick (null = skipped) | nickname |
 | `done` | pid | hand-over confirmed |
-| `undo` | pid (a payment) or what: `draw` / `top` + reason | undo a payment, the whole draw, or the top score prize |
-| `top` | pid, nick, best, item | the top score prize given (R29) |
+| `undo` | pid (a payment) or what: `draw` + reason | undo a payment, or the whole draw |
 | `hide` | pid | nickname hidden |
 | `draw` | prize (`item`, `rest`, `jackpot`), tier, item, items, ticket (null = no tickets), amount, count | one draw step |
 | `nothere` | draw (id), ticket, reason | the drawn winner was not there |
@@ -303,7 +302,7 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T55 | on-screen words | no "ticket" or "raffle" in on-screen texts: DRAW ENTRY / DRAW ENTRIES, a play is a TRY | N |
 | T56 | cards used | = payments with at least 1 draw entry | N |
 | T57 | R28 N on the pick screen | +2 draw entries, item stays in stock, not a win for R23 | N |
-| T58 | top score (R29) | best finished live payment up to 12:50 on the event day; ties = latest; test mode never counts; given once from F9, undo logged | N |
+| T58 | no top score prize (R29) | no top score text on any screen, no F9 top score key, the draw starts straight away | F (quick check) |
 | T59 | draw order with reserved items | bronze, silver, gold, then GTA 6 last; reserved items never on the wheel and never picked at a hand-over | N |
 
 ## Simulation results (R25, R27, T47)

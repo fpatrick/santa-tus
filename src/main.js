@@ -4,7 +4,7 @@
 import { CONFIG } from './config.js';
 import { versionLabel, DISCLAIMER, STAGE } from './version.js';
 import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, plainName, rankOf, lastActivePayment, fmtEuro } from './ledger.js';
-import { timeState, itemById, drawState, liveOdds, inTen, topScore, topGiven, ticketPool } from './prizes.js';
+import { timeState, itemById, drawState, liveOdds, inTen, ticketPool } from './prizes.js';
 import * as R from './rules.js';
 import { createStore } from './store.js';
 import { createFlight } from './game.js';
@@ -57,16 +57,12 @@ app.refresh = () => {
   banners();
 };
 
-// R30, R29: the live engagement lines (always from the live ledger: test mode never counts).
+// R30: the live engagement lines (always from the live ledger: test mode never counts).
 function engageInfo(s) {
   const live = liveOdds(s, CONFIG);
-  const t = topScore(s, CONFIG);
-  const g = topGiven(s);
-  const p = g ? s.byPid.get(g.pid) : t.p;
   return {
     entries: ticketPool(s).length, x: inTen(live),
     tiers: Object.entries(CONFIG.sponsors).map(([k, T]) => ({ name: T.name, free: live.tiers[k].free })),
-    top: p ? { name: plainName(p, CONFIG), best: p.best } : null, given: !!g,
   };
 }
 

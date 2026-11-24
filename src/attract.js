@@ -189,7 +189,7 @@ function sponsors(ctx, info = {}) {
   ctx.fillText(T.sponsorsHow.replace('{n}', CONFIG.thresholds.ticket).replace('{draw}', CONFIG.event.drawTime), W / 2, 820);
 }
 
-// R30: the draw scene lines (jackpot off): headline, draw time, draw entries in the box, chimney 10, X IN 10, top score.
+// R30: the draw scene lines (jackpot off): headline, draw time, draw entries in the box, chimney 10, X IN 10.
 function drawLines(ctx, e) {
   outlined(ctx, T.drawHeadline.replace('{draw}', CONFIG.event.drawTime), W / 2, 100, 48, '#ffd23f', 'center');
   if (!e) return;
@@ -200,10 +200,7 @@ function drawLines(ctx, e) {
   const spin = e.x > 0 ? `   ·   ${T.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', e.x)}` : '';
   ctx.fillText(`${T.entryAt10.replace('{n}', CONFIG.thresholds.choice)}${spin}`, W / 2, 210);
   ctx.fillStyle = '#ffd9a0';
-  const top = T.topScoreRule.replace('{time}', CONFIG.event.lastPayment);
-  const now = e.top ? `   ·   ${(e.given ? T.topScoreDone : T.topScoreNow).replace('{name}', e.top.name).replace('{best}', e.top.best)}` : '';
-  ctx.fillText(`${top}${now}`, W / 2, 255);
-  ctx.fillText(`${T.drawAt} ${CONFIG.event.drawTime}`, W / 2, 300);
+  ctx.fillText(`${T.drawAt} ${CONFIG.event.drawTime}`, W / 2, 260);
 }
 
 function board(ctx, info) {

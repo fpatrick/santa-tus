@@ -23,7 +23,6 @@ const ACTIONS = [
   ['8', 'draw', 'DRAW'],
   ['9', 'newday', 'NEW DAY'],
   ['S', 'stock', 'STOCK: SET ITEMS LEFT'],
-  ['T', 'top', 'TOP SCORE PRIZE'],
   ['C', 'cash', 'CASH FALLBACK ON/OFF'],
   ...(CONFIG.JACKPOT_ENABLED ? [['J', 'jackpot', 'JACKPOT: FIX VALUE']] : []), // R13: only when the jackpot is on
   ['U', 'undodraw', 'UNDO THE DRAW'],
@@ -39,8 +38,6 @@ function infoHtml(i) {
     const x = sm.tiers[k];
     return `<div><span>${T.name}:</span> given ${x.given} · left ${x.left}${x.reserved ? ` (${x.reserved} won, not given yet)` : ''}</div>`;
   }).join('');
-  const top = i.top.p ? `${esc(i.top.name)} · ${i.top.p.best}` : 'nobody yet';
-  const topText = sm.top ? `<b>GIVEN</b>: ${esc(sm.top.nick || `PLAYER ${sm.top.pid}`)} · ${sm.top.best}` : `leader now ${top}${i.top.locked ? ' (LOCKED)' : ` (locks at ${CONFIG.event.lastPayment})`}`;
   const winners = sm.drawWinners.map((d) => `${esc(itemLabel(d.item))} ${fmtTicket(d.ticket)}`).join(' · ') || '-';
   const odds = i.live.list.map((x) => `${CONFIG.wheel.outcomes.find((o) => o.id === x.id).label} ${x.odds}%`).join(' · ');
   const ds = i.draw;
@@ -57,7 +54,6 @@ function infoHtml(i) {
     <div><span>Sweets given:</span> ${sm.sweets} · <span>Draw entries:</span> ${sm.tickets} · <span>Cards used:</span> <b>${sm.cards}</b> · <span>"+2 instead":</span> ${sm.swaps}</div>
     <div><span>NEXT DRAW ENTRY:</span> <b>${fmtTicket(i.nextTicket)}</b></div>
     <div><span>Draw:</span> ${drawText}</div>
-    <div><span>Top score (R29):</span> ${topText}</div>
     <div class="span2"><span>Draw winners:</span> ${winners}</div>
     ${tiers}
     <div class="span2"><span>Live odds:</span> ${esc(odds)}</div>
@@ -109,11 +105,6 @@ export function staffPanel(api) {
       if (id === 'hide') { mode = 'hide-pid'; return say('Type the payment number of the nickname to hide, then ENTER:'); }
       if (id === 'sound') { api.toggleSound(); return say(`Sound is now ${api.info().muted ? 'muted' : 'on'}.`); }
       if (id === 'stock') { mode = 'stock-in'; return say(`${stockList(api.info())}<br>Type the item number and the new count (for example "4 2"), then ENTER:`, true); }
-      if (id === 'top') {
-        if (!api.info().summary.top) { close(); const r = await api.giveTop(); render(); setKeys(onKey); return say(r); }
-        mode = 'undotop-reason';
-        return say('The top score prize was given. To UNDO it, type the reason, then ENTER (ESC stops):');
-      }
       if (id === 'cash') { const on = await api.toggleCash(); return say(on === null ? CONFIG.text.cashGreyed : `€10 cash fallback is now ${on ? 'ON' : 'OFF'} (saved in the log).`); }
       if (id === 'jackpot') { mode = 'jackpot-in'; return say(`Jackpot now ${fmtEuro(api.info().live.jackpot.value)}. Type the new value (0-${CONFIG.jackpot.max}), then ENTER:`); }
       if (id === 'undodraw') {
@@ -153,7 +144,6 @@ export function staffPanel(api) {
         if (m === 'hide-pid') { const ok = await api.hide(Number(val)); return say(ok ? `Nickname of payment #${val} is hidden.` : `No payment #${val}.`); }
         if (m === 'stock-in') { const [n, c] = val.split(/\s+/).map(Number); return say(await api.setStock(n, c)); }
         if (m === 'jackpot-in') return say(await api.fixJackpot(Number(val)));
-        if (m === 'undotop-reason') { if (!val) { mode = m; return say('A reason is needed:'); } return say(await api.undoTop(val)); }
         if (m === 'undodraw-reason') { if (!val) { mode = m; return say('A reason is needed:'); } return say(await api.undoDraw(val)); }
         return null;
       }

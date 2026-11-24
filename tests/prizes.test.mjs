@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import { CONFIG } from '../src/config.js';
 import * as R from '../src/rules.js';
 import { buildState } from '../src/ledger.js';
-import { stock, liveOdds, jackpotInfo, drawState, summary, caps, timeState, cashSwitch, inTen, topScore, topGiven } from '../src/prizes.js';
+import { stock, liveOdds, jackpotInfo, drawState, summary, caps, timeState, cashSwitch, inTen } from '../src/prizes.js';
 import { buildPieces } from '../src/wheel.js';
 import { newSession, playPayment, cfgWith, forceWheel } from './helpers.mjs';
 
@@ -15,7 +15,7 @@ const sum = (o) => Object.values(o).reduce((a, b) => a + b, 0);
 const win = (sess, id, extra = {}) => playPayment(sess, 'p1', { tries: [22], choices: ['sweet'], wheel: [id], nick: `P${sess.s.payments.length + 1}`, ...extra });
 
 const JP = cfgWith({ JACKPOT_ENABLED: true }); // the jackpot code stays (R13): its tests run with it switched on
-const ALL = { gold: 4, silver: 8, bronze: 7 }; // sponsor items at the start of the day (R22 version 2)
+const ALL = { gold: 5, silver: 8, bronze: 7 }; // sponsor items at the start of the day (R22 version 2)
 const sellOut = (sess, tiers = Object.keys(ALL)) => { for (const t of tiers) for (let i = 0; i < ALL[t]; i++) win(sess, t); };
 const cashOn = (sess) => sess.commit(R.cashSwitchBody(sess.s, sess.cfg, true));
 
@@ -23,7 +23,7 @@ test('T35: base odds at the start of the day: GOLD 4, SILVER 12, BRONZE 14, FREE
   const sess = newSession();
   assert.deepEqual(odds(sess), { jackpot: 0, gold: 4, silver: 12, bronze: 14, free: 26, t2: 44, cash: 0 });
   assert.deepEqual(Object.fromEntries(Object.entries(stock(sess.s, CONFIG).tiers).filter(([k]) => k !== 'reserved').map(([k, T]) => [k, T.left])), ALL);
-  assert.equal(stock(sess.s, CONFIG).tiers.reserved.left, 2); // GTA 6 + the top score voucher (R22)
+  assert.equal(stock(sess.s, CONFIG).tiers.reserved.left, 1); // only GTA 6 (R22)
   assert.equal(CONFIG.JACKPOT_ENABLED, false);
   assert.equal(CONFIG.CASH_FALLBACK_ENABLED, false);
   assert.equal(CONFIG.CASH_FALLBACK_MAX_WINS, 3);
@@ -32,15 +32,15 @@ test('T35: base odds at the start of the day: GOLD 4, SILVER 12, BRONZE 14, FREE
   assert.deepEqual(['gold', 'silver', 'bronze'].map((t) => CONFIG.wheel.outcomes.find((o) => o.id === t).label), ['GOLD €20 VOUCHER', 'SILVER GAMING / DAY OUT', 'BRONZE GIFT']);
 });
 
-test('T36: GOLD "€20 VOUCHER": the winner picks one that is left; the sponsor name shows; stock 4 -> 3 (R22)', () => {
+test('T36: GOLD "€20 VOUCHER": the winner picks one that is left; the sponsor name shows; stock 5 -> 4 (R22)', () => {
   const sess = newSession();
   const r = win(sess, 'gold', { item: 'one4all20' });
   const it = r.items.find((i) => i.kind === 'sponsor');
   assert.equal(it.tier, 'gold');
   assert.equal(it.label, 'ONE4ALL €20 VOUCHER');
   assert.equal(it.sponsorName, 'ONE4ALL');
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 3);
-  assert.deepEqual(R.itemsLeft('gold', sess.s, CONFIG).map((i) => [i.id, i.left]), [['lidl20', 3]]);
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 4);
+  assert.deepEqual(R.itemsLeft('gold', sess.s, CONFIG).map((i) => [i.id, i.left]), [['lidl20', 3], ['one4all20', 1]]);
 });
 
 test('T37: SILVER "GAMING OR DAY OUT" and BRONZE "GIFT": the winner picks what is left (R22)', () => {
@@ -62,7 +62,7 @@ test('T38: one sponsor prize per nickname per day: Y gives +2 draw entries inste
   assert.equal(r.p.tickets.length, 1 + CONFIG.tickets.swap); // chimney 10 ticket + the swap
   assert.deepEqual(r.steps.filter((x) => ['nick', 'sponsor', 'tickets'].includes(x)), ['nick', 'sponsor', 'tickets']);
   assert.ok(!r.items.some((i) => i.kind === 'sponsor'));
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 3); // 1 given, the second one is free again
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 4); // 1 given, the second one is free again
   const other = win(sess, 'bronze', { nick: 'ANA', done: false });
   assert.equal(R.alreadyWon(other.p, sess.s), false);
 });
@@ -280,7 +280,7 @@ test('T46: the draw (jackpot off): bronze, silver, gold; NOT HERE draws the same
   assert.equal(s.jackpotPaid, 0);
   assert.equal(s.tiers.bronze.given, 7);
   assert.equal(s.tiers.silver.given, 4);
-  assert.equal(s.tiers.gold.left, 4); // stays with the team
+  assert.equal(s.tiers.gold.left, 5); // stays with the team
 });
 
 test('T46b: the draw with the jackpot on: the items, then the jackpot last; one ticket kept for it (R13, R14)', () => {
@@ -356,41 +356,15 @@ test('T48: staff fixes are logged; test mode keeps its own stock; times only cou
   assert.equal(timeState(cfgWith({}), day(9, 0)), '');
 });
 
-test('T58: the top score prize: best finished live payment up to 12:50 on the event day, ties = latest, given once, undo logged (R29)', () => {
-  const sess = newSession();
-  assert.equal(topScore(sess.s, CONFIG).p, null);
-  assert.throws(() => R.topBody(sess.s, CONFIG)); // nobody played yet
-  playPayment(sess, 'p1', { tries: [18], choices: ['sweet'], nick: 'AMY' });
-  playPayment(sess, 'p1', { tries: [18], choices: ['sweet'], nick: 'BEN' }); // a tie: the latest one leads (L1)
-  const open = playPayment(sess, 'p1', { tries: [40], done: false, choices: ['sweet'], wheel: ['t2'] }); // not finished: does not count
-  assert.equal(open.p.status, 'open');
-  assert.equal(topScore(sess.s, CONFIG).p.nick, 'BEN');
-  const ev = sess.commit(R.topBody(sess.s, CONFIG));
-  assert.deepEqual([ev.nick, ev.best, ev.item], ['BEN', 18, 'one4allTop']);
-  assert.equal(stock(sess.s, CONFIG).left.one4allTop, 0);
-  assert.throws(() => R.topBody(sess.s, CONFIG)); // never twice
-  assert.throws(() => R.undoTopBody(''));
-  sess.commit(R.undoTopBody('wrong player'));
-  assert.equal(topGiven(sess.s), null);
-  assert.equal(stock(sess.s, CONFIG).left.one4allTop, 1);
-  // on the event day, a payment made after 12:50 (O override) does not count
-  const day = newSession();
-  playPayment(day, 'p1', { tries: [12], choices: ['sweet'], nick: 'EARLY', at: new Date(2026, 10, 26, 12, 40).getTime() });
-  playPayment(day, 'p1', { tries: [33], choices: ['sweet'], wheel: ['t2'], nick: 'LATE', at: new Date(2026, 10, 26, 12, 55).getTime() });
-  assert.equal(topScore(day.s, CONFIG).p.nick, 'EARLY');
-  assert.equal(summary(sess.s, CONFIG).top, null);
-});
-
 test('T59: the draw: bronze, silver, gold, then GTA 6 LAST; reserved items are never on the wheel or picked at a hand-over (R14, R22)', () => {
   const sess = newSession();
-  for (let i = 0; i < 12; i++) win(sess, 't2'); // 36 draw entries: enough for every item
+  for (let i = 0; i < 12; i++) win(sess, 't2'); // 36 draw entries: enough for every item (21)
   const order = [];
   for (let g = 0; g < 40 && drawState(sess.s, CONFIG).next; g++) order.push(sess.commit(R.drawBody(sess.s, CONFIG, Math.random, sess.clock)));
   const tiers = order.map((d) => d.tier);
-  assert.deepEqual(tiers, [...Array(7).fill('bronze'), ...Array(8).fill('silver'), ...Array(4).fill('gold'), 'reserved']);
+  assert.deepEqual(tiers, [...Array(7).fill('bronze'), ...Array(8).fill('silver'), ...Array(5).fill('gold'), 'reserved']);
   assert.equal(order.at(-1).item, 'gta6');
   assert.ok(!CONFIG.wheel.outcomes.some((o) => o.sponsor === 'reserved'));
-  assert.ok(!order.some((d) => d.item === 'one4allTop')); // the top score voucher is never drawn
   const p = sess.s.payments[0];
   assert.throws(() => R.itemBody({ ...p, sponsor: 'gold', item: null, swapped: false }, 'gta6', sess.s, CONFIG));
 });
