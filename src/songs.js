@@ -63,29 +63,46 @@ export const CRASH = {
   loopFrom: 0,
 };
 
-// Title screen (A5): a bright, quick "Christmas waltz" of Silent Night, made to catch people walking past.
-// 1) a 4-bar hook (the song's first notes, fast, with a cymbal), 2) the melody on high music-box bells with
-// sparkle fills in every long note, 3) a key change up with the full chip band, then back to the hook.
-// About 60 s per loop at CONFIG.music.menuBpm = 156.
-const HOOK = 'G5 .5 A5 .5 G5 .5 E5 .5 G5 1 | A5 .5 C6 .5 A5 .5 F5 .5 A5 1 | G5 .5 B5 .5 G5 .5 D5 .5 F5 1 | G4 .5 B4 .5 D5 .5 F5 .5 G5 1 |';
-// counter = bell fills on the long melody notes (one bar per melody bar, bars 1-23; bar 24 is the turn).
-const FILLS = `
-  R 3 | R 1 G5 .5 C6 .5 E6 .5 C6 .5 | R 3 | R 1 E6 .5 D6 .5 C6 .5 G5 .5 |
-  R 3 | R 1 D6 .5 F6 .5 D6 .5 B5 .5 | R 3 | R 1 C6 .5 E6 .5 G6 .5 E6 .5 |
-  R 3 | R 3 | R 3 | R 1 G5 .5 A5 .5 G5 .5 E5 .5 |
-  R 3 | R 3 | R 3 | R 1 C6 .5 A5 .5 G5 .5 E5 .5 |
-  R 3 | R 3 | R 1 E6 .5 G6 .5 E6 .5 C6 .5 | R 1 G6 .5 E6 .5 C6 .5 G5 .5 |
-  R 3 | R 3 | R 1 E5 .5 G5 .5 C6 .5 E6 .5 |`;
-const VERSE_CHORDS = SILENT_CHORDS.split(' ').slice(0, 23).join(' ');
+// Title screen (A5): Silent Night as a loud Christmas chiptune DANCE track, made to stop people walking past.
+// 4/4 at CONFIG.music.menuBpm (160): kick on every beat, snare on 2 and 4, pumping octave bass, 16th-note
+// arpeggios, and a quick riff in every gap of the melody. 1) a 4-bar hook with a cymbal, 2) the melody,
+// 3) a drum roll and a key change up with everything louder, then back to the hook. About 78 s per loop.
+const HOOK = `
+  G5 .5 A5 .5 G5 .5 E5 .5 R .5 E5 .5 G5 1 | A5 .5 C6 .5 A5 .5 F5 .5 R .5 F5 .5 A5 1 |
+  G5 .5 B5 .5 G5 .5 D5 .5 R .5 D5 .5 F5 1 | G5 .25 G5 .25 G5 .5 F5 .5 D5 .5 B4 .5 D5 .5 G5 1 |`;
+// The 3/4 melody in 4/4: every two old bars (6 beats) + a 2-beat gap = two new bars. The riffs fill the gaps.
+const toFour = (melody) => {
+  const bars = melody.split('|').map((x) => x.trim()).filter(Boolean);
+  const out = [];
+  for (let k = 0; k < bars.length; k += 2) out.push(`${bars[k]} ${bars[k + 1]} R 2`);
+  return out.join(' | ');
+};
+const SILENT44 = toFour(SILENT);
+// One riff (2 beats of 16ths) per gap, matching the chord there. The last bar (24) is the turn (4 beats).
+const RIFF = {
+  C: ['G5 .25 A5 .25 G5 .25 E5 .25 C6 .5 G5 .5', 'C6 .25 B5 .25 G5 .25 E5 .25 G5 .5 C6 .5', 'E5 .25 G5 .25 C6 .25 E6 .25 D6 .5 C6 .5'],
+  G7: ['B5 .25 D6 .25 B5 .25 G5 .25 F5 .5 D5 .5', 'G5 .25 B5 .25 D6 .25 F6 .25 D6 .5 B5 .5'],
+  F: ['A5 .25 C6 .25 A5 .25 F5 .25 C6 .5 A5 .5', 'F5 .25 A5 .25 C6 .25 F6 .25 C6 .5 A5 .5'],
+};
+const DANCE_CHORDS = SILENT_CHORDS.split(' ').slice(0, 23);
+const RIFFS = (() => {
+  const used = { C: 0, G7: 0, F: 0 };
+  const out = [];
+  for (let k = 1; k < 22; k += 2) { // the second bar of each pair (bars 2, 4, ... 22) has the gap
+    const c = DANCE_CHORDS[k];
+    out.push(`R 4 | R 2 ${RIFF[c][used[c]++ % RIFF[c].length]}`);
+  }
+  return `${out.join(' | ')} | R 4 |`; // bar 23: the last melody note
+})();
 export const MENU = {
   sections: [
-    sec('hook', HOOK, 'C F G7 G7', 3, { lead: 'square', bass: 'waltz', drums: 'waltzbig', up: 0, double: true }),
-    // last bar A7 = the turn into the new key (D); a snare roll lifts it
-    sec('bells', SILENT, `${VERSE_CHORDS} A7`, 3, { lead: 'bell', oct: 12, bass: 'waltz', drums: 'waltz', up: 0, fill: true,
-      counter: `${FILLS} A4 .5 C#5 .5 E5 .5 G5 .5 A5 .5 C#6 .5 |` }),
-    // 2 semitones up (D). The last bar F7 + 2 = G7 leads back to the hook in C.
-    sec('band', SILENT, `${VERSE_CHORDS} F7`, 3, { lead: 'square', bass: 'waltz', arp: true, drums: 'waltzbig', up: 2, double: true, fill: true,
-      counter: `${FILLS} F4 .5 A4 .5 C5 .5 Eb5 .5 F5 .5 A5 .5 |` }),
+    sec('hook', HOOK, 'C F G7 G7', 4, { lead: 'square', bass: 'pump', arp16: true, drums: 'dancebig', up: 0, double: true }),
+    // last bar A7 = the turn into the new key (D), with a snare roll
+    sec('dance', SILENT44, `${DANCE_CHORDS.join(' ')} A7`, 4, { lead: 'square', bass: 'pump', drums: 'dance', up: 0, double: true, fill: true,
+      counter: `${RIFFS} A4 .5 C#5 .5 E5 .5 G5 .5 A5 .5 C#6 .5 E6 .5 G6 .5 |` }),
+    // 2 semitones up (D), everything louder. The last bar F7 + 2 = G7 leads back to the hook in C.
+    sec('dance-up', SILENT44, `${DANCE_CHORDS.join(' ')} F7`, 4, { lead: 'square', bass: 'pump', arp16: true, drums: 'dancebig', up: 2, double: true, fill: true,
+      counter: `${RIFFS} F4 .5 A4 .5 C5 .5 Eb5 .5 F5 .5 A5 .5 C6 .5 Eb6 .5 |` }),
   ],
   loopFrom: 0,
 };
@@ -140,13 +157,19 @@ export function sectionEvents(s) {
   bars.forEach((name, bar) => {
     const tones = chordTones(name).map((t) => t + s.up);
     const at = bar * bpb;
-    if (s.bass === 'waltz') {
+    if (s.bass === 'pump') { // dance: root on every eighth, jumping between two octaves
+      for (let k = 0; k < bpb * 2; k++) ev.push({ b: at + k / 2, len: 0.45, kind: 'bass', m: 36 + (tones[0] % 12) + (k % 2 ? 12 : 0), vol: k % 2 ? 0.55 : 0.8 });
+    } else if (s.bass === 'waltz') {
       ev.push({ b: at, len: 2.5, kind: 'bass', m: 36 + tones[0] });
       ev.push({ b: at + 1, len: 1, kind: 'arp', m: 60 + tones[1] }, { b: at + 2, len: 1, kind: 'arp', m: 60 + tones[2] });
     } else {
       const vol = s.bass === 'soft' ? 0.6 : 1;
       ev.push({ b: at, len: 1, kind: 'bass', m: 36 + (tones[0] % 12), vol }, { b: at + 2, len: 1, kind: 'bass', m: 36 + (tones[2] % 12), vol });
       if (s.bass === 'oompah') ev.push({ b: at + 1, len: 0.5, kind: 'arp', m: 60 + tones[1] }, { b: at + 3, len: 0.5, kind: 'arp', m: 60 + tones[2] });
+    }
+    if (s.arp16) { // 16th-note sparkle: up and down the chord, an octave above the melody
+      const run = [0, 1, 2, 3, 2, 1].map((i) => (i < tones.length ? tones[i] : tones[0] + 12));
+      for (let k = 0; k < bpb * 4; k++) ev.push({ b: at + k / 4, len: 0.25, kind: 'arp', m: 72 + run[k % run.length], vol: 0.5 });
     }
     if (s.arp) for (let k = 0; k < bpb * 2; k++) ev.push({ b: at + k / 2, len: 0.5, kind: 'arp', m: 72 + tones[k % tones.length], vol: 0.6 });
     const roll = s.fill && bar === bars.length - 1; // last bar: a snare roll that grows
@@ -159,13 +182,18 @@ export function sectionEvents(s) {
         if (big && k === 5 && !roll) ev.push({ b: at + beat, len: 0.25, kind: 'kick', vol: 0.5 });
         if (roll) ev.push({ b: at + beat, len: 0.25, kind: 'snare', vol: 0.3 + 0.13 * k });
         else if (k === 2 || k === 4) ev.push({ b: at + beat, len: 0.25, kind: 'snare', vol: big ? 0.7 : 0.35 });
+      } else if (s.drums === 'dance' || s.drums === 'dancebig') { // 4/4: kick on every beat, snare on 2 and 4
+        const big = s.drums === 'dancebig';
+        if (k % 2 === 0 && !(roll && k >= 4)) ev.push({ b: at + beat, len: 0.25, kind: 'kick', vol: big ? 1 : 0.85 });
+        if (roll) ev.push({ b: at + beat, len: 0.25, kind: 'snare', vol: 0.3 + 0.1 * k }, { b: at + beat + 0.25, len: 0.25, kind: 'snare', vol: 0.25 + 0.1 * k });
+        else if (k === 2 || k === 6) ev.push({ b: at + beat, len: 0.25, kind: 'snare', vol: big ? 0.9 : 0.7 });
       } else if (s.drums === 'drive' || s.drums === 'big') {
         if (k % 4 === 0 || (s.drums === 'big' && k % 2 === 0)) ev.push({ b: at + beat, len: 0.25, kind: 'kick' });
         if (k % 4 === 2) ev.push({ b: at + beat, len: 0.25, kind: 'snare' });
       } else if (s.drums === 'bells' && k % 8 === 0) ev.push({ b: at + beat, len: 0.25, kind: 'kick', vol: 0.6 });
     }
   });
-  if (s.drums === 'big' || s.drums === 'waltzbig') ev.push({ b: 0, len: 2, kind: 'crash' });
+  if (s.drums === 'big' || s.drums === 'waltzbig' || s.drums === 'dancebig') ev.push({ b: 0, len: 2, kind: 'crash' });
   return ev.sort((x, y) => x.b - y.b);
 }
 
