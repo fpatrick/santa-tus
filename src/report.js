@@ -13,14 +13,14 @@ const time = (ts) => (ts ? new Date(ts).toLocaleString('en-IE') : '');
 export function buildCsv(s, cfg, label = 'live', now = Date.now()) {
   const rows = [[
     'time', 'payment', 'price_eur', 'price', 'status', 'tries_bought', 'tries_played', 'best_chimney', 'nickname',
-    'chimney10', 'wheel', 'sponsor_tier', 'sponsor_item', 'sponsor', 'ticket_numbers', 'jackpot_paid_eur', 'cash10_paid_eur',
+    'chimney10', 'wheel', 'sponsor_tier', 'sponsor_item', 'sponsor', 'draw_entry_numbers', 'jackpot_paid_eur', 'cash10_paid_eur',
     'legend', 'mythic', 'godlike', 'reason',
   ]];
   for (const p of s.payments) {
     const it = p.item ? itemById(cfg, p.item) : null;
     rows.push([
       time(p.ts), p.pid, p.amount, p.kind, p.status, p.triesBought, p.tries.length, p.best, displayName(p, cfg),
-      p.p10 || '', p.wheel || '', p.swapped ? `${p.sponsor} (swapped for tickets)` : p.sponsor || '', it ? it.label : '', it ? it.sponsor : '',
+      p.p10 || '', p.wheel || '', p.swapped ? `${p.sponsor} (swapped for draw entries)` : p.sponsor || '', it ? it.label : '', it ? it.sponsor : '',
       p.tickets.map(fmtTicket).join(' '), p.jackpotWon || 0, p.cash || 0,
       p.best >= cfg.thresholds.legend ? 'yes' : '', p.best >= cfg.thresholds.mythic ? 'yes' : '', p.best >= cfg.thresholds.beat ? 'yes' : '', p.reason,
     ]);
@@ -37,10 +37,11 @@ export function buildCsv(s, cfg, label = 'live', now = Date.now()) {
   rows.push(['10 eur cash paid (eur)', sm.cashPaid]);
   rows.push(['sweets given', sm.sweets]);
   for (const [tier, x] of Object.entries(sm.tiers)) rows.push([`${tier} items given / left`, x.given, x.left]);
-  rows.push(['tickets given', sm.tickets]);
+  rows.push(['draw entries given', sm.tickets]);
+  rows.push(['cards used', sm.cards]);
   const v = drawValidity(s);
   rows.push([]);
-  rows.push(['DRAW', 'time', 'prize', 'ticket', 'amount_eur', 'note']);
+  rows.push(['DRAW', 'time', 'prize', 'draw_entry', 'amount_eur', 'note']);
   for (const d of s.draws) {
     const it = d.item ? itemById(cfg, d.item) : null;
     const note = d.n <= v.undoN ? 'undone' : v.notHere.has(d.id) ? 'not here' : '';

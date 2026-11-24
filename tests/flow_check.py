@@ -139,11 +139,11 @@ def run():
             pg.wait_for_function("document.activeElement && document.activeElement.classList.contains('nick')")
             pg.keyboard.type("Sam")
             pg.keyboard.press("Enter")
-            overlay_title(pg, "YOUR DRAW TICKETS")  # R12: the one ticket screen
+            overlay_title(pg, "YOUR DRAW ENTRIES")  # R12: the one ticket screen
             assert "#0001" in pg.inner_text("#overlay")
             overlay_title(pg, "HAND-OVER")
             txt = pg.inner_text("#overlay")
-            assert "SWEET" in txt and "GIVE 1 TICKET #0001" in txt, txt
+            assert "SWEET" in txt and "WRITE ON THE NEXT CARD: DRAW ENTRY #0001" in txt, txt
             pg.keyboard.press("Enter")
             pg.wait_for_function("document.querySelector('.board .nm') && document.querySelector('.board .nm').textContent === 'SAM'")
             kinds = [e["t"] for e in server_events(port)]
@@ -152,9 +152,9 @@ def run():
 
             # T50: TICKETS ONLY key 5 = €6.50 for 3 tickets: no game, straight to the ticket screen (R1, R12)
             pay(pg, "5")
-            overlay_title(pg, "YOUR DRAW TICKETS")
+            overlay_title(pg, "YOUR DRAW ENTRIES")
             overlay_title(pg, "HAND-OVER")
-            assert "GIVE 3 TICKETS #0002-#0004" in pg.inner_text("#overlay"), pg.inner_text("#overlay")
+            assert "WRITE ON THE NEXT CARD: DRAW ENTRIES #0002 TO #0004" in pg.inner_text("#overlay"), pg.inner_text("#overlay")
             pg.keyboard.press("Enter")
             pg.wait_for_function("santa.scene === 'attract' && !santa.flowActive", timeout=10000)
             last = server_events(port)[-3:]
@@ -202,7 +202,7 @@ def run():
             pg.keyboard.press("1")
             overlay_title(pg, "HAND-OVER", timeout=20000)
             txt = pg.inner_text("#overlay")
-            assert "GOLD: GIVE VUE CINEMA" in txt and "SPONSOR: VUE CINEMA" in txt and "GIVE 2 TICKETS" in txt, txt
+            assert "GOLD: GIVE VUE CINEMA" in txt and "SPONSOR: VUE CINEMA" in txt and "DRAW ENTRIES #0" in txt and "TICKET" not in txt.replace("4 TICKETS", ""), txt
             pg.keyboard.press("Enter")
             print("ok - T36: €10 = 5 tries + bonus ticket, GOLD pick with the sponsor name on the hand-over")
 
@@ -227,7 +227,7 @@ def run():
             pg.keyboard.press("y")
             overlay_title(pg, "HAND-OVER")
             txt = pg.inner_text("#overlay")
-            assert "BRONZE" not in txt and "GIVE 3 TICKETS" in txt, txt  # chimney 10 + the 2 swap tickets, one screen
+            assert "BRONZE" not in txt and "DRAW ENTRIES #" in txt and " TO #" in txt, txt  # chimney 10 + the 2 swap tickets, one screen
             pg.keyboard.press("Enter")
             print("ok - T38: one sponsor prize per nickname: Y gives +2 tickets instead")
 
@@ -244,7 +244,7 @@ def run():
             boot(pg, url)
             overlay_title(pg, "YOUR WHEEL RESULT", timeout=20000)
             to_handover(pg)
-            assert "GIVE 3 TICKETS" in pg.inner_text("#overlay")
+            assert "WRITE ON THE NEXT CARD: DRAW ENTRIES" in pg.inner_text("#overlay")
             pg.keyboard.press("Enter")
             wheels = [e for e in server_events(port) if e["t"] == "award" and e["kind"] == "wheel"]
             assert len(wheels) == 4 and len({e["pid"] for e in wheels}) == 4, wheels

@@ -139,7 +139,7 @@ export function handover({ items, pid, best, name }) {
     const T = CONFIG.text;
     const li = items.map((it) => {
       if (it.kind === 'tickets') {
-        const text = T.giveTickets.replace('{n}', it.count).replace('{TICKETS}', it.count > 1 ? 'TICKETS' : 'TICKET').replace('{range}', fmtRange(it.tickets));
+        const text = T.giveTickets.replace('{n}', it.count).replace('{TICKETS}', it.count > 1 ? T.tickets : T.ticket).replace('{range}', fmtRange(it.tickets, T.rangeTo));
         return `<li class="tickets">${esc(text)}</li>`;
       }
       if (it.kind === 'sponsor') {

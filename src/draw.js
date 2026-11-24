@@ -86,10 +86,10 @@ export function drawScreen(ev, pool) {
       });
     };
     if (ev.ticket == null) {
-      num.textContent = ev.prize === 'jackpot' ? 'NO TICKETS' : 'TO THE TEAM';
+      num.textContent = ev.prize === 'jackpot' ? CONFIG.text.noTickets : 'TO THE TEAM';
       num.style.fontSize = '80px';
       el.querySelector('.who').textContent = ev.prize === 'jackpot' ? 'THE JACKPOT STAYS WITH THE CHARITY.'
-        : `NOT ENOUGH TICKETS: ${(ev.items || []).length} ITEMS STAY WITH THE TEAM${CONFIG.JACKPOT_ENABLED ? ' (ONE TICKET IS KEPT FOR THE JACKPOT)' : ''}.`;
+        : `${CONFIG.text.fewTickets}: ${(ev.items || []).length} ITEMS STAY WITH THE TEAM${CONFIG.JACKPOT_ENABLED ? ` (${CONFIG.text.keptForJackpot})` : ''}.`;
       after();
       return;
     }

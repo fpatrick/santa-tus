@@ -65,7 +65,7 @@ function playerInfo(p) {
   let spinText = spin ? spin.label : null;
   if (p.jackpotWon) spinText = `${CONFIG.text.jackpot} ${fmtEuro(p.jackpotWon)}`;
   if (item) spinText = `${spinText}: ${item.label}`;
-  if (p.swapped) spinText = `${spinText} (+${CONFIG.tickets.swap} TICKETS)`;
+  if (p.swapped) spinText = `${spinText} (+${CONFIG.tickets.swap} ${CONFIG.text.tickets})`;
   return {
     name: displayName(p, CONFIG), best: p.best, open: p.status === 'open', triesLeft: Math.max(0, R.triesLeft(p)),
     p10: tile ? (tile.id === 'free' ? 'FREE TRY (INSTEAD OF SWEET)' : tile.label) : null,

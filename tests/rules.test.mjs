@@ -3,8 +3,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG } from '../src/config.js';
 import * as R from '../src/rules.js';
-import { totals, leaderboard, legends, displayName, rankOf } from '../src/ledger.js';
-import { baseOdds } from '../src/prizes.js';
+import { totals, leaderboard, legends, displayName, rankOf, fmtRange } from '../src/ledger.js';
+import { baseOdds, summary } from '../src/prizes.js';
 import { newSession, playPayment, cfgWith } from './helpers.mjs';
 
 const kinds = (items) => items.map((i) => i.kind);
@@ -27,8 +27,41 @@ test('T33: keys 1-6: PLAY €2.50/1, €6.50/3, €10/5 + 1 bonus ticket; TICKET
     assert.equal(ev.bonus, bonus, `key ${key}`);
     assert.equal(ev.buy, buy, `key ${key}`);
   }
-  assert.equal(CONFIG.prices.find((p) => p.key === '3').badge, 'BEST VALUE +1 BONUS TICKET');
+  assert.equal(CONFIG.prices.find((p) => p.key === '3').badge, 'BEST VALUE +1 BONUS DRAW ENTRY');
   assert.throws(() => R.payBody(newSession().s, 'p2', CONFIG)); // the old €2 price is gone
+});
+
+test('T55: on screen a draw ticket is always a DRAW ENTRY, never a ticket or raffle ticket; a play is a TRY (R12)', () => {
+  const seen = [];
+  const walk = (v, path) => {
+    if (typeof v === 'string') seen.push([path, v]);
+    else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) walk(x, `${path}.${k}`);
+  };
+  walk(CONFIG.text, 'text');
+  for (const p of CONFIG.prices) { walk(p.label, `prices.${p.id}.label`); walk(p.badge, `prices.${p.id}.badge`); }
+  for (const o of CONFIG.wheel.outcomes) { walk(o.label, `wheel.${o.id}.label`); walk(o.short, `wheel.${o.id}.short`); }
+  walk(CONFIG.wheel.soldOut, 'wheel.soldOut');
+  walk(CONFIG.wheel.jackpotDone, 'wheel.jackpotDone');
+  const bad = seen.filter(([, v]) => /TICKET|RAFFLE/i.test(v.replace(/\{\w+\}/g, ''))); // {TICKETS} is a placeholder, not a word on screen
+  assert.deepEqual(bad, []);
+  assert.equal(CONFIG.text.ticket, 'DRAW ENTRY');
+  assert.equal(CONFIG.text.tickets, 'DRAW ENTRIES');
+  assert.equal(CONFIG.wheel.outcomes.find((o) => o.id === 't2').label, '+2 DRAW ENTRIES');
+  assert.equal(CONFIG.wheel.soldOut.replace('\n', ' '), 'SOLD OUT - +2 DRAW ENTRIES');
+  assert.deepEqual(CONFIG.prices.filter((p) => p.type === 'tickets').map((p) => p.label), ['€2.50 = 1 DRAW ENTRY', '€6.50 = 3 DRAW ENTRIES', '€10 = 6 DRAW ENTRIES']);
+  assert.equal(CONFIG.text.alreadyWonHint.replace('{n}', 2).split(' · ')[0], 'Y = GIVE +2 DRAW ENTRIES INSTEAD');
+  assert.equal(fmtRange([12, 13, 14], CONFIG.text.rangeTo), '#0012 TO #0014');
+});
+
+test('T56: "cards used" = payments that got at least 1 draw entry (one paper card each) (R12)', () => {
+  const sess = newSession();
+  playPayment(sess, 'p1', { tries: [12], choices: ['sweet'] }); // 1 entry: card 1
+  playPayment(sess, 'p1', { tries: [4] }); // no entry: no card
+  playPayment(sess, 't6'); // 6 entries: card 2
+  playPayment(sess, 'p5', { tries: [3, 3, 3, 3, 3] }); // bonus entry: card 3
+  const sm = summary(sess.s, CONFIG);
+  assert.equal(sm.cards, 3);
+  assert.equal(sm.tickets, 8);
 });
 
 test('T50: TICKETS ONLY (keys 4-6): no game, straight to the ticket screen, then the hand-over (R1, R12)', () => {

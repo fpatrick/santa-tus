@@ -72,7 +72,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 
 - NOT on the wheel (part 2): One4all €20 x1 (top score prize) and GTA 6 for PS5 (draw prize).
 - The prize screens show the sponsor name (text only; logos later).
-- **R23 One sponsor prize per nickname per day:** a sponsor winner is always asked for a nickname. If that nickname already won a sponsor prize today, staff see "ALREADY WON A PRIZE TODAY? Y = GIVE +2 TICKETS INSTEAD" [`tickets.swap`]. Staff decide (Y or N). The default nickname (skipped) is never matched.
+- **R23 One sponsor prize per nickname per day:** a sponsor winner is always asked for a nickname. If that nickname already won a sponsor prize today, staff see "ALREADY WON A PRIZE TODAY? Y = GIVE +2 DRAW ENTRIES INSTEAD" [`tickets.swap`]. Staff decide (Y or N). The default nickname (skipped) is never matched.
 - An item is **reserved** when the wheel lands on its tier (so stock can never go below 0) and **given** when staff confirm the item (the pick screen). Y in R23 gives +2 tickets and frees the reservation.
 
 **R7 The wheel** [`wheel.outcomes`]
@@ -86,7 +86,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 | +2 TICKETS | 38% |
 
 - **R24 Fallbacks**, worked out before every spin from the saved log (`prizes.js liveOdds`):
-  - a tier (GOLD, SILVER, BRONZE) with no items left: its chance goes to +2 TICKETS. On the wheel its slice shows "SOLD OUT - +2 TICKETS".
+  - a tier (GOLD, SILVER, BRONZE) with no items left: its chance goes to +2 TICKETS. On the wheel its slice shows "SOLD OUT - +2 DRAW ENTRIES".
   - the live odds always add up to exactly 100% (the +2 TICKETS slice takes what is left).
 - The computer picks the result with `secureRandom()` and SAVES it before the animation (D1). The slice sizes on the wheel are the live odds. After a crash the same result is shown again; a payment never spins twice (D11).
 - The wheel screen always shows the live odds and the items left per tier.
@@ -102,7 +102,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 
 **R12-R14 Tickets, jackpot and draw**
 
-- **R12 Draw tickets:** always called "draw ticket" on screen [`text.ticket`]. A payment collects tickets from: each try that reaches 10 (+1), key 3 bonus (+1), chimney 30 (+5), the wheel +2 TICKETS slice (+2), R23 swap (+2), and the TICKETS ONLY keys (1, 3 or 6). They are all given at the END of the payment, on ONE ticket screen that lists where they came from and their numbers ("GIVE 4 TICKETS #0012-#0015"); this is one `award` event (kind `tickets`). Numbers start at #0001 and go up by 1: they never repeat and never skip. Staff hand out pre-numbered cloakroom tickets in the same order.
+- **R12 Draw tickets:** On screen, draw tickets are called DRAW ENTRIES (one: DRAW ENTRY) [`text.ticket`, `text.tickets`]; a game play is always a TRY. Code, config and SPEC keep "draw ticket". A payment collects tickets from: each try that reaches 10 (+1), key 3 bonus (+1), chimney 30 (+5), the wheel +2 TICKETS slice (+2), R23 swap (+2), and the TICKETS ONLY keys (1, 3 or 6). They are all given at the END of the payment, on ONE ticket screen ("YOUR DRAW ENTRIES") that lists where they came from and their numbers; the hand-over says "WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0015"; this is one `award` event (kind `tickets`). Numbers start at #0001 and go up by 1: they never repeat and never skip. Staff give ONE plain paper card per payment and write the range on it (no cloakroom tickets): about 70-110 cards a day. The F9 summary shows "Cards used" (payments with at least 1 draw entry) and "NEXT DRAW ENTRY".
 - **R13 Jackpot: OFF** [`JACKPOT_ENABLED = false`]. When off, the jackpot is hidden everywhere (title screen, panel, wheel, draw, staff summary, odds sheet) and has no wheel slice. The old jackpot code stays (not deleted) for a later year: start €10, +€10 every hour, max €30, at most 2 wheel wins a day [`jackpot`].
 - **R14 The draw** (12:45 [`event.drawTime`], started by staff in F9, never automatic):
   - The prizes are every sponsor item not won yet. Order: bronze items, then silver, then gold. Each draw is for one named item. (Part 2 adds the GTA 6 draw prize.)
@@ -115,7 +115,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 
 **Fair play**
 
-- **R16 Hand-over:** the last screen lists everything to give: "GIVE 1 SWEET", "SILVER: GIVE LIDL €20 VOUCHER" + sponsor name, "GIVE 4 TICKETS #0012-#0015". The €10 CASH fallback ("PAY €10") is confirmed twice. Staff confirm everything with Enter.
+- **R16 Hand-over:** the last screen lists everything to give: "GIVE 1 SWEET", "SILVER: GIVE LIDL €20 VOUCHER" + sponsor name, "WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0015". The €10 CASH fallback ("PAY €10") is confirmed twice. Staff confirm everything with Enter.
 - **R17 No pressure:** after a payment the game goes back to the title screen. It never asks "play again?".
 - **R18 Odds shown:** in the title screen loop, on the wheel screen (live odds), and on the A4 sheet `print/odds.html`.
 
@@ -129,7 +129,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 | S4 | Get ready: "CLICK TO FLY", tries left, best | player | game.js HUD |
 | S5 | Play: chimney count, level, tries left, best, next goal. A new level plays a sound only (no text). A warning glow between chimney and presents just before each level change | player | game.js, flow.flightHooks |
 | S6 | Try over: the crash scene C1-C4 (Santa speaks), or "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce, crash.js |
-| S7 | Wheel: live odds and items left per tier, "SOLD OUT - +2 TICKETS" on empty tiers; "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
+| S7 | Wheel: live odds and items left per tier, "SOLD OUT - +2 DRAW ENTRIES" on empty tiers; "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
 | S8 | Chimney 10 choice: SWEET or FREE TRY, big tiles, mouse | player | screens.choice |
 | S9 | Nickname: for the best players list, LEGEND, MYTHIC, GODLIKE and every sponsor winner (R23). Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
 | S10 | Ticket screen (R12): all tickets of the payment with where they came from and the numbers. Then the hand-over (R16): €10 CASH confirmed twice, then the list. (The "already won today?" check and the item pick (R23) come just before the ticket screen.) Enter saves and goes back to S1 | staff | screens.handover, handover.js |
@@ -319,7 +319,7 @@ Simulation: 10,000 days per case, 18 cases (node scripts/simulate.js). Guesses: 
 
 Checks over all 180,000 days: €10 cash paid <= €30: **PASS** (highest €30) · no jackpot paid while it is off: **PASS** · odds add up to 100% before every spin: **PASS** · state after reload = before: **PASS** · days where prize money was more than the takings: **0**.
 
-How to read it: P(20) / P(30) = the chance that a payment's best try passes chimney 20 / 30. "Left for charity" = takings - €10 cash paid (sweets, tickets and printing are not in it; sponsor items cost nothing). Worst case cash per day is €30 (R27); it only happens when every sponsor prize is gone. "Tickets avg" = draw tickets given a day: have at least 400 cloakroom tickets.
+How to read it: P(20) / P(30) = the chance that a payment's best try passes chimney 20 / 30. "Left for charity" = takings - €10 cash paid (sweets, tickets and printing are not in it; sponsor items cost nothing). Worst case cash per day is €30 (R27); it only happens when every sponsor prize is gone. "Tickets avg" = draw entries given a day; they go on one paper card per payment, so only about 70-110 cards are needed.
 
 ## Open decisions (from the analysis)
 

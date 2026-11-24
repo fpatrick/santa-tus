@@ -195,13 +195,14 @@ export function drawState(s, cfg) {
 export function summary(s, cfg, now = Date.now()) {
   const jp = jackpotInfo(s, cfg, now);
   const st = stock(s, cfg);
-  const out = { taken: 0, payments: 0, cashPaid: 0, sweets: 0, tickets: 0, jackpotPaid: jp.paid, jackpotNow: jp.value, tiers: {} };
+  const out = { taken: 0, payments: 0, cashPaid: 0, sweets: 0, tickets: 0, cards: 0, jackpotPaid: jp.paid, jackpotNow: jp.value, tiers: {} };
   for (const p of s.payments) {
     if (p.status === 'undone') continue;
     out.payments += 1;
     out.taken += p.amount;
     out.cashPaid += p.cash;
     out.tickets += p.tickets.length;
+    if (p.tickets.length) out.cards += 1; // one paper card per payment with at least 1 draw entry
     if (p.p10 === 'sweet' || p.consolation) out.sweets += 1;
   }
   out.taken = Math.round(out.taken * 100) / 100;

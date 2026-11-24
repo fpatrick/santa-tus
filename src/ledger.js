@@ -186,12 +186,12 @@ export function fmtTicket(n) {
   return `#${String(n).padStart(4, '0')}`;
 }
 
-// R12: "#0012-#0013" for one run of numbers (the GIVE screens).
-export function fmtRange(list) {
+// R12: "#0012-#0013" for one run of numbers (sep = ' TO ' for "#0012 TO #0014" on the paper card).
+export function fmtRange(list, sep = '-') {
   const nums = [...list].sort((a, b) => a - b);
   if (!nums.length) return '';
   const run = nums.every((v, i) => i === 0 || v === nums[i - 1] + 1);
-  return run && nums.length > 1 ? `${fmtTicket(nums[0])}-${fmtTicket(nums[nums.length - 1])}` : fmtTickets(nums);
+  return run && nums.length > 1 ? `${fmtTicket(nums[0])}${sep}${fmtTicket(nums[nums.length - 1])}` : fmtTickets(nums);
 }
 
 // Groups ticket numbers into ranges: [41,42,43,50] -> "#0041 TO #0043, #0050"

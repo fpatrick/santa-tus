@@ -38,7 +38,7 @@ function infoHtml(i) {
   const odds = i.live.list.map((x) => `${CONFIG.wheel.outcomes.find((o) => o.id === x.id).label} ${x.odds}%`).join(' · ');
   const ds = i.draw;
   const J = CONFIG.JACKPOT_ENABLED;
-  const drawText = ds.done ? (J && ds.jackpotDraw ? `done · jackpot ticket ${ds.jackpotDraw.ticket ? fmtTicket(ds.jackpotDraw.ticket) : 'none (charity)'}` : 'done')
+  const drawText = ds.done ? (J && ds.jackpotDraw ? `done · jackpot draw entry ${ds.jackpotDraw.ticket ? fmtTicket(ds.jackpotDraw.ticket) : 'none (charity)'}` : 'done')
     : ds.started ? `started · ${ds.unitsLeft} items${J ? ' + jackpot' : ''} to go` : 'not started';
   const cash = `<span>€10 cash fallback (R27):</span> <b>${i.live.cashOn ? 'ON' : 'OFF'}</b>${i.live.list.find((x) => x.id === 'cash').odds ? ' · <b>ON THE WHEEL NOW</b>' : ' · only when all tiers are sold out'} · won ${i.live.caps.cashWins}/${CONFIG.CASH_FALLBACK_MAX_WINS}`;
   return `<div class="grid">
@@ -47,7 +47,8 @@ function infoHtml(i) {
     <div>${J ? `<span>Jackpot paid:</span> ${fmtEuro(sm.jackpotPaid)} · ` : ''}<span>€10 cash paid:</span> ${fmtEuro(sm.cashPaid)}</div>
     ${J ? `<div><span>Jackpot now:</span> <b>${jp.closed ? 'drawn' : fmtEuro(jp.value)}</b>${jp.nextMins ? ` (+${fmtEuro(CONFIG.jackpot.step)} in ${jp.nextMins} min)` : ''} · wheel jackpot ${i.live.caps.jackpotWins}/${CONFIG.jackpot.wheelMaxWins}</div>` : ''}
     <div class="span2">${cash}</div>
-    <div><span>Sweets given:</span> ${sm.sweets} · <span>Tickets:</span> ${sm.tickets} (next ${fmtTicket(i.nextTicket)})</div>
+    <div><span>Sweets given:</span> ${sm.sweets} · <span>Draw entries:</span> ${sm.tickets} · <span>Cards used:</span> <b>${sm.cards}</b></div>
+    <div><span>NEXT DRAW ENTRY:</span> <b>${fmtTicket(i.nextTicket)}</b></div>
     <div><span>Draw:</span> ${drawText}</div>
     ${tiers}
     <div class="span2"><span>Live odds:</span> ${esc(odds)}</div>

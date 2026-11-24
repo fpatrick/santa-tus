@@ -58,7 +58,7 @@ export function crashMessage(p, info, cfg, rnd = Math.random) {
   const prizes = pendingPrizes(p, cfg, info.pillars);
   v.prizes = joinList(prizes);
   const nT = p.ticketsGiven ? p.tickets.length : R.ticketParts(p, cfg).total; // R12: tickets come at the end
-  const tv = { ...v, n: nT, TICKETS: nT === 1 ? 'TICKET' : 'TICKETS' };
+  const tv = { ...v, n: nT, TICKETS: nT === 1 ? cfg.text.ticket : cfg.text.tickets };
   if (left > 0) {
     let line;
     if (info.pillars > (info.prevBest || 0) && info.prevBest > 0) line = T.triesNewBest;

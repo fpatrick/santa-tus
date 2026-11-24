@@ -17,7 +17,7 @@ const JP = cfgWith({ JACKPOT_ENABLED: true }); // the jackpot code stays (R13): 
 const ALL = { gold: 2, silver: 4, bronze: 13 }; // sponsor items at the start of the day (R22)
 const sellOut = (sess, tiers = Object.keys(ALL)) => { for (const t of tiers) for (let i = 0; i < ALL[t]; i++) win(sess, t); };
 
-test('T35: base odds at the start of the day: GOLD 4, SILVER 8, BRONZE 24, FREE TRY 26, +2 TICKETS 38; no cash, no jackpot (R7, R13)', () => {
+test('T35: base odds at the start of the day: GOLD 4, SILVER 8, BRONZE 24, FREE TRY 26, +2 DRAW ENTRIES 38; no cash, no jackpot (R7, R13)', () => {
   const sess = newSession();
   assert.deepEqual(odds(sess), { jackpot: 0, gold: 4, silver: 8, bronze: 24, free: 26, t2: 38, cash: 0 });
   assert.deepEqual(Object.fromEntries(Object.entries(stock(sess.s, CONFIG).tiers).map(([k, T]) => [k, T.left])), ALL);

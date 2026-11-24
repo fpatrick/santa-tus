@@ -98,7 +98,7 @@ async function giveTickets(app, name, p) {
   const ev = await app.commit(name, R.awardBody('tickets', p, app.led(name), CONFIG));
   const T = CONFIG.text;
   const lines = ev.parts.map((x) => `${T.ticketWhy[x.why].replace('{n}', x.tries || x.n)}: +${x.n}`);
-  if (ev.tickets.length) lines.push(`${ev.tickets.length} ${ev.tickets.length === 1 ? T.ticket : T.tickets}: ${fmtRange(ev.tickets)}`);
+  if (ev.tickets.length) lines.push(`${ev.tickets.length} ${ev.tickets.length === 1 ? T.ticket : T.tickets}: ${fmtRange(ev.tickets, T.rangeTo)}`);
   if (ev.legend) lines.push('LEGEND TAG ON YOUR NAME');
   sfx.milestone(ev.legend ? 3 : 2);
   fx.celebrate(ev.legend ? 3 : 2, 640, 560, '', '#ffd23f');

@@ -15,10 +15,10 @@ export const CONFIG = {
   prices: [
     { id: 'p1', type: 'play', amount: 2.5, tries: 1, bonus: 0, key: '1', label: '€2.50 = 1 TRY', badge: '' },
     { id: 'p3', type: 'play', amount: 6.5, tries: 3, bonus: 0, key: '2', label: '€6.50 = 3 TRIES', badge: '' },
-    { id: 'p5', type: 'play', amount: 10, tries: 5, bonus: 1, key: '3', label: '€10 = 5 TRIES', badge: 'BEST VALUE +1 BONUS TICKET' },
-    { id: 't1', type: 'tickets', amount: 2.5, tries: 0, buy: 1, key: '4', label: '€2.50 = 1 TICKET', badge: '' },
-    { id: 't3', type: 'tickets', amount: 6.5, tries: 0, buy: 3, key: '5', label: '€6.50 = 3 TICKETS', badge: '' },
-    { id: 't6', type: 'tickets', amount: 10, tries: 0, buy: 6, key: '6', label: '€10 = 6 TICKETS', badge: '' },
+    { id: 'p5', type: 'play', amount: 10, tries: 5, bonus: 1, key: '3', label: '€10 = 5 TRIES', badge: 'BEST VALUE +1 BONUS DRAW ENTRY' },
+    { id: 't1', type: 'tickets', amount: 2.5, tries: 0, buy: 1, key: '4', label: '€2.50 = 1 DRAW ENTRY', badge: '' },
+    { id: 't3', type: 'tickets', amount: 6.5, tries: 0, buy: 3, key: '5', label: '€6.50 = 3 DRAW ENTRIES', badge: '' },
+    { id: 't6', type: 'tickets', amount: 10, tries: 0, buy: 6, key: '6', label: '€10 = 6 DRAW ENTRIES', badge: '' },
   ],
   freePlay: { tries: 1 }, // K2: a €0 payment after a technical problem
 
@@ -75,12 +75,12 @@ export const CONFIG = {
       { id: 'silver', label: 'SILVER PRIZE', short: 'SILVER\nPRIZE', icon: 'silver', odds: 8, pieces: 1, tier: 3, color: '#b8c4dc', sponsor: 'silver' },
       { id: 'bronze', label: 'BRONZE PRIZE', short: 'BRONZE\nPRIZE', icon: 'bronze', odds: 24, pieces: 2, tier: 3, color: '#d9733a', sponsor: 'bronze' },
       { id: 'free', label: 'FREE TRY', short: 'FREE TRY', icon: 'free', odds: 26, pieces: 3, tier: 1, color: '#27c8ff', freeTry: true },
-      { id: 't2', label: '+2 TICKETS', short: '+2\nTICKETS', icon: 'ticket', odds: 38, pieces: 4, tier: 2, color: '#3dff8b', tickets: 2 },
+      { id: 't2', label: '+2 DRAW ENTRIES', short: '+2 DRAW\nENTRIES', icon: 'ticket', odds: 38, pieces: 4, tier: 2, color: '#3dff8b', tickets: 2 },
       { id: 'cash', label: '€10 CASH', short: '€10', icon: 'note', odds: 0, onWhenAllEmpty: 2, pieces: 1, tier: 4, color: '#ff5a6a', cash: 10 },
     ],
     fallbackTo: 't2',
-    soldOut: 'SOLD OUT\n+2 TICKETS', // on an empty tier's slice
-    jackpotDone: 'DRAW ONLY\n+2 TICKETS', // on the jackpot slice after 2 wheel wins or after the draw
+    soldOut: 'SOLD OUT -\n+2 DRAW ENTRIES', // on an empty tier's slice
+    jackpotDone: 'DRAW ONLY -\n+2 DRAW ENTRIES', // on the jackpot slice after 2 wheel wins or after the draw
     soldOutColor: '#5a5f78',
     tierNames: ['', 'NICE!', 'GREAT!', 'AMAZING!', 'LEGENDARY!'],
     spinSeconds: 5.5, // how long the spin lasts
@@ -172,9 +172,9 @@ export const CONFIG = {
     bestTry: 'BEST TRY COUNTS',
     charity: 'ALL PROFIT GOES TO PAEDIATRIC DIABETES, UHL',
     winTitle: 'WHAT YOU CAN WIN',
-    win10: 'A SWEET OR A FREE TRY + 1 DRAW TICKET EVERY TRY',
+    win10: 'A SWEET OR A FREE TRY, +1 DRAW ENTRY EVERY TRY',
     win20: 'A SPIN ON THE WHEEL',
-    win30: '5 DRAW TICKETS + LEGEND',
+    win30: '+5 DRAW ENTRIES + LEGEND',
     win40: 'MYTHIC TAG',
     win50: 'GODLIKE TAG',
     oddsTitle: 'WHEEL ODDS',
@@ -189,28 +189,34 @@ export const CONFIG = {
     jackpotMax: 'MAX',
     jackpotWaits: 'STARTS WITH THE FIRST GAME',
     jackpotDrawn: 'DRAWN',
-    ticket: 'DRAW TICKET', // used everywhere a ticket is named
-    tickets: 'DRAW TICKETS',
+    // On screen a draw ticket is always a DRAW ENTRY (a game play is always a TRY). Code and SPEC say "ticket".
+    ticket: 'DRAW ENTRY', // used everywhere a draw ticket is named on screen
+    tickets: 'DRAW ENTRIES',
     sponsorsTitle: 'PRIZES FROM OUR SPONSORS',
     sponsorsHow: 'WIN THEM ON THE WHEEL (PASS {n} CHIMNEYS) OR IN THE {draw} DRAW',
-    ticketsOnly: 'TICKETS ONLY (NO GAME)',
+    ticketsOnly: 'DRAW ENTRIES ONLY (NO GAME)',
     play: 'PLAY',
     prizeDraw: 'PRIZE DRAW',
-    ticketsTitle: 'YOUR DRAW TICKETS',
+    ticketsTitle: 'YOUR DRAW ENTRIES',
+    rangeTo: ' TO ', // "#0012 TO #0014" (staff write it on the paper card)
     // R12: where the tickets came from, on the ticket screen. {n} = count.
-    ticketWhy: { per10: 'CHIMNEY 10 (x{n} TRIES)', bonus: 'BONUS TICKET (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', buy: 'BOUGHT' },
+    ticketWhy: { per10: 'CHIMNEY 10 (x{n} TRIES)', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', buy: 'BOUGHT' },
     cashOn: 'CASH FALLBACK',
     itemsLeft: 'ITEMS LEFT',
     lastGames: 'LAST GAMES! THE DRAW IS AT {draw}',
     lateTitle: 'NO NEW PAYMENTS',
     late: 'THE LAST PAYMENT TIME ({time}) IS OVER.',
-    lateDraw: 'THE DRAW IS DONE: NEW TICKETS ARE NOT IN IT.',
+    lateDraw: 'THE DRAW IS DONE: NEW DRAW ENTRIES ARE NOT IN IT.',
     alreadyWon: 'ALREADY WON A PRIZE TODAY?',
-    alreadyWonHint: 'Y = GIVE +{n} TICKETS INSTEAD · N = GIVE THE PRIZE',
-    soldOutNow: 'SOLD OUT: GIVE +{n} TICKETS INSTEAD',
+    alreadyWonHint: 'Y = GIVE +{n} DRAW ENTRIES INSTEAD · N = GIVE THE PRIZE',
+    soldOutNow: 'SOLD OUT: GIVE +{n} DRAW ENTRIES INSTEAD',
     wheelBack: 'YOUR WHEEL RESULT',
-    // S10 hand-over words. {n} = count, {TICKETS} = TICKET/TICKETS, {range} = "#0012-#0013", {amount} = euro.
-    giveTickets: 'GIVE {n} {TICKETS} {range}',
+    // S10 hand-over words. {n} = count, {TICKETS} = DRAW ENTRY/DRAW ENTRIES, {range} = "#0012 TO #0014", {amount} = euro.
+    // One paper card per payment: staff write the range on it.
+    giveTickets: 'WRITE ON THE NEXT CARD: {TICKETS} {range}',
+    noTickets: 'NO DRAW ENTRIES',
+    fewTickets: 'NOT ENOUGH DRAW ENTRIES',
+    keptForJackpot: 'ONE DRAW ENTRY IS KEPT FOR THE JACKPOT',
     payJackpot: 'PAY JACKPOT {amount}',
     payCash: 'PAY {amount}',
     payAgain: 'CONFIRM AGAIN: {what} DONE?',
@@ -241,13 +247,13 @@ export const CONFIG = {
       triesSafe: 'YOUR CHIMNEY 10 PRIZE IS SAFE! {tries} TO WIN EVEN MORE!',
       prizesTitle: ['GAME OVER... BUT YOU WON!', 'WHAT A RIDE!', 'HO HO HO! A WINNER!'],
       prizes: "LET'S GET YOUR PRIZES: {prizes}!",
-      ticketsOnly: 'KEEP YOUR {n} DRAW {TICKETS} SAFE. THE DRAW IS AT {draw}!',
+      ticketsOnly: 'KEEP YOUR {n} {TICKETS} SAFE. THE DRAW IS AT {draw}!',
       waiting: 'WAITING FOR YOU AT THE END: {prizes}!',
       overTitle: ['GAME OVER', 'OH NO... GAME OVER', 'GAME OVER, MY FRIEND'],
       over: ['THE CHIMNEYS WON THIS TIME...', 'I LOST MY HAT AND MY PRESENTS!', 'THAT ROOF CAME OUT OF NOWHERE!'],
       overClose: 'SO CLOSE! CHIMNEY 10 WAS ONLY {gap} AWAY.',
       thanks: 'THANK YOU FOR HELPING KIDS WITH DIABETES AT UHL!',
-      prize: { spin: 'A SPIN ON THE WHEEL', legend: '5 DRAW TICKETS AND THE LEGEND TAG', mythic: 'THE MYTHIC TAG', choice: 'A SWEET OR A FREE TRY', consolation: 'A SWEET' },
+      prize: { spin: 'A SPIN ON THE WHEEL', legend: '+5 DRAW ENTRIES AND THE LEGEND TAG', mythic: 'THE MYTHIC TAG', choice: 'A SWEET OR A FREE TRY', consolation: 'A SWEET' },
       skip: 'CLICK TO CONTINUE',
     },
   },

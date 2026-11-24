@@ -51,7 +51,7 @@ test('T32 C3: no tries left but prizes: Santa is happy and lists them', () => {
   const m = fly(sess, p, 33);
   assert.equal(m.state, 'prizes');
   assert.equal(m.mood, 'happy');
-  assert.match(m.lines[0], /A SWEET OR A FREE TRY, A SPIN ON THE WHEEL AND 5 DRAW TICKETS AND THE LEGEND TAG/);
+  assert.match(m.lines[0], /A SWEET OR A FREE TRY, A SPIN ON THE WHEEL AND \+5 DRAW ENTRIES AND THE LEGEND TAG/);
 });
 
 test('T32 C3: after free tries: the wheel still waits; with tickets kept Santa reminds about the draw', () => {
@@ -64,14 +64,14 @@ test('T32 C3: after free tries: the wheel still waits; with tickets kept Santa r
   sess.commit(R.wheelBody(p, sess.s, CONFIG, forceWheel(sess, 'free')));
   const m = fly(sess, p, 6); // the wheel's free try: no prize left, but the chimney 10 ticket of the first try (R5, R12)
   assert.equal(m.state, 'prizes');
-  assert.match(text(m), /KEEP YOUR 1 DRAW TICKET SAFE/);
+  assert.match(text(m), /KEEP YOUR 1 DRAW ENTRY SAFE/);
   const s2 = pay('p1');
   s2.sess.commit(R.tryBody(s2.p, 21));
   s2.sess.commit(R.choiceBody(s2.p, 'sweet', CONFIG));
   s2.sess.commit(R.wheelBody(s2.p, s2.sess.s, CONFIG, forceWheel(s2.sess, 't2')));
   const m2 = crashMessage(s2.p, { pillars: 4, prevBest: 21, freeRestart: false }, CONFIG, first);
   assert.equal(m2.state, 'prizes');
-  assert.match(text(m2), /KEEP YOUR 3 DRAW TICKETS SAFE/); // 1 (chimney 10) + 2 (wheel), given at the end
+  assert.match(text(m2), /KEEP YOUR 3 DRAW ENTRIES SAFE/); // 1 (chimney 10) + 2 (wheel), given at the end
 });
 
 test('T32 C4: nothing won: Santa is sad, close call and charity thanks', () => {
