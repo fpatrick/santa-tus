@@ -32,14 +32,14 @@ test('T35: base odds at the start of the day: GOLD 4, SILVER 12, BRONZE 14, FREE
   assert.deepEqual(['gold', 'silver', 'bronze'].map((t) => CONFIG.wheel.outcomes.find((o) => o.id === t).label), ['GOLD €20 VOUCHER', 'SILVER GAMING / DAY OUT', 'BRONZE GIFT']);
 });
 
-test('T36: GOLD "€20 VOUCHER": the winner picks one that is left; the sponsor name shows; stock 3 -> 2 (R22)', () => {
+test('T36: GOLD "€20 VOUCHER": the winner picks one that is left; the sponsor name shows; stock 4 -> 3 (R22)', () => {
   const sess = newSession();
   const r = win(sess, 'gold', { item: 'one4all20' });
   const it = r.items.find((i) => i.kind === 'sponsor');
   assert.equal(it.tier, 'gold');
   assert.equal(it.label, 'ONE4ALL €20 VOUCHER');
   assert.equal(it.sponsorName, 'ONE4ALL');
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 2);
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 3);
   assert.deepEqual(R.itemsLeft('gold', sess.s, CONFIG).map((i) => [i.id, i.left]), [['lidl20', 3]]);
 });
 
