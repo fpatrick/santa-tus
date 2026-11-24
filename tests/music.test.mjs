@@ -22,12 +22,19 @@ test('A5: every part has full bars, known notes and known chords', () => {
   }
 });
 
-test('A5: the title song is lively and catches attention (fast, drums, about a minute a loop)', () => {
+test('A5: the title song is a lively solo piano piece (no drums, flowing left hand, runs, about a minute a loop)', () => {
   const beats = MENU.sections.reduce((a, s) => a + sectionBeats(s), 0);
   const secs = (beats / CONFIG.music.menuBpm) * 60;
   assert.ok(CONFIG.music.menuBpm >= 140, `title tempo ${CONFIG.music.menuBpm} bpm is too slow`);
   assert.ok(secs > 45 && secs < 80, `title loop is ${secs.toFixed(1)} s`);
-  for (const s of MENU.sections) assert.ok(sectionEvents(s).some((e) => e.kind === 'kick'), `${s.name}: no beat`);
+  for (const s of MENU.sections) {
+    const ev = sectionEvents(s);
+    assert.equal(s.lead, 'piano', `${s.name}: piano`);
+    assert.ok(!ev.some((e) => ['kick', 'snare', 'sleigh', 'crash'].includes(e.kind)), `${s.name}: no drums`);
+    const bars = sectionBeats(s) / s.beatsPerBar;
+    assert.ok(ev.filter((e) => e.kind === 'arp' || e.kind === 'bass').length >= bars * 6, `${s.name}: the left hand must flow`);
+  }
+  assert.ok(MENU.sections.some((s) => sectionEvents(s).some((e) => e.kind === 'counter' && e.len <= 0.25)), 'fast runs');
 });
 
 test('T31: Jingle Bells runs from the first click to chimney 30 without looping, then loops', () => {

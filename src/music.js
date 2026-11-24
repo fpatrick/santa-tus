@@ -108,8 +108,13 @@ function update(dist = 0) {
 }
 
 // ---------- instruments ----------
+const PIANO_VOL = { lead: 0.28, lead2: 0.12, harm: 0.09, counter: 0.12, bass: 0.15, arp: 0.08 }; // melody forward, left hand under it
 function play(a, ev, t, dur, out, lead) {
   const v = ev.vol || 1;
+  if (lead === 'piano' && PIANO_VOL[ev.kind]) { // a person playing: tiny timing and touch differences
+    const human = 0.9 + Math.random() * 0.15;
+    return piano(a, ev.m, t + Math.random() * 0.008, dur, PIANO_VOL[ev.kind] * v * human, out, ev.kind === 'bass' || ev.kind === 'arp');
+  }
   switch (ev.kind) {
     case 'lead': return lead === 'bell' ? bell(a, ev.m, t, dur, 0.16 * v, out) : osc(a, 'square', ev.m, t, dur * 0.9, 0.075 * v, out);
     case 'lead2': return osc(a, 'square', ev.m, t, dur * 0.85, 0.03 * v, out);
@@ -141,6 +146,37 @@ function osc(a, type, m, t, dur, vol, out) {
   o.connect(env(a, t, dur, vol, out));
   o.start(t);
   o.stop(t + dur + 0.02);
+}
+
+// Piano: a hammer attack, a few soft overtones (slightly out of tune, like real strings), a lowpass that closes
+// as the note fades (bright at first, warm after), and a long fade that is shorter for high notes.
+// pedal = the left hand: it rings longer (sustain pedal feel).
+function piano(a, m, t, dur, vol, out, pedal) {
+  const f = freq(m);
+  const high = Math.max(0, Math.min(1, (m - 48) / 48));
+  const len = Math.min(3.2, Math.max(0.5, (pedal ? 1.6 : 1.1) * dur + 0.6)) * (1 - 0.45 * high);
+  const g = a.ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.006);
+  g.gain.exponentialRampToValueAtTime(vol * 0.45, t + 0.12);
+  g.gain.exponentialRampToValueAtTime(0.0001, t + len);
+  const lp = a.ctx.createBiquadFilter();
+  lp.type = 'lowpass';
+  lp.frequency.setValueAtTime(Math.min(12000, f * 9), t);
+  lp.frequency.exponentialRampToValueAtTime(Math.max(400, f * 2.2), t + Math.min(0.9, len));
+  lp.connect(g);
+  g.connect(out);
+  for (const [mult, lv, type] of [[1, 1, 'triangle'], [1.003, 0.5, 'sine'], [2.002, 0.35, 'sine'], [3.01, 0.12, 'sine'], [4.02, 0.05, 'sine']]) {
+    const o = a.ctx.createOscillator();
+    const og = a.ctx.createGain();
+    o.type = type;
+    o.frequency.value = f * mult;
+    og.gain.value = lv;
+    o.connect(og);
+    og.connect(lp);
+    o.start(t);
+    o.stop(t + len + 0.05);
+  }
 }
 
 // Music-box bell: a sine with a soft overtone and a long fade.
