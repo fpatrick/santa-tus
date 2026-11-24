@@ -29,8 +29,8 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | To change... | Edit |
 | --- | --- |
 | Prices, staff code, odds, prizes, level speeds and gaps, words on screen, draw time | `src/config.js` only |
-| Who gets which prize, in which order, the one ticket screen (R1-R27) | `src/rules.js` (+ test in `tests/rules.test.mjs`) |
-| Sponsor stock, live wheel odds and fallbacks, the €10 cash fallback and its F9 switch, caps, draw order, end-of-day summary, the jackpot (OFF: `JACKPOT_ENABLED`) (R13, R14, R22-R27) | `src/prizes.js` (+ `tests/prizes.test.mjs`) |
+| Who gets which prize, in which order, the one ticket screen, the cash switch checks (R1-R28) | `src/rules.js` (+ test in `tests/rules.test.mjs`) |
+| Sponsor stock, live wheel odds and the sold-out "move down" rule (R24), the manual €10 cash fallback and its F9 switch (R27), caps, draw order, end-of-day summary, the jackpot (OFF: `JACKPOT_ENABLED`) (R13, R14, R22-R27) | `src/prizes.js` (+ `tests/prizes.test.mjs`) |
 | Leaderboard, totals, ticket numbers (L1, R12) | `src/ledger.js` |
 | Sponsor step: "already won?", item pick (R22, R23); hand-over: €10 cash confirmed twice and logged (R16, R27) | `src/handover.js` |
 | Prove the prize math: 18 cases x 10,000 days (R25) | `scripts/simulate.js` (results in SPEC.md) |
@@ -77,7 +77,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 
 | Command | What | When |
 | --- | --- | --- |
-| `npm test` | 65 rule, prize, ledger, course, music and crash-message tests (Node, about 10 s) | after every change |
+| `npm test` | 66 rule, prize, ledger, course, music and crash-message tests (Node, about 10 s) | after every change |
 | `npm run test:server` | 9 server tests (Python) | after a change to `server/` |
 | `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, T36-T38, T46, T47b, T49-T51, T53, about 2 min) | after a change to screens, flow, store, main |
 | `node scripts/simulate.js` | 18 cases x 10,000 market days with the real rules (about 12 min; `--days 500` for a quick check) | after a change to prizes, odds, jackpot or stock |

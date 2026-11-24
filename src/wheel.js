@@ -9,49 +9,32 @@ import { wheelSfx } from './wheelsound.js';
 import { drawSky, drawSnow } from './world.js';
 import { outlined } from './game.js';
 import { fmtEuro } from './ledger.js';
-import { baseOdds } from './prizes.js';
+import { baseOdds, inTen } from './prizes.js';
 import { CX, CY, RAD, TAU, spotlight, drawBuildRays, drawMarquee, drawWheel } from './wheelart.js';
 
 const POINTER = -Math.PI / 2;
 const REVEAL_SECS = [0, 2.4, 3, 3.8, 6];
 const T = CONFIG.text;
 
-// Slices: each outcome with base odds is cut into `pieces` slices, mixed around the wheel. live = liveOdds()
-// from prizes.js: a slice whose outcome has no chance now shows the sold-out text and gives the fallback, and
-// the cash slice is cut out of the first fallback slice. So the area of each result is exactly its live chance.
+// Slices (R7, R24): the wheel is ALWAYS drawn from the live odds (live = liveOdds() from prizes.js, or the base
+// odds before the first layout). Each outcome with a chance is cut into `pieces` slices, mixed around the wheel,
+// so the area of each result is exactly its live chance. A 0% outcome is not drawn at all (no "SOLD OUT" slices).
 export function buildPieces(cfg = CONFIG, live = null) {
-  const W = cfg.wheel;
-  const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : null;
-  const B = Object.fromEntries(baseOdds(cfg).map((x) => [x.o.id, x.odds])); // R13: no jackpot slice when it is off
-  const base = W.outcomes.filter((o) => B[o.id] > 0);
-  const left = base.map((o) => ({ o, n: o.pieces }));
+  const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : Object.fromEntries(baseOdds(cfg).map((x) => [x.o.id, x.odds]));
+  const base = cfg.wheel.outcomes.filter((o) => L[o.id] > 0);
+  const left = base.map((o) => ({ o, n: Math.max(1, Math.min(o.pieces, Math.round(L[o.id] / 4))) })); // tiny chances: 1 slice
+  const count = Object.fromEntries(left.map((l) => [l.o.id, l.n]));
   const order = [];
   while (left.some((l) => l.n > 0)) {
     for (const l of left) if (l.n > 0) { order.push(l.o); l.n -= 1; }
   }
-  const cashO = W.outcomes.find((o) => o.cash);
-  const cashSize = L && cashO ? (TAU * L[cashO.id]) / 100 : 0;
-  let cut = cashSize > 0;
   let a = 0;
-  const out = [];
-  order.forEach((o, k) => {
-    const off = L && L[o.id] === 0;
-    const show = off ? { ...o, short: o.jackpot ? W.jackpotDone : W.soldOut, icon: 'ticket', color: W.soldOutColor, off: true } : o;
-    const gives = off ? W.fallbackTo : o.id;
-    let size = (TAU * B[o.id]) / 100 / o.pieces;
-    if (cut && o.id === W.fallbackTo) {
-      size -= cashSize;
-      out.push({ o: show, gives, start: a, size, k });
-      a += size;
-      out.push({ o: cashO, gives: cashO.id, start: a, size: cashSize, k: k + 1 });
-      a += cashSize;
-      cut = false;
-      return;
-    }
-    out.push({ o: show, gives, start: a, size, k });
+  return order.map((o, k) => {
+    const size = (TAU * L[o.id]) / 100 / count[o.id];
+    const piece = { o, gives: o.id, start: a, size, k };
     a += size;
+    return piece;
   });
-  return out;
 }
 
 export function createWheel() {
@@ -170,15 +153,21 @@ function reveal(w) {
   if (o.tickets || o.cash) fx.burst(CX, CY, { count: (o.tickets || 10) * 10, kind: 'coin', colors: ['#ffd23f'], speed: 900, size: 22, gravity: 900, life: 2 }); // a coin payout
 }
 
-// S7, R24: the live odds and the items left per tier, always on the wheel screen.
+// S7, R7, R24: the spin chance line, the live odds and the items left per tier, always on the wheel screen.
 function drawOddsLine(ctx, live) {
   const W = CONFIG.wheel;
   const B = Object.fromEntries(baseOdds(CONFIG).map((x) => [x.o.id, x.odds]));
   const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : B;
-  const parts = W.outcomes.filter((o) => B[o.id] > 0 || L[o.id] > 0)
-    .map((o) => (L[o.id] > 0 ? `${o.label} ${L[o.id]}%` : `${o.label} ${(o.jackpot ? W.jackpotDone : W.soldOut).split('\n')[0]}`));
+  const parts = W.outcomes.filter((o) => L[o.id] > 0).map((o) => `${o.label} ${L[o.id]}%`); // R24: only what can be won now
+  const x = live ? inTen(live) : 0; // R7: "REACH CHIMNEY 20 = SPIN: 3 IN 10 WIN A PRIZE" (hidden at 0)
   ctx.fillStyle = 'rgba(7, 5, 28, 0.78)';
-  ctx.fillRect(20, 968, 1240, 104);
+  ctx.fillRect(20, x > 0 ? 930 : 968, 1240, x > 0 ? 142 : 104);
+  if (x > 0) {
+    ctx.font = '30px VT323';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#3dff8b';
+    ctx.fillText(CONFIG.text.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', x), CX, 962);
+  }
   const line = parts.join(' · ');
   let size = 30;
   do { ctx.font = `${size}px VT323`; size -= 1; } while (ctx.measureText(line).width > 1220 && size > 20);
@@ -187,11 +176,13 @@ function drawOddsLine(ctx, live) {
   ctx.fillText(line, CX, 1004);
   if (live) {
     const t = live.tiers;
-    const tiers = Object.entries(CONFIG.sponsors).map(([k, T]) => `${T.name} ${t[k].free}`).join(' · ');
+    const tiers = Object.entries(CONFIG.sponsors).map(([k, T]) => (t[k].free === 1 ? `${T.name}: ${CONFIG.text.onlyOne}` : `${T.name} ${t[k].free || CONFIG.text.tierSoldOut}`)).join(' · ');
     const jp = !CONFIG.JACKPOT_ENABLED || live.jackpot.closed ? '' : `   ·   ${CONFIG.text.jackpot} ${fmtEuro(live.jackpot.value)}`;
-    ctx.font = '30px VT323';
-    ctx.textAlign = 'right'; // the BETA badge sits bottom-left
+    const text = `${CONFIG.text.itemsLeft}: ${tiers}${jp}`;
+    let fs = 30; // the BETA badge sits bottom-left: the line must end before it
+    do { ctx.font = `${fs}px VT323`; fs -= 1; } while (ctx.measureText(text).width > 720 && fs > 18);
+    ctx.textAlign = 'right';
     ctx.fillStyle = '#ffd23f';
-    ctx.fillText(`${CONFIG.text.itemsLeft}: ${tiers}${jp}`, 1250, 1046);
+    ctx.fillText(text, 1250, 1046);
   }
 }

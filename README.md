@@ -20,7 +20,7 @@ All profit goes to Paediatric Diabetes, UHL.
 2. The player clicks to fly Santa past the chimneys. The best try counts.
 3. Prizes (at the end of the payment, the best try counts): chimney 10 = +1 draw entry for every try that gets there, and once a sweet or a free try; 20 = a wheel spin (gold / silver / bronze sponsor prizes, free try, +2 draw entries); 30 = +5 draw entries + LEGEND, 40 = MYTHIC, 50 = GODLIKE. All draw entries come on one screen at the end; staff write the numbers on one paper card.
 4. Staff hand over what the screen lists, then press **Enter**.
-5. At 12:45 staff run the draw from the staff panel (**F9**): the sponsor items left. The cash jackpot is OFF this year. A €10 CASH wheel slice only comes on when ALL sponsor prizes are gone (max 3 a day, F9 key **C** switches it).
+5. At 12:45 staff run the draw from the staff panel (**F9**): the sponsor items left. The cash jackpot is OFF this year. Sponsor tiers: GOLD €20 voucher, SILVER gaming or day out, BRONZE gift; a sold-out tier's chance moves down to the next tier. A €10 CASH wheel slice is manual: staff can switch it on (F9 key **C**) only when ALL sponsor prizes are gone (max 3 a day).
 
 All rules with their IDs: [SPEC.md](SPEC.md).
 

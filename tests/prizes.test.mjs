@@ -5,7 +5,8 @@ import assert from 'node:assert/strict';
 import { CONFIG } from '../src/config.js';
 import * as R from '../src/rules.js';
 import { buildState } from '../src/ledger.js';
-import { stock, liveOdds, jackpotInfo, drawState, summary, caps, timeState, cashSwitch } from '../src/prizes.js';
+import { stock, liveOdds, jackpotInfo, drawState, summary, caps, timeState, cashSwitch, inTen } from '../src/prizes.js';
+import { buildPieces } from '../src/wheel.js';
 import { newSession, playPayment, cfgWith, forceWheel } from './helpers.mjs';
 
 const H = 3600000;
@@ -14,40 +15,44 @@ const sum = (o) => Object.values(o).reduce((a, b) => a + b, 0);
 const win = (sess, id, extra = {}) => playPayment(sess, 'p1', { tries: [22], choices: ['sweet'], wheel: [id], nick: `P${sess.s.payments.length + 1}`, ...extra });
 
 const JP = cfgWith({ JACKPOT_ENABLED: true }); // the jackpot code stays (R13): its tests run with it switched on
-const ALL = { gold: 2, silver: 4, bronze: 13 }; // sponsor items at the start of the day (R22)
+const ALL = { gold: 3, silver: 8, bronze: 7 }; // sponsor items at the start of the day (R22 version 2)
 const sellOut = (sess, tiers = Object.keys(ALL)) => { for (const t of tiers) for (let i = 0; i < ALL[t]; i++) win(sess, t); };
+const cashOn = (sess) => sess.commit(R.cashSwitchBody(sess.s, sess.cfg, true));
 
-test('T35: base odds at the start of the day: GOLD 4, SILVER 8, BRONZE 24, FREE TRY 26, +2 DRAW ENTRIES 38; no cash, no jackpot (R7, R13)', () => {
+test('T35: base odds at the start of the day: GOLD 4, SILVER 12, BRONZE 14, FREE TRY 26, +2 DRAW ENTRIES 44; no cash, no jackpot; 3 IN 10 (R7, R13)', () => {
   const sess = newSession();
-  assert.deepEqual(odds(sess), { jackpot: 0, gold: 4, silver: 8, bronze: 24, free: 26, t2: 38, cash: 0 });
+  assert.deepEqual(odds(sess), { jackpot: 0, gold: 4, silver: 12, bronze: 14, free: 26, t2: 44, cash: 0 });
   assert.deepEqual(Object.fromEntries(Object.entries(stock(sess.s, CONFIG).tiers).map(([k, T]) => [k, T.left])), ALL);
   assert.equal(CONFIG.JACKPOT_ENABLED, false);
-  assert.equal(CONFIG.CASH_FALLBACK_ENABLED, true);
+  assert.equal(CONFIG.CASH_FALLBACK_ENABLED, false);
   assert.equal(CONFIG.CASH_FALLBACK_MAX_WINS, 3);
+  assert.equal(inTen(liveOdds(sess.s, CONFIG)), 3);
+  assert.deepEqual(['gold', 'silver', 'bronze'].map((t) => CONFIG.sponsors[t].title), ['€20 VOUCHER', 'GAMING OR DAY OUT', 'GIFT']);
+  assert.deepEqual(['gold', 'silver', 'bronze'].map((t) => CONFIG.wheel.outcomes.find((o) => o.id === t).label), ['GOLD €20 VOUCHER', 'SILVER GAMING / DAY OUT', 'BRONZE GIFT']);
 });
 
-test('T36: GOLD "DAY OUT FOR 4": the winner picks cinema or bowling; the sponsor name shows; stock 2 -> 1 (R22)', () => {
+test('T36: GOLD "€20 VOUCHER": the winner picks one that is left; the sponsor name shows; stock 3 -> 2 (R22)', () => {
   const sess = newSession();
-  const r = win(sess, 'gold', { item: 'bowl4' });
+  const r = win(sess, 'gold', { item: 'one4all20' });
   const it = r.items.find((i) => i.kind === 'sponsor');
   assert.equal(it.tier, 'gold');
-  assert.equal(it.label, 'FUN WORLD BOWLING, 4 GAMES');
-  assert.equal(it.sponsorName, 'FUN WORLD');
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 1);
-  assert.deepEqual(R.itemsLeft('gold', sess.s, CONFIG).map((i) => i.id), ['vue4']);
+  assert.equal(it.label, 'ONE4ALL €20 VOUCHER');
+  assert.equal(it.sponsorName, 'ONE4ALL');
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 2);
+  assert.deepEqual(R.itemsLeft('gold', sess.s, CONFIG).map((i) => [i.id, i.left]), [['lidl20', 2]]);
 });
 
-test('T37: SILVER: the winner picks a voucher that is left; BRONZE: from the table (R22)', () => {
+test('T37: SILVER "GAMING OR DAY OUT" and BRONZE "GIFT": the winner picks what is left (R22)', () => {
   const sess = newSession();
-  win(sess, 'silver', { item: 'one4all20' });
-  assert.deepEqual(R.itemsLeft('silver', sess.s, CONFIG).map((i) => [i.id, i.left]), [['lidl20', 3]]);
+  win(sess, 'silver', { item: 'bowl4' });
+  assert.deepEqual(R.itemsLeft('silver', sess.s, CONFIG).map((i) => i.id), ['ps10', 'xbox10', 'vue4']);
   win(sess, 'bronze', { item: 'candle' });
   assert.ok(!R.itemsLeft('bronze', sess.s, CONFIG).some((i) => i.id === 'candle'));
   const p = sess.s.payments[1];
   assert.throws(() => R.itemBody(p, 'candle', sess.s, CONFIG)); // already has its item, and none left
 });
 
-test('T38: one sponsor prize per nickname per day: Y gives +2 tickets instead (on the same ticket screen) and frees the item (R23)', () => {
+test('T38: one sponsor prize per nickname per day: Y gives +2 draw entries instead (on the same ticket screen) and frees the item (R23)', () => {
   const sess = newSession();
   win(sess, 'gold', { nick: 'SAM' });
   const r = win(sess, 'gold', { nick: 'sam', swap: true, done: false });
@@ -56,36 +61,62 @@ test('T38: one sponsor prize per nickname per day: Y gives +2 tickets instead (o
   assert.equal(r.p.tickets.length, 1 + CONFIG.tickets.swap); // chimney 10 ticket + the swap
   assert.deepEqual(r.steps.filter((x) => ['nick', 'sponsor', 'tickets'].includes(x)), ['nick', 'sponsor', 'tickets']);
   assert.ok(!r.items.some((i) => i.kind === 'sponsor'));
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 1); // 1 given, the second one is free again
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 2); // 1 given, the second one is free again
   const other = win(sess, 'bronze', { nick: 'ANA', done: false });
   assert.equal(R.alreadyWon(other.p, sess.s), false);
 });
 
-test('T39: each tier selling out: its chance goes to +2 TICKETS and the slice says SOLD OUT; NO cash until ALL are sold out (R24, R27)', () => {
+test('T57: N on the pick screen: +2 draw entries, the item stays in stock, NOT a sponsor win for R23 (R28)', () => {
+  const sess = newSession();
+  const r = win(sess, 'bronze', { nick: 'MO', decline: true });
+  assert.equal(r.p.swapped, true);
+  assert.equal(r.p.item, null);
+  assert.equal(r.p.tickets.length, 1 + CONFIG.tickets.swap);
+  assert.ok(!r.items.some((i) => i.kind === 'sponsor'));
+  assert.equal(stock(sess.s, CONFIG).tiers.bronze.free, ALL.bronze); // still all in stock
+  const ev = r.sess.events.find((e) => e.t === 'award' && e.kind === 'tickets');
+  assert.ok(ev.parts.some((x) => x.why === 'declined' && x.n === 2));
+  const again = win(sess, 'gold', { nick: 'mo', done: false });
+  assert.equal(R.alreadyWon(again.p, sess.s), false); // the declined one does not count
+});
+
+test('T39: sold out: the chance moves DOWN only (gold -> silver -> bronze -> +2), GOLD never above 4%, FREE TRY 26%, 0% slices not drawn (R24)', () => {
   const sess = newSession();
   sellOut(sess, ['gold']);
   let o = odds(sess);
-  assert.deepEqual([o.gold, o.cash, o.t2], [0, 0, 38 + 4]);
+  assert.deepEqual([o.gold, o.silver, o.bronze, o.free, o.t2, o.cash], [0, 16, 14, 26, 44, 0]);
   assert.equal(liveOdds(sess.s, CONFIG, sess.clock).list.find((x) => x.id === 'gold').why, 'soldout');
   sellOut(sess, ['silver']);
   o = odds(sess);
-  assert.deepEqual([o.gold, o.silver, o.cash, o.t2], [0, 0, 0, 38 + 4 + 8]);
+  assert.deepEqual([o.gold, o.silver, o.bronze, o.free, o.t2], [0, 0, 30, 26, 44]);
   assert.equal(sum(o), 100);
-  sellOut(sess, ['bronze']); // now ALL tiers are sold out: €10 CASH at 2%, taken from +2 TICKETS
+  sellOut(sess, ['bronze']); // ALL sold out: everything goes to +2, no cash unless staff switch it on
   o = odds(sess);
-  assert.deepEqual([o.gold, o.silver, o.bronze, o.cash], [0, 0, 0, 2]);
-  assert.equal(o.t2, 38 + 4 + 8 + 24 - 2);
-  assert.equal(sum(o), 100);
+  assert.deepEqual([o.gold, o.silver, o.bronze, o.free, o.t2, o.cash], [0, 0, 0, 26, 74, 0]);
   assert.equal(liveOdds(sess.s, CONFIG, sess.clock).allEmpty, true);
-  // only bronze sold out (gold and silver left): still no cash
+  assert.equal(inTen(liveOdds(sess.s, CONFIG)), 0); // the "X IN 10" line is hidden
+  // only silver sold out: its 12% goes to bronze; gold stays 4% (never up)
   const b = newSession();
-  sellOut(b, ['bronze']);
-  assert.equal(odds(b).cash, 0);
+  sellOut(b, ['silver']);
+  assert.deepEqual(Object.values((({ gold, silver, bronze, free, t2 }) => ({ gold, silver, bronze, free, t2 }))(odds(b))), [4, 0, 26, 26, 44]);
+  assert.equal(inTen(liveOdds(b.s, CONFIG)), 3);
+  // only bronze sold out: its chance goes to +2, gold and silver keep theirs
+  const c = newSession();
+  sellOut(c, ['bronze']);
+  assert.deepEqual([odds(c).gold, odds(c).silver, odds(c).t2], [4, 12, 58]);
+  // the wheel: one slice set per outcome with a chance, sizes = the live odds, no 0% slice
+  const pieces = buildPieces(CONFIG, liveOdds(b.s, CONFIG));
+  assert.ok(!pieces.some((p) => p.o.id === 'silver'));
+  const area = (id) => pieces.filter((p) => p.gives === id).reduce((a2, p) => a2 + p.size, 0) / (2 * Math.PI) * 100;
+  for (const [id, v] of Object.entries(odds(b))) assert.ok(Math.abs(area(id) - v) < 1e-9, `${id}: ${area(id)} vs ${v}`);
 });
 
-test('T40: €10 CASH at most 3 times a day, then its chance goes back to +2 TICKETS; "PAY €10" is in the hand-over (R27)', () => {
+test('T40: €10 CASH (switched on) at most 3 times a day, then its chance goes back to +2 DRAW ENTRIES; "PAY €10" in the hand-over (R27)', () => {
   const sess = newSession();
   sellOut(sess);
+  cashOn(sess);
+  assert.equal(odds(sess).cash, 2);
+  assert.equal(odds(sess).t2, 72);
   for (let i = 0; i < 3; i++) {
     const r = win(sess, 'cash');
     assert.ok(r.items.some((x) => x.kind === 'cash' && x.amount === 10));
@@ -98,36 +129,44 @@ test('T40: €10 CASH at most 3 times a day, then its chance goes back to +2 TIC
   assert.equal(summary(sess.s, CONFIG).cashPaid, 30); // worst case €30 a day (R27)
 });
 
-test('T53: the F9 cash switch: off = no cash slice even when all is sold out; on again = 2%; each switch is logged (R27)', () => {
+test('T53: the F9 cash switch is MANUAL: refused while any tier has stock; on when all sold out; stock back = off by itself (logged) (R27)', () => {
   const sess = newSession();
-  sellOut(sess);
-  assert.equal(cashSwitch(sess.s, CONFIG), true);
-  sess.commit({ ...R.staffBody('cash-fallback', 'off'), on: false });
+  assert.equal(cashSwitch(sess.s, CONFIG), false); // off at the start of the day
+  assert.throws(() => R.cashSwitchBody(sess.s, CONFIG, true)); // greyed out: tiers still have stock
+  sellOut(sess, ['gold', 'silver']);
+  assert.throws(() => R.cashSwitchBody(sess.s, CONFIG, true)); // bronze still has stock
+  sellOut(sess, ['bronze']);
+  assert.equal(odds(sess).cash, 0); // all sold out, but nobody switched it on
+  cashOn(sess);
+  assert.equal(odds(sess).cash, 2);
+  assert.equal(R.cashAutoOffBody(sess.s, CONFIG), null); // still all sold out: stays on
+  sess.commit(R.stockBody(sess.s, CONFIG, 'shirt', 1)); // staff found one more shirt
+  const off = R.cashAutoOffBody(sess.s, CONFIG);
+  assert.equal(off.on, false);
+  sess.commit(off);
   assert.equal(cashSwitch(sess.s, CONFIG), false);
   assert.equal(odds(sess).cash, 0);
-  assert.equal(odds(sess).t2, 74);
-  assert.throws(() => win(sess, 'cash'));
-  sess.commit({ ...R.staffBody('cash-fallback', 'on'), on: true });
-  assert.equal(odds(sess).cash, 2);
-  assert.equal(sess.s.staff.filter((x) => x.action === 'cash-fallback').length, 2);
-  const off = newSession(cfgWith({ CASH_FALLBACK_ENABLED: false })); // config off: never cash
-  sellOut(off);
-  assert.equal(odds(off).cash, 0);
+  assert.equal(odds(sess).bronze, 30); // the chance of the sold-out gold and silver moved down to bronze
+  assert.deepEqual(sess.s.staff.filter((x) => x.action === 'cash-fallback').map((x) => x.detail), ['on', 'auto: stock is back']);
+  sess.commit(R.cashSwitchBody(sess.s, CONFIG, false)); // off always works
   // the cash payout confirmation is logged once, and not asked again after a reload
-  const c = win(sess, 'cash', { done: false });
-  sess.commit({ ...R.staffBody('cash-paid', '€10'), pid: c.p.pid });
-  assert.equal(buildState(sess.events).byPid.get(c.p.pid).cashPaid, true);
+  const t = newSession();
+  sellOut(t);
+  cashOn(t);
+  const c = win(t, 'cash', { done: false });
+  t.commit({ ...R.staffBody('cash-paid', '€10'), pid: c.p.pid });
+  assert.equal(buildState(t.events).byPid.get(c.p.pid).cashPaid, true);
 });
 
-test('T41: the wheel jackpot (only when JACKPOT_ENABLED) at most 2 times a day, then its chance goes to +2 TICKETS (R13, R24)', () => {
+test('T41: the wheel jackpot (only when JACKPOT_ENABLED) at most 2 times a day, then its chance goes to +2 DRAW ENTRIES (R13, R24)', () => {
   const sess = newSession(JP);
   assert.equal(odds(sess).jackpot, 3);
-  assert.equal(odds(sess).t2, 35);
+  assert.equal(odds(sess).t2, 41);
   win(sess, 'jackpot');
   win(sess, 'jackpot');
   const o = odds(sess);
   assert.equal(o.jackpot, 0);
-  assert.equal(o.t2, 38);
+  assert.equal(o.t2, 44);
   assert.equal(sum(o), 100);
   assert.equal(R.checkConfig(JP).length, 0);
 });
@@ -230,16 +269,17 @@ test('T46: the draw (jackpot off): bronze, silver, gold; NOT HERE draws the same
   const order = [again];
   for (let g = 0; g < 40 && drawState(sess.s, CONFIG).next; g++) order.push(sess.commit(R.drawBody(sess.s, CONFIG, Math.random, sess.clock)));
   const prizes = order.map((d) => (d.prize === 'item' ? d.tier : d.prize));
-  // 12 tickets - 1 out = 11 winners, all bronze (13 bronze items first), then the rest stays with the team
-  assert.deepEqual(prizes, [...Array(11).fill('bronze'), 'rest']);
+  // 12 tickets - 1 out = 11 winners: the 7 bronze items, then 4 silver, then the rest stays with the team
+  assert.deepEqual(prizes, [...Array(7).fill('bronze'), ...Array(4).fill('silver'), 'rest']);
   assert.equal(new Set(order.filter((d) => d.ticket != null).map((d) => d.ticket)).size, 11, 'each ticket wins once');
   const ds = drawState(sess.s, CONFIG);
   assert.equal(ds.done, true);
   assert.throws(() => R.drawBody(sess.s, CONFIG));
   const s = summary(sess.s, CONFIG, sess.clock);
   assert.equal(s.jackpotPaid, 0);
-  assert.equal(s.tiers.bronze.given, 11);
-  assert.equal(s.tiers.gold.left, 2); // stays with the team
+  assert.equal(s.tiers.bronze.given, 7);
+  assert.equal(s.tiers.silver.given, 4);
+  assert.equal(s.tiers.gold.left, 3); // stays with the team
 });
 
 test('T46b: the draw with the jackpot on: the items, then the jackpot last; one ticket kept for it (R13, R14)', () => {
@@ -249,7 +289,7 @@ test('T46b: the draw with the jackpot on: the items, then the jackpot last; one 
   const order = [];
   for (let g = 0; g < 40 && drawState(sess.s, JP).next; g++) order.push(sess.commit(R.drawBody(sess.s, JP, Math.random, sess.clock)));
   const prizes = order.map((d) => (d.prize === 'item' ? d.tier : d.prize));
-  assert.deepEqual(prizes, [...Array(11).fill('bronze'), 'rest', 'jackpot']);
+  assert.deepEqual(prizes, [...Array(7).fill('bronze'), ...Array(4).fill('silver'), 'rest', 'jackpot']); // 12 entries: 11 items, the last kept for the jackpot
   const jp = order.at(-1);
   assert.ok(jp.ticket != null);
   assert.equal(jp.amount, 20);
@@ -260,9 +300,10 @@ test('T46b: the draw with the jackpot on: the items, then the jackpot last; one 
 test('T47: a crash and reload gives the exact same state (D9, D11)', () => {
   const sess = newSession();
   sellOut(sess);
+  sess.commit(R.cashSwitchBody(sess.s, CONFIG, true));
   win(sess, 'cash');
-  sess.commit({ ...R.staffBody('cash-fallback', 'off'), on: false });
-  sess.commit(R.stockBody(sess.s, CONFIG, 'lidl20', 1)); // staff found one more voucher
+  sess.commit(R.stockBody(sess.s, CONFIG, 'ps10', 1)); // staff found one more voucher
+  sess.commit(R.cashAutoOffBody(sess.s, CONFIG)); // stock is back: the cash switch goes off by itself
   win(sess, 'silver', { done: false }); // the hand-over is still open
   const again = buildState([...sess.events].reverse()); // the order comes from n, not from the list
   const now = sess.clock + 30 * 60000;

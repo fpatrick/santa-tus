@@ -36,7 +36,7 @@ export async function sponsorPrize(app, name, p) {
     await app.commit(name, R.awardBody('swap', p, app.led(name), CONFIG));
     return;
   }
-  const tier = CONFIG.sponsors[p.sponsor];
-  const id = tier.pick && left.length > 1 ? await screens.pickItem(p.sponsor, left) : left[0].id;
+  const id = await screens.pickItem(p.sponsor, left); // always shown, even with 1 item: N = +2 instead (R28)
+  if (!id) { await app.commit(name, R.awardBody('swap', p, app.led(name), CONFIG, 'declined')); return; }
   await app.commit(name, R.itemBody(p, id, app.led(name), CONFIG));
 }

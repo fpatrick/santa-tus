@@ -40,7 +40,7 @@ function infoHtml(i) {
   const J = CONFIG.JACKPOT_ENABLED;
   const drawText = ds.done ? (J && ds.jackpotDraw ? `done · jackpot draw entry ${ds.jackpotDraw.ticket ? fmtTicket(ds.jackpotDraw.ticket) : 'none (charity)'}` : 'done')
     : ds.started ? `started · ${ds.unitsLeft} items${J ? ' + jackpot' : ''} to go` : 'not started';
-  const cash = `<span>€10 cash fallback (R27):</span> <b>${i.live.cashOn ? 'ON' : 'OFF'}</b>${i.live.list.find((x) => x.id === 'cash').odds ? ' · <b>ON THE WHEEL NOW</b>' : ' · only when all tiers are sold out'} · won ${i.live.caps.cashWins}/${CONFIG.CASH_FALLBACK_MAX_WINS}`;
+  const cash = `<span>€10 cash fallback (R27):</span> <b>${i.live.cashOn ? 'ON' : 'OFF'}</b>${i.live.list.find((x) => x.id === 'cash').odds ? ' · <b>ON THE WHEEL NOW</b>' : ' · staff switch it ON only when all tiers are sold out'} · won ${i.live.caps.cashWins}/${CONFIG.CASH_FALLBACK_MAX_WINS}`;
   return `<div class="grid">
     <div class="span2">${prices} · free plays <b>${t.count.free || 0}</b> · undone <b>${t.undone}</b></div>
     <div><span>Total taken:</span> <b>${fmtEuro(sm.taken)}</b></div>
@@ -72,7 +72,7 @@ export function staffPanel(api) {
       const i = api.info();
       const el = open(`<div class="box wide staff"><h1>STAFF PANEL</h1>
         ${infoHtml(i)}
-        <div class="acts">${ACTIONS.map(([k, id, label]) => `<button class="btn ${id === 'newday' || id === 'undo' || id === 'undodraw' ? 'red' : id === 'draw' ? 'gold' : ''}" data-id="${id}"><span class="key">${k}</span>${label}</button>`).join('')}</div>
+        <div class="acts">${ACTIONS.map(([k, id, label]) => `<button class="btn ${id === 'newday' || id === 'undo' || id === 'undodraw' ? 'red' : id === 'draw' ? 'gold' : ''}${id === 'cash' && !i.live.cashOn && !i.live.allEmpty ? ' greyed' : ''}" data-id="${id}"><span class="key">${k}</span>${label}</button>`).join('')}</div>
         <div class="msg">${msg}</div>
         <div class="hint">Press a number or letter. <kbd>ESC</kbd> closes the panel.</div></div>`, 'full');
       el.querySelectorAll('[data-id]').forEach((b) => b.addEventListener('click', () => act(b.dataset.id)));
@@ -100,7 +100,7 @@ export function staffPanel(api) {
       if (id === 'hide') { mode = 'hide-pid'; return say('Type the payment number of the nickname to hide, then ENTER:'); }
       if (id === 'sound') { api.toggleSound(); return say(`Sound is now ${api.info().muted ? 'muted' : 'on'}.`); }
       if (id === 'stock') { mode = 'stock-in'; return say(`${stockList(api.info())}<br>Type the item number and the new count (for example "4 2"), then ENTER:`, true); }
-      if (id === 'cash') { const on = await api.toggleCash(); return say(`€10 cash fallback is now ${on ? 'ON' : 'OFF'} (saved in the log).`); }
+      if (id === 'cash') { const on = await api.toggleCash(); return say(on === null ? CONFIG.text.cashGreyed : `€10 cash fallback is now ${on ? 'ON' : 'OFF'} (saved in the log).`); }
       if (id === 'jackpot') { mode = 'jackpot-in'; return say(`Jackpot now ${fmtEuro(api.info().live.jackpot.value)}. Type the new value (0-${CONFIG.jackpot.max}), then ENTER:`); }
       if (id === 'undodraw') {
         if (!api.info().draw.started) return say('The draw has not started.');

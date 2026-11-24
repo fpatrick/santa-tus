@@ -201,3 +201,6 @@ body.board-only #panel { left: 0; padding-bottom: 70px; }
 @media (prefers-reduced-motion: reduce) {
   .board li.fresh, .shake-x { animation: none; }
 }
+
+/* R27: the cash fallback switch is greyed out until all tiers are sold out */
+.btn.greyed { opacity: 0.35; filter: grayscale(1); }

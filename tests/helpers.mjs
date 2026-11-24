@@ -44,7 +44,7 @@ export function newSession(cfg = CONFIG) {
 // Plays one payment. tries = pillars per try. wheel = wheel results in order. choices = chimney 10 choices.
 // item = the sponsor item to give (default: the first one left), swap = true answers Y to "already won?".
 // at = clock (ms) when the payment starts. Returns { p, steps, items }.
-export function playPayment(sess, priceId, { tries = [], wheel = [], choices = [], nick = 'SAM', done = true, item = null, swap = false, at = null } = {}) {
+export function playPayment(sess, priceId, { tries = [], wheel = [], choices = [], nick = 'SAM', done = true, item = null, swap = false, decline = false, at = null } = {}) {
   const { cfg } = sess;
   if (at != null) sess.clock = at;
   const pay = sess.commit(R.payBody(sess.s, priceId, cfg));
@@ -73,7 +73,8 @@ export function playPayment(sess, priceId, { tries = [], wheel = [], choices = [
       sess.commit(R.nickBody(p, nick, cfg));
     } else if (st.step === 'sponsor') { // R23: the "already won?" check, then the item pick (handover.js sponsorPrize)
       const left = R.itemsLeft(p.sponsor, sess.s, cfg);
-      if (swap || !left.length) sess.commit(R.awardBody('swap', p, sess.s, cfg));
+      if (decline) sess.commit(R.awardBody('swap', p, sess.s, cfg, 'declined')); // R28: N on the pick screen
+      else if (swap || !left.length) sess.commit(R.awardBody('swap', p, sess.s, cfg));
       else sess.commit(R.itemBody(p, item || left[0].id, sess.s, cfg));
     } else if (st.step === 'tickets') { // R12: the one ticket screen
       sess.commit(R.awardBody('tickets', p, sess.s, cfg));

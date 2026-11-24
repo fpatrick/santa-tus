@@ -75,7 +75,7 @@ function applyAward(s, p, ev) {
   if (tickets.length) s.nextTicket = Math.max(s.nextTicket, Math.max(...tickets) + 1);
   p.cash += ev.cash || 0;
   p.jackpotWon += ev.jackpot || 0;
-  if (ev.add) p.adds.push({ kind: ev.kind, n: ev.add }); // R12: tickets given later, on the ticket screen
+  if (ev.add) p.adds.push({ kind: ev.why === 'declined' ? 'declined' : ev.kind, n: ev.add }); // R12: tickets given later, on the ticket screen
   if (ev.kind === 'tickets') { p.ticketsGiven = true; if (ev.legend) { p.p30 = true; p.legendTs = ev.ts; } }
   if (ev.freeTry) { p.extraTries += 1; p.freeFrom.push(ev.kind); }
   if (ev.kind === 'p20') p.p20 = true;

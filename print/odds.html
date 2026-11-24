@@ -66,7 +66,7 @@
     } else $('jackpot').remove();
     $('draw').textContent = `${T.tickets}: +${CONFIG.tickets.per10} for every try that passes ${th.choice}, +1 bonus with €10 = 5 tries, +${CONFIG.tickets.p30} at ${th.legend}, +2 on the wheel, or buy them (${T.ticketsOnly}). All given at the end of the payment, numbered in order and written on one paper card. `
       + `Draw at ${CONFIG.event.drawTime}: every sponsor item not won yet (bronze, silver, gold)${CONFIG.JACKPOT_ENABLED ? ', then the jackpot last' : ''}. One draw entry wins once. Winner not there: we draw again. Last payment ${CONFIG.event.lastPayment}.`;
-    $('note').textContent = `When a prize tier is sold out, its chance goes to +2 ${T.tickets}. Only when GOLD, SILVER and BRONZE are ALL sold out, a ${cash.label} slice (${cash.onWhenAllEmpty}%, max ${CONFIG.CASH_FALLBACK_MAX_WINS} a day) comes on. The wheel screen always shows the live odds. One sponsor prize per person per day. ${T.ageNote || ''}`;
+    $('note').textContent = `When a prize tier is sold out, its chance moves down to the next tier (GOLD to SILVER to BRONZE to +2 ${T.tickets}); it never moves up, FREE TRY stays the same. Only when GOLD, SILVER and BRONZE are ALL sold out, staff may switch on a ${cash.label} slice (${cash.onWhenAllEmpty}%, max ${CONFIG.CASH_FALLBACK_MAX_WINS} a day). The wheel screen always shows the live odds. One sponsor prize per person per day. ${T.ageNote || ''}`;
     $('ver').textContent = versionLabel();
   </script>
 </body>

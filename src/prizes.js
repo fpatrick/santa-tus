@@ -70,7 +70,8 @@ export function baseOdds(cfg) {
   return list;
 }
 
-// R27: is the cash fallback switched on? Config first, then every staff switch in F9 (saved order).
+// R27: is the cash fallback switched on? Config first (off), then every staff switch in F9 (saved order),
+// including the automatic "off" when stock comes back (staffapi.js logs it).
 export function cashSwitch(s, cfg) {
   let on = !!cfg.CASH_FALLBACK_ENABLED;
   for (const ev of s.events) if (ev.t === 'staff' && ev.action === 'cash-fallback') on = !!ev.on;
@@ -142,21 +143,29 @@ export function liveOdds(s, cfg, now = Date.now()) {
   const list = baseOdds(cfg).map(({ o, odds }) => ({ id: o.id, odds, why: '' }));
   let anyEmpty = false;
   let allEmpty = true;
-  for (const [k, o] of W.outcomes.entries()) {
-    if (!o.sponsor) continue;
-    if (!st.tiers[o.sponsor] || st.tiers[o.sponsor].free <= 0) { list[k].odds = 0; list[k].why = 'soldout'; anyEmpty = true; } else allEmpty = false;
+  // R24: a sold-out tier's chance moves DOWN (gold -> silver -> bronze), after the last tier to the fallback. Never up.
+  let carry = 0;
+  for (const tier of W.soldOutDown || []) {
+    const x = list.find((y) => W.outcomes.find((o) => o.id === y.id).sponsor === tier);
+    if (!x) continue;
+    x.odds += carry;
+    if (!st.tiers[tier] || st.tiers[tier].free <= 0) { carry = x.odds; x.odds = 0; x.why = 'soldout'; anyEmpty = true; } else { carry = 0; allEmpty = false; }
   }
   for (const [k, o] of W.outcomes.entries()) {
     if (o.jackpot && list[k].odds > 0 && (cp.jackpotWins >= cfg.jackpot.wheelMaxWins || jp.closed)) { list[k].odds = 0; list[k].why = 'done'; }
   }
   const cashOn = cashSwitch(s, cfg);
-  for (const [k, o] of W.outcomes.entries()) { // R27: only when ALL tiers are empty, the switch is on and the cap is not reached
+  for (const [k, o] of W.outcomes.entries()) { // R27: only when ALL tiers are empty, staff switched it on and the cap is not reached
     if (o.cash) list[k].odds = allEmpty && cashOn && cp.cashWins < cfg.CASH_FALLBACK_MAX_WINS ? o.onWhenAllEmpty : 0;
   }
   const to = list.find((x) => x.id === W.fallbackTo);
   to.odds = 100 - list.reduce((a, x) => a + (x === to ? 0 : x.odds), 0);
-  return { list, tiers: st.tiers, caps: cp, jackpot: jp, anyEmpty, allEmpty, cashOn };
+  const prizePct = list.reduce((a, x) => a + (W.outcomes.find((o) => o.id === x.id).sponsor ? x.odds : 0), 0);
+  return { list, tiers: st.tiers, caps: cp, jackpot: jp, anyEmpty, allEmpty, cashOn, prizePct };
 }
+
+// R7: "X IN 10 WIN A PRIZE": the live gold + silver + bronze chance in tenths, rounded down (0 = hide the line).
+export const inTen = (live) => Math.floor((live.prizePct + 1e-9) / 10);
 
 // All tickets that can win (tickets of undone payments are out).
 export function ticketPool(s) {

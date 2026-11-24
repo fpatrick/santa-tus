@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.23.0 (2026-11-24): R22 new tiers (GOLD €20 VOUCHER, SILVER GAMING OR DAY OUT, BRONZE GIFT; reserved items kept off the wheel). R28 N = +2 DRAW ENTRIES INSTEAD on every pick screen. R7 odds 4/12/14/26/44. R24 a sold-out tier's chance moves down only; the wheel is drawn from the live odds (no 0% slices), ONLY 1 LEFT!, "X IN 10 WIN A PRIZE". R27 cash fallback manual: off by default, F9 C only when all sold out, auto-off when stock comes back.
 - 0.22.1 (2026-11-24): R12 wording: on screen draw tickets are DRAW ENTRIES (a play is a TRY); one paper card per payment ("WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0014"); F9 shows NEXT DRAW ENTRY and cards used. No rule or number changed.
 - 0.22.0 (2026-11-24): FINAL rules part 1. R1 keys 1-6: PLAY €2.50/1, €6.50/3, €10/5 + 1 bonus ticket; TICKETS ONLY €2.50/1, €6.50/3, €10/6. R5 +1 draw ticket for every try that reaches 10; R8 chimney 30 = 5 tickets + LEGEND; R12 all tickets on one screen at the end. R22 new sponsor tiers (GOLD day out for 4, SILVER vouchers, BRONZE table). R7 wheel 4/8/24/26/38. R27 €10 cash fallback only when ALL tiers are sold out, max 3 a day, F9 key C switch, payout logged. R13 jackpot OFF (JACKPOT_ENABLED = false, hidden everywhere, code kept).
 - 0.21.2 (2026-11-11): A5 new title song: quick, catchy Christmas-waltz Silent Night (hook, bells with fills, key change with the band).

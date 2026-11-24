@@ -62,41 +62,47 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 - **R19** No new prizes after 30: chimneys 31-50 count only for the leaderboard and the tags. Ranks: LEGEND (30) < MYTHIC (40) < GODLIKE (50).
 - **R11 Consolation** (*proposal*, off) [`consolation.on`]: gave up the 10 prize for a free try and ended below 20: still 1 sweet.
 
-**R22 Sponsor prizes in 3 tiers** [`sponsors`] (staff can change the counts in F9, logged)
+**R22 Sponsor prizes in 3 tiers** [`sponsors`] (staff can change the counts in F9, logged). Version 2 (24 Nov 2026).
 
 | Tier | Items (count) | Who picks |
 | --- | --- | --- |
-| GOLD "Day out for 4" | Vue cinema, 4 tickets (1) · Fun World bowling, 4 games (1) | the winner picks one that is left |
-| SILVER | Lidl €20 voucher (3) · One4all €20 voucher (1) | the winner picks one that is left |
-| BRONZE | PlayStation €10 voucher (4) · Xbox €10 voucher (2) · Rocknshop shirt (3) · The Works book set (1) · The Works art set (1) · Serenity Scents candle (1) · Serenity Scents room spray (1) | the winner picks one from the table |
+| GOLD "€20 VOUCHER" | Lidl €20 voucher (2) · One4all €20 voucher (1) | the winner picks one that is left |
+| SILVER "GAMING OR DAY OUT" | PlayStation €10 voucher (4) · Xbox €10 voucher (2) · Vue cinema, 4 tickets (1) · Fun World bowling, 4 games (1) | the winner picks one that is left |
+| BRONZE "GIFT" | Rocknshop shirt (3) · The Works book set (1) · The Works art set (1) · Serenity Scents candle (1) · Serenity Scents room spray (1) | the winner picks one that is left |
 
-- NOT on the wheel (part 2): One4all €20 x1 (top score prize) and GTA 6 for PS5 (draw prize).
+- RESERVED, never on the wheel (part 2 builds these): Lidl €20 x1 and GTA 6 for PS5 (12:45 draw), One4all €20 x1 (top score prize).
 - The prize screens show the sponsor name (text only; logos later).
 - **R23 One sponsor prize per nickname per day:** a sponsor winner is always asked for a nickname. If that nickname already won a sponsor prize today, staff see "ALREADY WON A PRIZE TODAY? Y = GIVE +2 DRAW ENTRIES INSTEAD" [`tickets.swap`]. Staff decide (Y or N). The default nickname (skipped) is never matched.
-- An item is **reserved** when the wheel lands on its tier (so stock can never go below 0) and **given** when staff confirm the item (the pick screen). Y in R23 gives +2 tickets and frees the reservation.
+- **R28 No item wanted:** every sponsor prize pick screen (even with only 1 item left) has "N = +2 DRAW ENTRIES INSTEAD", for a player who does not want any item left in that tier. The item stays in stock (the reservation is freed) and it does NOT count as a sponsor prize win for R23 (saved as an `award` kind `swap` with `why: 'declined'`).
+- An item is **reserved** when the wheel lands on its tier (so stock can never go below 0) and **given** when staff confirm the item (the pick screen). Y in R23 or N in R28 gives +2 draw tickets and frees the reservation.
 
 **R7 The wheel** [`wheel.outcomes`]
 
 | Slice | Base chance |
 | --- | --- |
-| GOLD | 4% |
-| SILVER | 8% |
-| BRONZE | 24% |
+| GOLD €20 VOUCHER | 4% |
+| SILVER GAMING / DAY OUT | 12% |
+| BRONZE GIFT | 14% |
 | FREE TRY | 26% |
-| +2 TICKETS | 38% |
+| +2 DRAW ENTRIES | 44% |
 
-- **R24 Fallbacks**, worked out before every spin from the saved log (`prizes.js liveOdds`):
-  - a tier (GOLD, SILVER, BRONZE) with no items left: its chance goes to +2 TICKETS. On the wheel its slice shows "SOLD OUT - +2 DRAW ENTRIES".
-  - the live odds always add up to exactly 100% (the +2 TICKETS slice takes what is left).
-- The computer picks the result with `secureRandom()` and SAVES it before the animation (D1). The slice sizes on the wheel are the live odds. After a crash the same result is shown again; a payment never spins twice (D11).
-- The wheel screen always shows the live odds and the items left per tier.
+- **R24 Sold out: chance moves DOWN only** [`wheel.soldOutDown`], worked out before every spin from the saved log (`prizes.js liveOdds`):
+  - GOLD sold out: its chance goes to SILVER. SILVER sold out: its chance (and any it got from GOLD) goes to BRONZE. BRONZE sold out: its chance (and any it got) goes to +2 DRAW ENTRIES.
+  - Applied from the top down, so the chance keeps moving down until it reaches a tier with stock, or +2 DRAW ENTRIES. It never moves up: GOLD is never more than 4%. FREE TRY always stays 26%.
+  - The live odds always add up to exactly 100% (the +2 DRAW ENTRIES slice takes what is left).
+  - "Sold out" = no free items in the tier (items left minus items won on the wheel and not given yet).
+- The computer picks the result with `secureRandom()` and SAVES it before the animation (D1). After a crash the same result is shown again; a payment never spins twice (D11).
+- **Wheel drawing:** the wheel is ALWAYS drawn from the live odds: each slice size = its real chance. A slice with 0% is not drawn (no empty or "SOLD OUT" slices). The wheel is drawn again whenever the live odds change (a win, an F9 edit, an undo).
+- The wheel screen always shows the live odds, the items left per tier ("ONLY 1 LEFT!" when a tier has 1 item) and "REACH CHIMNEY 20 = SPIN: X IN 10 WIN A PRIZE" [`text.spinChance`], X = the live prize chance (gold + silver + bronze) / 10, rounded down; hidden when X is 0. The title screen shows the same line.
 - Each result has a tier 1-4: effects and sounds grow with the tier.
 
-**R27 Cash fallback** (a safety option, only when ALL sponsor prizes are gone) [`CASH_FALLBACK_ENABLED`, `CASH_FALLBACK_MAX_WINS`]
+**R27 Cash fallback: MANUAL only** [`CASH_FALLBACK_ENABLED`, `CASH_FALLBACK_MAX_WINS`]
 
-- `CASH_FALLBACK_ENABLED = true` in config. Staff can switch it on or off in F9 (key C); each switch is saved as a `staff` event (`cash-fallback`, on/off).
-- It turns on ONLY when GOLD, SILVER and BRONZE are ALL sold out. Then a "€10 CASH" slice appears at 2% [`wheel` cash `onWhenAllEmpty`], taken from +2 TICKETS.
-- €10 CASH can be won at most 3 times per day (`CASH_FALLBACK_MAX_WINS = 3`); after that its chance goes back to +2 TICKETS.
+- `CASH_FALLBACK_ENABLED = false` in config (off at the start of the day).
+- Staff can switch it ON in F9 (key C) ONLY when GOLD, SILVER and BRONZE are ALL sold out; otherwise the switch is greyed out and refuses. Switching OFF always works. Each switch is a `staff` event (`cash-fallback`, on/off).
+- When ON (and all tiers are still sold out): a "€10 CASH" slice at 2% [`wheel` cash `onWhenAllEmpty`], taken from +2 DRAW ENTRIES.
+- €10 CASH can be won at most 3 times per day (`CASH_FALLBACK_MAX_WINS = 3`); after that its chance goes back to +2 DRAW ENTRIES.
+- If stock comes back to any tier (an F9 stock edit or an undo), the switch turns OFF by itself, saved as a `staff` event `cash-fallback` off with detail "auto: stock is back".
 - Staff screen: "PAY €10", confirmed twice, then saved (`staff` event `cash-paid` with the payment number).
 - **Worst case: €10 x 3 = €30 cash paid per day.** No other money prize exists while the jackpot is off (R13).
 
@@ -129,7 +135,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 | S4 | Get ready: "CLICK TO FLY", tries left, best | player | game.js HUD |
 | S5 | Play: chimney count, level, tries left, best, next goal. A new level plays a sound only (no text). A warning glow between chimney and presents just before each level change | player | game.js, flow.flightHooks |
 | S6 | Try over: the crash scene C1-C4 (Santa speaks), or "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce, crash.js |
-| S7 | Wheel: live odds and items left per tier, "SOLD OUT - +2 DRAW ENTRIES" on empty tiers; "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
+| S7 | Wheel: drawn from the live odds (no 0% slices), items left per tier ("ONLY 1 LEFT!"), "REACH CHIMNEY 20 = SPIN: X IN 10 WIN A PRIZE"; "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
 | S8 | Chimney 10 choice: SWEET or FREE TRY, big tiles, mouse | player | screens.choice |
 | S9 | Nickname: for the best players list, LEGEND, MYTHIC, GODLIKE and every sponsor winner (R23). Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
 | S10 | Ticket screen (R12): all tickets of the payment with where they came from and the numbers. Then the hand-over (R16): €10 CASH confirmed twice, then the list. (The "already won today?" check and the item pick (R23) come just before the ticket screen.) Enter saves and goes back to S1 | staff | screens.handover, handover.js |
@@ -271,12 +277,12 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T31 | flight music | ends exactly at chimney 30, no loop before; tempo 140-260 bpm | N |
 | T33 | each price key 1-6 | PLAY €2.50/1, €6.50/3, €10/5 + 1 bonus ticket "BEST VALUE +1 BONUS TICKET"; TICKETS ONLY €2.50/1, €6.50/3, €10/6; the old €2 price is gone | N |
 | T34 | chain of free tries 12 -> 21 -> 31 | choice, wheel, then the ticket screen after the last free try (R10); every try that reached 10 keeps its ticket | N |
-| T35 | start of the day | base odds 4/8/24/26/38, no €10 cash, no jackpot | N |
-| T36 | GOLD win | the player picks cinema or bowling, sponsor name shown; stock 2 -> 1 | N, F |
+| T35 | start of the day | base odds 4/12/14/26/44, no €10 cash, no jackpot; 3 IN 10 | N |
+| T36 | GOLD win | the player picks a €20 voucher, sponsor name shown; stock 3 -> 2 | N, F |
 | T37 | SILVER / BRONZE win | the player picks from what is left | N, F |
 | T38 | same nickname wins again | "ALREADY WON?" Y = +2 tickets on the same ticket screen, the item is free again (R23) | N, F |
-| T39 | each tier sells out | its chance to +2 TICKETS, "SOLD OUT"; no €10 cash until ALL tiers are sold out, then 2% | N |
-| T40 | 3 x €10 CASH | cash slice off again; €30 paid = the worst case (R27) | N |
+| T39 | each tier sells out | chance moves down only (gold -> silver -> bronze -> +2), GOLD never above 4%, FREE TRY 26%, 0% slices not drawn; no cash unless staff switch it on | N |
+| T40 | 3 x €10 CASH (switched on) | cash slice off again; €30 paid = the worst case (R27) | N |
 | T41 | jackpot switched on (test config) | 3% slice, max 2 wheel wins a day | N |
 | T42 | 2,000 random days | odds = 100% before every spin, stock never below 0 | N |
 | T43 | jackpot growth (jackpot on) | €10, +€10 every hour from the first paid game, max €30, back to €10 after a win | N |
@@ -289,35 +295,40 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T50 | TICKETS ONLY (keys 4-6) | no game: ticket screen, hand-over; numbers in order | N, F |
 | T51 | 5 tries, 4 reach 10 | 4 chimney 10 tickets (+1 bonus on key 3), all on one ticket screen | N, F |
 | T52 | key 3, no try reaches 10 | the bonus ticket still comes | N |
-| T53 | F9 key C | cash fallback off = no cash slice; on again = 2%; both switches logged; `CASH_FALLBACK_ENABLED = false` = never | N, F |
+| T53 | F9 key C | refused (greyed) while any tier has stock; on when all sold out = 2%; stock back = off by itself (logged) | N, F |
 | T54 | R13 jackpot off | no wheel slice, not in the draw, hidden on all screens | N, screenshots |
+| T55 | on-screen words | no "ticket" or "raffle" in on-screen texts: DRAW ENTRY / DRAW ENTRIES, a play is a TRY | N |
+| T56 | cards used | = payments with at least 1 draw entry | N |
+| T57 | R28 N on the pick screen | +2 draw entries, item stays in stock, not a win for R23 | N |
 
 ## Simulation results (R25, R27, T47)
 
-Simulation: 10,000 days per case, 18 cases (node scripts/simulate.js). Guesses: price mix 40%/30%/15%/5%/5%/5% (PLAY €2.50/€6.50/€10, TICKETS ONLY €2.50/€6.50/€10), another try of the payment passes 10: 50%, free try at chimney 10 35%, same nickname wins again 10%, draw winner not here 10%, payments spread from 09:00 to 12:35, one crash and reload at mid-day. Jackpot OFF, cash fallback ON.
+Quick check for version 0.23.0 (200 days per case; the full 10,000-day run was skipped on request). The €10 cash fallback is manual and off in the simulation.
+
+Simulation: 200 days per case, 18 cases (node scripts/simulate.js). Guesses: price mix 40%/30%/15%/5%/5%/5% (PLAY €2.50/€6.50/€10, TICKETS ONLY €2.50/€6.50/€10), another try of the payment passes 10: 50%, free try at chimney 10 35%, same nickname wins again 10%, draw winner not here 10%, payments spread from 09:00 to 12:35, one crash and reload at mid-day. Jackpot OFF, cash fallback OFF.
 
 | Payments | P(20) | P(30) | Spins avg | €10 cash avg / 95% / max | Gold / silver / bronze won (wheel) avg | Sold out % (avg time) G / S / B | Items left for draw avg | Tickets avg | Sweets avg | Taken avg | Left for charity avg / min |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 35 | 0.5 | 0.1 | 17.3 | €0 / €0 / €0 | 0.6 / 1.2 / 3.8 | 14.4% (11:14) / 3.9% (11:44) / 0% (12:07) | 13.4 | 120.2 | 18.5 | €189 | €189 / €123.5 |
-| 35 | 0.5 | 0.2 | 17.3 | €0 / €0 / €0 | 0.6 / 1.2 / 3.8 | 14.6% (11:14) / 3.9% (11:45) / 0% (-) | 13.4 | 139 | 18.6 | €188.8 | €188.8 / €111 |
-| 35 | 0.8 | 0.1 | 25.4 | €0 / €0 / €0 | 0.8 / 1.8 / 5.5 | 25.1% (11:11) / 11.5% (11:39) / 0.2% (12:15) | 10.8 | 132.4 | 19 | €188.8 | €188.8 / €122.5 |
-| 35 | 0.8 | 0.2 | 25.3 | €0 / €0 / €0 | 0.9 / 1.8 / 5.5 | 25.9% (11:10) / 12.1% (11:38) / 0.2% (12:15) | 10.8 | 152.7 | 19 | €189.1 | €189.1 / €130.5 |
-| 35 | 1 | 0.1 | 29.8 | €0 / €0 / €0 | 1 / 2.1 / 6.5 | 32% (11:09) / 18.4% (11:38) / 1.1% (12:13) | 9.5 | 139.4 | 19.4 | €188.8 | €188.8 / €119 |
-| 35 | 1 | 0.2 | 29.7 | €0 / €0 / €0 | 1 / 2.1 / 6.5 | 31.3% (11:08) / 17.7% (11:38) / 0.9% (12:12) | 9.5 | 160.5 | 19.3 | €189 | €189 / €130.5 |
-| 50 | 0.5 | 0.1 | 24.7 | €0 / €0 / €0 | 0.8 / 1.7 / 5.4 | 24.4% (11:12) / 10.8% (11:39) / 0.3% (12:13) | 11 | 171.6 | 26.4 | €270.2 | €270.2 / €191.5 |
-| 50 | 0.5 | 0.2 | 24.6 | €0 / €0 / €0 | 0.8 / 1.8 / 5.4 | 24.6% (11:08) / 11.2% (11:38) / 0.2% (12:17) | 11.1 | 198.7 | 26.4 | €269.9 | €269.9 / €196 |
-| 50 | 0.8 | 0.1 | 36.2 | €0 / €0 / €0 | 1.1 / 2.4 / 7.9 | 40.2% (11:05) / 28.5% (11:34) / 4.8% (12:09) | 7.6 | 189.4 | 27.2 | €269.6 | €269.6 / €194.5 |
-| 50 | 0.8 | 0.2 | 36.2 | €0 / €0 / €10 | 1.1 / 2.4 / 7.8 | 40.4% (11:05) / 27.7% (11:34) / 4.1% (12:09) | 7.6 | 218.5 | 27.2 | €269.9 | €269.9 / €195.5 |
-| 50 | 1 | 0.1 | 42.5 | €0 / €0 / €20 | 1.3 / 2.8 / 9.1 | 48.9% (11:01) / 39.6% (11:28) / 12.6% (12:06) | 5.9 | 200.2 | 27.6 | €269.8 | €269.7 / €187.5 |
-| 50 | 1 | 0.2 | 42.5 | €0 / €0 / €10 | 1.2 / 2.7 / 9.1 | 47.8% (11:02) / 38.7% (11:29) / 12.5% (12:07) | 5.9 | 230.1 | 27.6 | €269.6 | €269.6 / €188 |
-| 70 | 0.5 | 0.1 | 34.5 | €0 / €0 / €10 | 1.1 / 2.4 / 7.5 | 37.9% (11:04) / 25.9% (11:35) / 3.7% (12:09) | 8.1 | 240.5 | 37.1 | €377.9 | €377.9 / €288.5 |
-| 70 | 0.5 | 0.2 | 34.4 | €0 / €0 / €0 | 1.1 / 2.4 / 7.5 | 38.4% (11:05) / 26.2% (11:34) / 3.8% (12:10) | 8.1 | 278.3 | 37 | €378 | €378 / €292.5 |
-| 70 | 0.8 | 0.1 | 50.6 | €0.1 / €0 / €30 | 1.4 / 3.1 / 10.5 | 57.6% (10:58) / 52.2% (11:23) / 31% (12:00) | 4 | 267 | 38 | €377.8 | €377.7 / €289 |
-| 70 | 0.8 | 0.2 | 50.7 | €0.1 / €0 / €20 | 1.4 / 3.1 / 10.5 | 58.1% (10:58) / 53.5% (11:22) / 30.7% (12:01) | 4 | 307.9 | 38.1 | €378 | €378 / €289 |
-| 70 | 1 | 0.1 | 59.5 | €0.3 / €0 / €30 | 1.5 / 3.4 / 11.7 | 66.4% (10:53) / 65.3% (11:16) / 55.2% (11:54) | 2.4 | 283.9 | 38.7 | €377.9 | €377.7 / €295 |
-| 70 | 1 | 0.2 | 59.5 | €0.3 / €0 / €20 | 1.5 / 3.3 / 11.7 | 67.4% (10:54) / 64.2% (11:17) / 55.2% (11:53) | 2.4 | 325.9 | 38.7 | €378.3 | €378 / €280.5 |
+| 35 | 0.5 | 0.1 | 16.9 | €0 / €0 / €0 | 0.5 / 1.9 / 2.3 | 1% (11:08) / 0% (-) / 0% (-) | 13.2 | 119.4 | 18.7 | €189.4 | €189.4 / €146 |
+| 35 | 0.5 | 0.2 | 17.1 | €0 / €0 / €0 | 0.6 / 1.9 / 2.2 | 3% (11:27) / 0% (-) / 0.5% (11:18) | 13.3 | 141.6 | 18.2 | €189 | €189 / €141.5 |
+| 35 | 0.8 | 0.1 | 25.3 | €0 / €0 / €0 | 1 / 2.7 / 3.4 | 9% (11:38) / 1% (12:25) / 3.5% (11:55) | 11 | 133.9 | 19.2 | €187.7 | €187.7 / €141.5 |
+| 35 | 0.8 | 0.2 | 25.2 | €0 / €0 / €0 | 1 / 2.8 / 3.2 | 7.5% (11:12) / 0% (-) / 5% (11:54) | 11 | 152.4 | 18.8 | €187.8 | €187.8 / €145 |
+| 35 | 1 | 0.1 | 29.7 | €0 / €0 / €0 | 1.1 / 3.3 / 3.7 | 13.5% (11:26) / 1.5% (11:58) / 8.5% (11:54) | 10 | 141.5 | 19.1 | €188 | €188 / €150.5 |
+| 35 | 1 | 0.2 | 29.6 | €0 / €0 / €0 | 0.9 / 3.3 / 3.7 | 9% (11:29) / 1.5% (11:54) / 9.5% (12:01) | 10.1 | 163.4 | 19.5 | €191.1 | €191.1 / €142.5 |
+| 50 | 0.5 | 0.1 | 24.7 | €0 / €0 / €0 | 0.9 / 2.6 / 3.3 | 9.5% (11:05) / 0.5% (11:52) / 2.5% (12:05) | 11.1 | 171.8 | 27 | €269.1 | €269.1 / €218 |
+| 50 | 0.5 | 0.2 | 24.7 | €0 / €0 / €0 | 0.9 / 2.6 / 3.2 | 5.5% (11:24) / 0% (-) / 3% (12:17) | 11.4 | 203.1 | 26.1 | €269.9 | €269.9 / €208 |
+| 50 | 0.8 | 0.1 | 35.8 | €0 / €0 / €0 | 1.2 / 4 / 4.3 | 16% (11:43) / 7.5% (12:07) / 15% (11:55) | 8.5 | 192.4 | 26.9 | €270.8 | €270.8 / €215.5 |
+| 50 | 0.8 | 0.2 | 36.3 | €0 / €0 / €0 | 1.2 / 4.2 / 4.5 | 13% (11:26) / 7.5% (11:56) / 15.5% (11:45) | 8.1 | 224.8 | 27.2 | €269.7 | €269.7 / €219 |
+| 50 | 1 | 0.1 | 42.5 | €0 / €0 / €0 | 1.4 / 4.6 / 5.1 | 19.5% (11:20) / 13.5% (12:02) / 32% (11:42) | 7 | 206.2 | 27.9 | €272.7 | €272.7 / €222.5 |
+| 50 | 1 | 0.2 | 42.7 | €0 / €0 / €0 | 1.4 / 4.6 / 5.2 | 19% (11:20) / 7.5% (12:01) / 32.5% (11:51) | 6.8 | 235.6 | 27.7 | €270.8 | €270.8 / €219 |
+| 70 | 0.5 | 0.1 | 34.7 | €0 / €0 / €0 | 1.2 / 3.9 / 4.4 | 15% (11:24) / 2.5% (12:07) / 19% (11:46) | 8.5 | 243.1 | 37.1 | €376.6 | €376.6 / €308 |
+| 70 | 0.5 | 0.2 | 34.4 | €0 / €0 / €0 | 1.3 / 3.9 / 4.5 | 16% (11:45) / 5.5% (12:06) / 17% (11:39) | 8.3 | 281.5 | 37 | €380.4 | €380.4 / €327.5 |
+| 70 | 0.8 | 0.1 | 50.6 | €0 / €0 / €0 | 1.6 / 5.3 / 6 | 30% (11:25) / 18% (11:51) / 60% (11:38) | 5.1 | 273.5 | 37.7 | €381.3 | €381.3 / €319 |
+| 70 | 0.8 | 0.2 | 50.7 | €0 / €0 / €0 | 1.8 / 5.5 / 5.8 | 34% (11:29) / 25% (11:56) / 50.5% (11:42) | 4.9 | 313.5 | 38.4 | €380.8 | €380.8 / €314 |
+| 70 | 1 | 0.1 | 59.5 | €0 / €0 / €0 | 2.1 / 6.3 / 6.4 | 46.5% (11:15) / 37% (11:54) / 72.5% (11:30) | 3.3 | 289.8 | 38.2 | €377.7 | €377.7 / €311 |
+| 70 | 1 | 0.2 | 59.7 | €0 / €0 / €0 | 1.9 / 6.2 / 6.4 | 40% (11:11) / 38.5% (11:44) / 69% (11:33) | 3.5 | 329.5 | 39.5 | €381.5 | €381.5 / €318.5 |
 
-Checks over all 180,000 days: €10 cash paid <= €30: **PASS** (highest €30) · no jackpot paid while it is off: **PASS** · odds add up to 100% before every spin: **PASS** · state after reload = before: **PASS** · days where prize money was more than the takings: **0**.
+Checks over all 3,600 days: €10 cash paid <= €30: **PASS** (highest €0) · no jackpot paid while it is off: **PASS** · odds add up to 100% before every spin: **PASS** · state after reload = before: **PASS** · days where prize money was more than the takings: **0**.
 
 How to read it: P(20) / P(30) = the chance that a payment's best try passes chimney 20 / 30. "Left for charity" = takings - €10 cash paid (sweets, tickets and printing are not in it; sponsor items cost nothing). Worst case cash per day is €30 (R27); it only happens when every sponsor prize is gone. "Tickets avg" = draw entries given a day; they go on one paper card per payment, so only about 70-110 cards are needed.
 

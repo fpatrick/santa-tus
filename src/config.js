@@ -40,20 +40,20 @@ export const CONFIG = {
   // R22: sponsor prizes. count = items at the start of the day (staff can change them in F9).
   // pick = the winner picks one item that is left. sponsor = the name shown on the prize screens.
   sponsors: {
-    gold: { name: 'GOLD', title: 'DAY OUT FOR 4', color: '#ffd23f', pick: true, give: 'GOLD: PLAYER PICKS CINEMA OR BOWLING',
+    gold: { name: 'GOLD', title: '€20 VOUCHER', color: '#ffd23f', pick: true, give: 'GOLD: PLAYER PICKS A €20 VOUCHER',
       items: [
-        { id: 'vue4', label: 'VUE CINEMA, 4 TICKETS', sponsor: 'VUE CINEMA', count: 1 },
-        { id: 'bowl4', label: 'FUN WORLD BOWLING, 4 GAMES', sponsor: 'FUN WORLD', count: 1 },
-      ] },
-    silver: { name: 'SILVER', color: '#d8e0f0', pick: true, give: 'SILVER: PLAYER PICKS A VOUCHER',
-      items: [
-        { id: 'lidl20', label: 'LIDL €20 VOUCHER', sponsor: 'LIDL', count: 3 },
+        { id: 'lidl20', label: 'LIDL €20 VOUCHER', sponsor: 'LIDL', count: 2 },
         { id: 'one4all20', label: 'ONE4ALL €20 VOUCHER', sponsor: 'ONE4ALL', count: 1 },
       ] },
-    bronze: { name: 'BRONZE', color: '#e0894a', pick: true, give: 'BRONZE: PLAYER PICKS FROM THE TABLE',
+    silver: { name: 'SILVER', title: 'GAMING OR DAY OUT', color: '#d8e0f0', pick: true, give: 'SILVER: PLAYER PICKS GAMING OR A DAY OUT',
       items: [
         { id: 'ps10', label: 'PLAYSTATION €10 VOUCHER', sponsor: 'PLAYSTATION', count: 4 },
         { id: 'xbox10', label: 'XBOX €10 VOUCHER', sponsor: 'XBOX', count: 2 },
+        { id: 'vue4', label: 'VUE CINEMA, 4 TICKETS', sponsor: 'VUE CINEMA', count: 1 },
+        { id: 'bowl4', label: 'FUN WORLD BOWLING, 4 GAMES', sponsor: 'FUN WORLD', count: 1 },
+      ] },
+    bronze: { name: 'BRONZE', title: 'GIFT', color: '#e0894a', pick: true, give: 'BRONZE: PLAYER PICKS A GIFT',
+      items: [
         { id: 'shirt', label: 'ROCKNSHOP SHIRT', sponsor: 'ROCKNSHOP', count: 3 },
         { id: 'worksBook', label: 'THE WORKS BOOK SET', sponsor: 'THE WORKS', count: 1 },
         { id: 'worksArt', label: 'THE WORKS ART SET', sponsor: 'THE WORKS', count: 1 },
@@ -61,24 +61,26 @@ export const CONFIG = {
         { id: 'spray', label: 'SERENITY SCENTS ROOM SPRAY', sponsor: 'SERENITY SCENTS', count: 1 },
       ] },
   },
+  // R22: RESERVED, never on the wheel (part 2): Lidl €20 x1 + GTA 6 for PS5 (12:45 draw), One4all €20 x1 (top score prize).
   drawOrder: ['bronze', 'silver', 'gold'], // R14: the items first (in this order), the jackpot last
 
   // R7: the wheel. odds = base chance in % (must add up to 100). pieces = how many slices it shows.
   // tier 1-4 sets how big the effects and sounds are. short = text on the slice (\n = new line), icon = wheelicons.js.
-  // R24: sponsor = the tier it gives (no items left: its chance goes to `fallbackTo`).
-  // R27: the cash slice has odds 0: it turns on at `onWhenAllEmpty` % (taken from fallbackTo) only when ALL tiers are empty.
+  // R24: sponsor = the tier it gives. Sold out: its chance moves DOWN the `soldOutDown` list, after the last one to `fallbackTo`.
+  // R27: the cash slice has odds 0: staff can switch it on (F9) only when ALL tiers are empty; then `onWhenAllEmpty` % from fallbackTo.
   // R13: the jackpot slice is only used when JACKPOT_ENABLED is true (its odds then come from `jackpotOdds`, taken from fallbackTo).
   wheel: {
     outcomes: [
       { id: 'jackpot', label: 'JACKPOT', short: 'JACKPOT', icon: 'coin', odds: 0, jackpotOdds: 3, pieces: 1, tier: 4, color: '#ffd23f', jackpot: true },
-      { id: 'gold', label: 'GOLD PRIZE', short: 'GOLD\nPRIZE', icon: 'gold', odds: 4, pieces: 1, tier: 4, color: '#ffb81f', sponsor: 'gold' },
-      { id: 'silver', label: 'SILVER PRIZE', short: 'SILVER\nPRIZE', icon: 'silver', odds: 8, pieces: 1, tier: 3, color: '#b8c4dc', sponsor: 'silver' },
-      { id: 'bronze', label: 'BRONZE PRIZE', short: 'BRONZE\nPRIZE', icon: 'bronze', odds: 24, pieces: 2, tier: 3, color: '#d9733a', sponsor: 'bronze' },
+      { id: 'gold', label: 'GOLD €20 VOUCHER', short: 'GOLD €20\nVOUCHER', icon: 'gold', odds: 4, pieces: 1, tier: 4, color: '#ffb81f', sponsor: 'gold' },
+      { id: 'silver', label: 'SILVER GAMING / DAY OUT', short: 'SILVER\nGAMING/DAY OUT', icon: 'silver', odds: 12, pieces: 1, tier: 3, color: '#b8c4dc', sponsor: 'silver' },
+      { id: 'bronze', label: 'BRONZE GIFT', short: 'BRONZE\nGIFT', icon: 'bronze', odds: 14, pieces: 2, tier: 3, color: '#d9733a', sponsor: 'bronze' },
       { id: 'free', label: 'FREE TRY', short: 'FREE TRY', icon: 'free', odds: 26, pieces: 3, tier: 1, color: '#27c8ff', freeTry: true },
-      { id: 't2', label: '+2 DRAW ENTRIES', short: '+2 DRAW\nENTRIES', icon: 'ticket', odds: 38, pieces: 4, tier: 2, color: '#3dff8b', tickets: 2 },
+      { id: 't2', label: '+2 DRAW ENTRIES', short: '+2 DRAW\nENTRIES', icon: 'ticket', odds: 44, pieces: 4, tier: 2, color: '#3dff8b', tickets: 2 },
       { id: 'cash', label: '€10 CASH', short: '€10', icon: 'note', odds: 0, onWhenAllEmpty: 2, pieces: 1, tier: 4, color: '#ff5a6a', cash: 10 },
     ],
     fallbackTo: 't2',
+    soldOutDown: ['gold', 'silver', 'bronze'], // R24: a sold-out tier's chance moves to the next one down (never up)
     soldOut: 'SOLD OUT -\n+2 DRAW ENTRIES', // on an empty tier's slice
     jackpotDone: 'DRAW ONLY -\n+2 DRAW ENTRIES', // on the jackpot slice after 2 wheel wins or after the draw
     soldOutColor: '#5a5f78',
@@ -91,9 +93,9 @@ export const CONFIG = {
     sound: { eighth: 0.065, rollSecs: 1.6, coins: [0, 8, 16, 26, 60], coinGap: 0.04 },
   },
 
-  // R27: the €10 cash fallback (only when GOLD, SILVER and BRONZE are all sold out). Staff can switch it in F9 (logged).
+  // R27: the €10 cash fallback (only when GOLD, SILVER and BRONZE are all sold out). Staff switch it ON in F9 (logged).
   // Worst case: CASH_FALLBACK_MAX_WINS x €10 = €30 a day.
-  CASH_FALLBACK_ENABLED: true,
+  CASH_FALLBACK_ENABLED: false, // manual only: staff switch it on in F9 when all tiers are sold out
   CASH_FALLBACK_MAX_WINS: 3,
 
   // R13: the cash jackpot. OFF for market day 2026: hidden everywhere (the code stays for a later year).
@@ -198,9 +200,14 @@ export const CONFIG = {
     play: 'PLAY',
     prizeDraw: 'PRIZE DRAW',
     ticketsTitle: 'YOUR DRAW ENTRIES',
+    spinChance: 'REACH CHIMNEY {n} = SPIN: {x} IN 10 WIN A PRIZE', // R7: x = live gold + silver + bronze chance / 10
+    onlyOne: 'ONLY 1 LEFT!',
+    tierSoldOut: 'SOLD OUT',
+    declineItem: 'N = +2 DRAW ENTRIES INSTEAD', // R28: the player wants no item left in this tier
+    cashGreyed: 'CASH FALLBACK CAN ONLY BE SWITCHED ON WHEN GOLD, SILVER AND BRONZE ARE ALL SOLD OUT.',
     rangeTo: ' TO ', // "#0012 TO #0014" (staff write it on the paper card)
     // R12: where the tickets came from, on the ticket screen. {n} = count.
-    ticketWhy: { per10: 'CHIMNEY 10 (x{n} TRIES)', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', buy: 'BOUGHT' },
+    ticketWhy: { per10: 'CHIMNEY 10 (x{n} TRIES)', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', declined: 'INSTEAD OF A PRIZE ITEM', buy: 'BOUGHT' },
     cashOn: 'CASH FALLBACK',
     itemsLeft: 'ITEMS LEFT',
     lastGames: 'LAST GAMES! THE DRAW IS AT {draw}',

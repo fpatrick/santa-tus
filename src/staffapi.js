@@ -13,6 +13,11 @@ import { fmtEuro } from './ledger.js';
 
 export function staffApi(app) {
   const name = () => app.ledgerName();
+  // R27: stock is back in a tier while the cash fallback is on: switch it off by itself (logged).
+  const cashAutoOff = async () => {
+    const body = R.cashAutoOffBody(app.led(), CONFIG);
+    if (body) await app.commit(name(), body);
+  };
   return {
     info: () => {
       const s = app.led();
@@ -28,6 +33,7 @@ export function staffApi(app) {
       const body = R.undoBody(app.led());
       if (!body) return null;
       await app.commit(name(), body);
+      await cashAutoOff();
       if (app.flowActive) app.endFlight({ aborted: true });
       return body;
     },
@@ -61,12 +67,14 @@ export function staffApi(app) {
       const it = allItems(CONFIG)[n - 1];
       if (!it || !(count >= 0)) return 'Type the item number and the count, for example "4 2".';
       const ev = await app.commit(name(), R.stockBody(app.led(), CONFIG, it.id, count));
+      await cashAutoOff();
       return `${it.label}: ${ev.before} -> ${ev.left} left. Saved.`;
     },
-    // R27: the €10 cash fallback switch, saved as a staff event. Returns the new state.
+    // R27: the €10 cash fallback switch, saved as a staff event. ON only when all tiers are sold out (else null).
     toggleCash: async () => {
       const on = !cashSwitch(app.led(), CONFIG);
-      await app.commit(name(), { ...R.staffBody('cash-fallback', on ? 'on' : 'off'), on });
+      if (on && !liveOdds(app.led(), CONFIG).allEmpty) return null; // greyed out
+      await app.commit(name(), R.cashSwitchBody(app.led(), CONFIG, on));
       return on;
     },
     fixJackpot: async (value) => {

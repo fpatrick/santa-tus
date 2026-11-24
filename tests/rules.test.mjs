@@ -185,7 +185,7 @@ test('T34: a chain of free tries: 12 -> free try -> 21 -> wheel free try -> 31: 
 
 test('T15: 100,000 spins on the base odds: each slice within 0.5 points (R7)', () => {
   const base = baseOdds(CONFIG).map((x) => ({ id: x.o.id, odds: x.odds }));
-  assert.deepEqual(Object.fromEntries(base.filter((x) => x.odds > 0).map((x) => [x.id, x.odds])), { gold: 4, silver: 8, bronze: 24, free: 26, t2: 38 });
+  assert.deepEqual(Object.fromEntries(base.filter((x) => x.odds > 0).map((x) => [x.id, x.odds])), { gold: 4, silver: 12, bronze: 14, free: 26, t2: 44 });
   const n = 100000;
   const count = {};
   for (let i = 0; i < n; i++) { const id = R.pickOutcome(base); count[id] = (count[id] || 0) + 1; }

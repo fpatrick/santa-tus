@@ -7,7 +7,7 @@ import { drawSky, drawSnow, drawRoof } from './world.js';
 import { drawSanta } from './sprites.js';
 import { createFlight, outlined } from './game.js';
 import { fmtEuro } from './ledger.js';
-import { baseOdds } from './prizes.js';
+import { baseOdds, inTen } from './prizes.js';
 import { wheelIcon } from './wheelicons.js';
 import { rankBadge, RANK_COLOR } from './rankbadge.js';
 
@@ -44,7 +44,7 @@ export function createAttract(getInfo) {
       ctx.fillRect(0, 0, W, 1080);
       if (name === 'logo') logo(ctx, a);
       if (name === 'prices') prices(ctx, a);
-      if (name === 'prizes') prizes(ctx);
+      if (name === 'prizes') prizes(ctx, getInfo());
       if (name === 'sponsors') sponsors(ctx);
       if (name === 'board') board(ctx, getInfo());
       drawSnow(ctx, dt, 2);
@@ -126,24 +126,33 @@ function priceBox(ctx, x, y, w, h, text, color) {
   outlined(ctx, text, x + w / 2, y + h / 2 + 26, 54, color, 'center');
 }
 
-function prizes(ctx) {
+function prizes(ctx, info = {}) {
   outlined(ctx, T.winTitle, W / 2, 120, 44, '#27c8ff', 'center');
   const rows = [[10, T.win10, '#3dff8b'], [20, T.win20, '#27c8ff'], [30, T.win30, '#ffd23f'], [40, T.win40, '#c35cff'], [50, T.win50, '#ff6b7a']];
   rows.forEach(([n, text, color], k) => {
     const y = 170 + k * 84;
     outlined(ctx, String(n), 150, y + 40, 56, color, 'center');
-    outlined(ctx, text, 250, y + 30, 30, '#f4f7ff', 'left');
+    ctx.font = '30px "Press Start 2P"';
+    const two = ctx.measureText(text).width > 990 && text.includes(', '); // a long line goes on 2 lines, split at the comma
+    if (two) {
+      const [a1, a2] = [text.slice(0, text.indexOf(', ') + 1), text.slice(text.indexOf(', ') + 2)];
+      outlined(ctx, a1, 250, y + 14, 28, '#f4f7ff', 'left');
+      outlined(ctx, a2, 250, y + 50, 28, '#f4f7ff', 'left');
+    } else outlined(ctx, text, 250, y + 30, 30, '#f4f7ff', 'left');
   });
   outlined(ctx, T.oddsTitle, W / 2, 640, 30, '#ffd23f', 'center');
   ctx.font = '38px VT323';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#f4f7ff';
-  const odds = baseOdds(CONFIG).filter((x) => x.odds > 0).map((x) => `${x.o.label} ${x.odds}%`);
+  const live = info.live ? info.live.list.map((x) => ({ o: CONFIG.wheel.outcomes.find((o) => o.id === x.id), odds: x.odds })) : baseOdds(CONFIG);
+  const odds = live.filter((x) => x.odds > 0).map((x) => `${x.o.label} ${x.odds}%`);
   ctx.fillText(odds.slice(0, 3).join('   '), W / 2, 690);
   ctx.fillText(odds.slice(3).join('   '), W / 2, 732);
   ctx.font = '32px VT323';
   ctx.fillStyle = '#ffd23f';
   if (CONFIG.JACKPOT_ENABLED) wrap(ctx, jackpotRule(), W / 2, 790, 1100, 36); // R13
+  const x = info.live ? inTen(info.live) : 0; // R7: "REACH CHIMNEY 20 = SPIN: 3 IN 10 WIN A PRIZE", hidden at 0
+  if (x > 0) outlined(ctx, T.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', x), W / 2, 800, 26, '#3dff8b', 'center');
 }
 
 // R13: the jackpot rule in words, numbers from config.

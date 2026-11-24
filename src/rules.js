@@ -3,7 +3,7 @@
 // returns event bodies. The caller saves them (store.js) before it shows anything (D1).
 
 import { rankFor, lastActivePayment } from './ledger.js';
-import { liveOdds, stock, jackpotInfo, drawState, itemById } from './prizes.js';
+import { liveOdds, stock, jackpotInfo, drawState, itemById, cashSwitch } from './prizes.js';
 
 // R7, K3: a secure random number in [0, 1).
 export function secureRandom() {
@@ -93,15 +93,15 @@ function takeTickets(s, count) {
   return out;
 }
 
-// R8, R11, R12, R23: fixed awards. 'swap' = +2 draw tickets instead of a second sponsor prize today (given on the
-// ticket screen). 'tickets' = the ONE ticket screen at the end: all numbers at once, in order, never twice (R12).
+// R8, R11, R12, R23, R28: fixed awards. 'swap' = +2 draw tickets instead of a sponsor item (given on the ticket
+// screen): why 'already' = a 2nd prize today (R23), 'declined' = the player wants no item left (R28). The item stays in stock. 'tickets' = the ONE ticket screen at the end: all numbers at once, in order, never twice (R12).
 // 'p30' is only for old saved days (chimney 30 tickets are now part of 'tickets').
-export function awardBody(kind, p, s, cfg) {
+export function awardBody(kind, p, s, cfg, why = 'already') {
   if (kind === 'p30') return { t: 'award', pid: p.pid, kind, tickets: takeTickets(s, cfg.tickets.p30), legend: true };
   if (kind === 'consolation') return { t: 'award', pid: p.pid, kind, item: cfg.consolation.item, tickets: [] };
   if (kind === 'swap') {
     if (!p.sponsor || p.item || p.swapped) throw new Error('Nothing to swap (R23)');
-    return { t: 'award', pid: p.pid, kind, tier: p.sponsor, tickets: [], add: cfg.tickets.swap };
+    return { t: 'award', pid: p.pid, kind, tier: p.sponsor, tickets: [], add: cfg.tickets.swap, why };
   }
   if (kind === 'tickets') {
     if (p.ticketsGiven) throw new Error('This payment already got its tickets (R12)');
@@ -239,6 +239,18 @@ export function jackpotFixBody(s, cfg, value, now = Date.now()) {
   const v = Number(value);
   if (!(v >= 0) || v > cfg.jackpot.max) throw new Error(`The jackpot must be between 0 and ${cfg.jackpot.max}`);
   return { t: 'jackpot', value: v, before: jackpotInfo(s, cfg, now).value };
+}
+
+// R27: the F9 cash fallback switch. ON only when GOLD, SILVER and BRONZE are all sold out (else it throws). OFF always.
+export function cashSwitchBody(s, cfg, on) {
+  if (on && !liveOdds(s, cfg).allEmpty) throw new Error('R27: cash fallback only when all tiers are sold out');
+  return { ...staffBody('cash-fallback', on ? 'on' : 'off'), on: !!on };
+}
+
+// R27: stock came back (F9 edit or undo) while the switch is on: the switch goes off by itself. null = nothing to do.
+export function cashAutoOffBody(s, cfg) {
+  if (!cashSwitch(s, cfg) || liveOdds(s, cfg).allEmpty) return null;
+  return { ...staffBody('cash-fallback', 'auto: stock is back'), on: false };
 }
 
 export function staffBody(action, detail = '') {

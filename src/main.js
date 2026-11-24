@@ -4,7 +4,7 @@
 import { CONFIG } from './config.js';
 import { versionLabel, DISCLAIMER, STAGE } from './version.js';
 import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, plainName, rankOf, lastActivePayment, fmtEuro } from './ledger.js';
-import { timeState, itemById, drawState } from './prizes.js';
+import { timeState, itemById, drawState, liveOdds } from './prizes.js';
 import * as R from './rules.js';
 import { createStore } from './store.js';
 import { createFlight } from './game.js';
@@ -79,6 +79,7 @@ function attractInfo() {
   return {
     top: leaderboard(s, CONFIG).map((p) => ({ name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
     jackpot: totals(s, CONFIG).jackpot, jp: totals(s, CONFIG).jackpotInfo, drawTime: CONFIG.event.drawTime,
+    live: liveOdds(s, CONFIG), // R7, R24: the title screen shows the live odds and "X IN 10"
   };
 }
 

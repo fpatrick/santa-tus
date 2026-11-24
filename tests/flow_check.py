@@ -202,7 +202,7 @@ def run():
             pg.keyboard.press("1")
             overlay_title(pg, "HAND-OVER", timeout=20000)
             txt = pg.inner_text("#overlay")
-            assert "GOLD: GIVE VUE CINEMA" in txt and "SPONSOR: VUE CINEMA" in txt and "DRAW ENTRIES #0" in txt and "TICKET" not in txt.replace("4 TICKETS", ""), txt
+            assert "GOLD: GIVE LIDL €20 VOUCHER" in txt and "SPONSOR: LIDL" in txt and "DRAW ENTRIES #0" in txt and "TICKET" not in txt.replace("4 TICKETS", ""), txt
             pg.keyboard.press("Enter")
             print("ok - T36: €10 = 5 tries + bonus ticket, GOLD pick with the sponsor name on the hand-over")
 
@@ -214,7 +214,7 @@ def run():
             pg.wait_for_selector(".picks", timeout=20000)
             pg.keyboard.press("2")
             overlay_title(pg, "HAND-OVER")
-            assert "ONE4ALL" in pg.inner_text("#overlay")
+            assert "XBOX" in pg.inner_text("#overlay")
             pg.keyboard.press("Enter")
             print("ok - T37: SILVER pick screen, the picked item on the hand-over")
 
@@ -250,25 +250,31 @@ def run():
             assert len(wheels) == 4 and len({e["pid"] for e in wheels}) == 4, wheels
             print("ok - T47b: reload during the spin shows the same result, one spin only")
 
-            # T53 (F): F9 key C switches the €10 cash fallback off and on again, both saved in the log (R27)
-            pg.wait_for_function("santa.scene === 'attract' && !santa.flowActive && !document.querySelector('#overlay.on')", timeout=15000)
-            pg.keyboard.press("F9")
-            pg.wait_for_selector(".dots")
-            pg.keyboard.type("PAID")
-            pg.keyboard.press("Enter")
-            pg.wait_for_selector("text=STAFF PANEL")
+            # T53 (F): F9 key C is greyed out while any tier has stock; ON only when all are sold out (R27)
+            def open_f9():
+                pg.wait_for_function("santa.scene === 'attract' && !santa.flowActive && !document.querySelector('#overlay.on')", timeout=15000)
+                pg.keyboard.press("F9")
+                pg.wait_for_selector(".dots")
+                pg.keyboard.type("PAID")
+                pg.keyboard.press("Enter")
+                pg.wait_for_selector("text=STAFF PANEL")
+            open_f9()
             assert "JACKPOT" not in pg.inner_text("#overlay .acts"), "R13: no jackpot action while it is off"
+            assert pg.locator("[data-id='cash'].greyed").count() == 1, "cash switch must be greyed out"
             pg.keyboard.press("c")
-            pg.wait_for_selector("text=cash fallback is now OFF")
+            pg.wait_for_selector("text=CAN ONLY BE SWITCHED ON")
+            pg.keyboard.press("Escape")
+            commit_js(pg, "P.allItems(CONFIG).map((it) => R.stockBody(santa.led('live'), CONFIG, it.id, 0))")
+            open_f9()
+            assert pg.locator("[data-id='cash'].greyed").count() == 0
             pg.keyboard.press("c")
             pg.wait_for_selector("text=cash fallback is now ON")
             pg.keyboard.press("Escape")
             sw = [e for e in server_events(port) if e["t"] == "staff" and e["action"] == "cash-fallback"]
-            assert [e["on"] for e in sw] == [False, True], sw
-            print("ok - T53: F9 cash fallback switch, logged")
+            assert [e["on"] for e in sw] == [True], sw
+            print("ok - T53: F9 cash switch greyed while stock is left, ON when all sold out, logged")
 
-            # T49 (F): ALL tiers sold out -> €10 CASH: "PAY €10" confirmed twice and logged (R27)
-            commit_js(pg, "P.allItems(CONFIG).map((it) => R.stockBody(santa.led('live'), CONFIG, it.id, 0))")
+            # T49 (F): ALL tiers sold out + switched on -> €10 CASH: "PAY €10" confirmed twice and logged (R27)
             pg.evaluate("import('./src/config.js').then(({ CONFIG }) => { for (const o of CONFIG.wheel.outcomes) o.odds = o.id === 't2' ? 100 : 0;"
                         " CONFIG.wheel.outcomes.find((o) => o.cash).onWhenAllEmpty = 100; })")
             pay(pg, "1")
@@ -287,8 +293,18 @@ def run():
             paid = [e for e in server_events(port) if e["t"] == "staff" and e["action"] == "cash-paid"]
             assert len(paid) == 1, paid
             print("ok - T49: all sold out, €10 CASH paid after two confirms and logged")
-            # put some items back for the draw test (logged as staff stock edits)
-            commit_js(pg, "[R.stockBody(santa.led('live'), CONFIG, 'ps10', 3), R.stockBody(santa.led('live'), CONFIG, 'lidl20', 1)]")
+            # stock back with F9 S (item 3 = PlayStation, 3 left): the cash switch goes OFF by itself (R27)
+            open_f9()
+            pg.keyboard.press("s")
+            pg.wait_for_selector("input.staff-in")
+            pg.wait_for_function("document.activeElement && document.activeElement.classList.contains('staff-in')")
+            pg.keyboard.type("3 3")
+            pg.keyboard.press("Enter")
+            pg.wait_for_selector("text=PLAYSTATION €10 VOUCHER: 0 -> 3 left")
+            pg.keyboard.press("Escape")
+            sw = [e for e in server_events(port) if e["t"] == "staff" and e["action"] == "cash-fallback"]
+            assert [(e["on"], e["detail"]) for e in sw] == [(True, "on"), (False, "auto: stock is back")], sw
+            print("ok - T53: stock back in F9 turns the cash fallback off by itself (logged)")
 
             # T46 (F): the draw from F9: the first prize, NOT HERE with a reason, the same prize again (R14)
             pg.wait_for_function("santa.scene === 'attract' && !document.querySelector('#overlay.on')", timeout=10000)
