@@ -15,7 +15,7 @@ const sum = (o) => Object.values(o).reduce((a, b) => a + b, 0);
 const win = (sess, id, extra = {}) => playPayment(sess, 'p1', { tries: [22], choices: ['sweet'], wheel: [id], nick: `P${sess.s.payments.length + 1}`, ...extra });
 
 const JP = cfgWith({ JACKPOT_ENABLED: true }); // the jackpot code stays (R13): its tests run with it switched on
-const ALL = { gold: 3, silver: 8, bronze: 7 }; // sponsor items at the start of the day (R22 version 2)
+const ALL = { gold: 4, silver: 8, bronze: 7 }; // sponsor items at the start of the day (R22 version 2)
 const sellOut = (sess, tiers = Object.keys(ALL)) => { for (const t of tiers) for (let i = 0; i < ALL[t]; i++) win(sess, t); };
 const cashOn = (sess) => sess.commit(R.cashSwitchBody(sess.s, sess.cfg, true));
 
@@ -39,7 +39,7 @@ test('T36: GOLD "€20 VOUCHER": the winner picks one that is left; the sponsor 
   assert.equal(it.label, 'ONE4ALL €20 VOUCHER');
   assert.equal(it.sponsorName, 'ONE4ALL');
   assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 2);
-  assert.deepEqual(R.itemsLeft('gold', sess.s, CONFIG).map((i) => [i.id, i.left]), [['lidl20', 2]]);
+  assert.deepEqual(R.itemsLeft('gold', sess.s, CONFIG).map((i) => [i.id, i.left]), [['lidl20', 3]]);
 });
 
 test('T37: SILVER "GAMING OR DAY OUT" and BRONZE "GIFT": the winner picks what is left (R22)', () => {
@@ -61,7 +61,7 @@ test('T38: one sponsor prize per nickname per day: Y gives +2 draw entries inste
   assert.equal(r.p.tickets.length, 1 + CONFIG.tickets.swap); // chimney 10 ticket + the swap
   assert.deepEqual(r.steps.filter((x) => ['nick', 'sponsor', 'tickets'].includes(x)), ['nick', 'sponsor', 'tickets']);
   assert.ok(!r.items.some((i) => i.kind === 'sponsor'));
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 2); // 1 given, the second one is free again
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 3); // 1 given, the second one is free again
   const other = win(sess, 'bronze', { nick: 'ANA', done: false });
   assert.equal(R.alreadyWon(other.p, sess.s), false);
 });
@@ -279,7 +279,7 @@ test('T46: the draw (jackpot off): bronze, silver, gold; NOT HERE draws the same
   assert.equal(s.jackpotPaid, 0);
   assert.equal(s.tiers.bronze.given, 7);
   assert.equal(s.tiers.silver.given, 4);
-  assert.equal(s.tiers.gold.left, 3); // stays with the team
+  assert.equal(s.tiers.gold.left, 4); // stays with the team
 });
 
 test('T46b: the draw with the jackpot on: the items, then the jackpot last; one ticket kept for it (R13, R14)', () => {

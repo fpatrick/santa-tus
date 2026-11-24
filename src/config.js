@@ -11,14 +11,11 @@ export const CONFIG = {
   event: { date: '2026-11-26', open: '09:00', lastGameWarn: '12:30', lastPayment: '12:35', drawTime: '12:45', close: '13:00' },
 
   // R1: prices. key = staff keyboard key on the payment screen (pressed after the payment is received).
-  // type 'play' = tries (+ bonus draw tickets at payment). type 'tickets' = no game, only `buy` draw tickets.
+  // Draw entries come ONLY from playing: nobody can buy them. bonus = draw entries that come with the price (key 3).
   prices: [
     { id: 'p1', type: 'play', amount: 2.5, tries: 1, bonus: 0, key: '1', label: '€2.50 = 1 TRY', badge: '' },
     { id: 'p3', type: 'play', amount: 6.5, tries: 3, bonus: 0, key: '2', label: '€6.50 = 3 TRIES', badge: '' },
     { id: 'p5', type: 'play', amount: 10, tries: 5, bonus: 1, key: '3', label: '€10 = 5 TRIES', badge: 'BEST VALUE +1 BONUS DRAW ENTRY' },
-    { id: 't1', type: 'tickets', amount: 2.5, tries: 0, buy: 1, key: '4', label: '€2.50 = 1 DRAW ENTRY', badge: '' },
-    { id: 't3', type: 'tickets', amount: 6.5, tries: 0, buy: 3, key: '5', label: '€6.50 = 3 DRAW ENTRIES', badge: '' },
-    { id: 't6', type: 'tickets', amount: 10, tries: 0, buy: 6, key: '6', label: '€10 = 6 DRAW ENTRIES', badge: '' },
   ],
   freePlay: { tries: 1 }, // K2: a €0 payment after a technical problem
 
@@ -42,7 +39,7 @@ export const CONFIG = {
   sponsors: {
     gold: { name: 'GOLD', title: '€20 VOUCHER', color: '#ffd23f', pick: true, give: 'GOLD: PLAYER PICKS A €20 VOUCHER',
       items: [
-        { id: 'lidl20', label: 'LIDL €20 VOUCHER', sponsor: 'LIDL', count: 2 },
+        { id: 'lidl20', label: 'LIDL €20 VOUCHER', sponsor: 'LIDL', count: 3 },
         { id: 'one4all20', label: 'ONE4ALL €20 VOUCHER', sponsor: 'ONE4ALL', count: 1 },
       ] },
     silver: { name: 'SILVER', title: 'GAMING OR DAY OUT', color: '#d8e0f0', pick: true, give: 'SILVER: PLAYER PICKS GAMING OR A DAY OUT',
@@ -61,7 +58,7 @@ export const CONFIG = {
         { id: 'spray', label: 'SERENITY SCENTS ROOM SPRAY', sponsor: 'SERENITY SCENTS', count: 1 },
       ] },
   },
-  // R22: RESERVED, never on the wheel (part 2): Lidl €20 x1 + GTA 6 for PS5 (12:45 draw), One4all €20 x1 (top score prize).
+  // R22: RESERVED, never on the wheel (part 2): GTA 6 for PS5 (12:45 draw), One4all €20 x1 (top score prize).
   drawOrder: ['bronze', 'silver', 'gold'], // R14: the items first (in this order), the jackpot last
 
   // R7: the wheel. odds = base chance in % (must add up to 100). pieces = how many slices it shows.
@@ -196,7 +193,6 @@ export const CONFIG = {
     tickets: 'DRAW ENTRIES',
     sponsorsTitle: 'PRIZES FROM OUR SPONSORS',
     sponsorsHow: 'WIN THEM ON THE WHEEL (PASS {n} CHIMNEYS) OR IN THE {draw} DRAW',
-    ticketsOnly: 'DRAW ENTRIES ONLY (NO GAME)',
     play: 'PLAY',
     prizeDraw: 'PRIZE DRAW',
     ticketsTitle: 'YOUR DRAW ENTRIES',
@@ -207,7 +203,7 @@ export const CONFIG = {
     cashGreyed: 'CASH FALLBACK CAN ONLY BE SWITCHED ON WHEN GOLD, SILVER AND BRONZE ARE ALL SOLD OUT.',
     rangeTo: ' TO ', // "#0012 TO #0014" (staff write it on the paper card)
     // R12: where the tickets came from, on the ticket screen. {n} = count.
-    ticketWhy: { per10: 'CHIMNEY 10 (x{n} TRIES)', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', declined: 'INSTEAD OF A PRIZE ITEM', buy: 'BOUGHT' },
+    ticketWhy: { per10: 'CHIMNEY 10 (x{n} TRIES)', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', declined: 'INSTEAD OF A PRIZE ITEM' },
     cashOn: 'CASH FALLBACK',
     itemsLeft: 'ITEMS LEFT',
     lastGames: 'LAST GAMES! THE DRAW IS AT {draw}',

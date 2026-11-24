@@ -86,7 +86,7 @@ function logo(ctx, a) {
 function prices(ctx, a) {
   outlined(ctx, 'PRICES', W / 2, 150, 48, '#27c8ff', 'center');
   const colors = ['#3dff8b', '#27c8ff', '#ffd23f'];
-  CONFIG.prices.filter((p) => (p.type || 'play') === 'play').forEach((p, k) => {
+  CONFIG.prices.forEach((p, k) => {
     const y = 190 + k * 150;
     priceBox(ctx, 160, y, 960, 140, p.label, colors[k % colors.length]);
     if (p.badge) {
@@ -101,18 +101,7 @@ function prices(ctx, a) {
       ctx.restore();
     }
   });
-  const tk = CONFIG.prices.filter((p) => p.type === 'tickets');
-  if (tk.length) { // R1: TICKETS ONLY (no game)
-    outlined(ctx, T.ticketsOnly, W / 2, 712, 28, '#ffd23f', 'center');
-    let size = 52; // VT323 is narrow: the 3 ticket prices fit on one line
-    do { ctx.font = `${size}px VT323`; size -= 2; } while (ctx.measureText(tk.map((p) => p.label).join('  ·  ')).width > 1180 && size > 28);
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#07051c';
-    ctx.fillText(tk.map((p) => p.label).join('  ·  '), W / 2 + 3, 765 + 3);
-    ctx.fillStyle = '#f4f7ff';
-    ctx.fillText(tk.map((p) => p.label).join('  ·  '), W / 2, 765);
-  }
-  outlined(ctx, T.bestTry, W / 2, 830, 36, '#f4f7ff', 'center');
+  outlined(ctx, T.bestTry, W / 2, 790, 44, '#f4f7ff', 'center');
 }
 
 function priceBox(ctx, x, y, w, h, text, color) {

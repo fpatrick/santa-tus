@@ -50,8 +50,7 @@
     const cash = W.outcomes.find((o) => o.cash);
     $('tagline').textContent = `${T.tagline}. ${T.bestTry}. ${T.charity}.`;
     const row = (p) => `<tr><td class="big">${p.label}</td><td>${p.badge || ''}</td></tr>`;
-    $('prices').innerHTML = `<tr><th colspan="2">${T.play}</th></tr>${CONFIG.prices.filter((p) => p.type !== 'tickets').map(row).join('')}`
-      + `<tr><th colspan="2">${T.ticketsOnly}</th></tr>${CONFIG.prices.filter((p) => p.type === 'tickets').map(row).join('')}`;
+    $('prices').innerHTML = CONFIG.prices.map(row).join('');
     $('odds').innerHTML = '<tr><th>Wheel</th><th>Chance</th></tr>'
       + baseOdds(CONFIG).filter((x) => x.odds > 0).map((x) => `<tr><td>${x.o.label}</td><td>${x.odds}%</td></tr>`).join('');
     $('prizes').innerHTML = '<tr><th>Pass chimney</th><th>You get (once per payment, the best try counts)</th></tr>' + [
@@ -64,7 +63,7 @@
       $('jackpot').textContent = T.jackpotRule.replace('{start}', fmtEuro(J.start)).replace('{step}', fmtEuro(J.step)).replace('{max}', fmtEuro(J.max)).replace('{draw}', CONFIG.event.drawTime)
         + ` Max ${J.wheelMaxWins} wheel wins a day.`;
     } else $('jackpot').remove();
-    $('draw').textContent = `${T.tickets}: +${CONFIG.tickets.per10} for every try that passes ${th.choice}, +1 bonus with €10 = 5 tries, +${CONFIG.tickets.p30} at ${th.legend}, +2 on the wheel, or buy them (${T.ticketsOnly}). All given at the end of the payment, numbered in order and written on one paper card. `
+    $('draw').textContent = `${T.tickets}: +${CONFIG.tickets.per10} for every try that passes ${th.choice}, +1 bonus with €10 = 5 tries, +${CONFIG.tickets.p30} at ${th.legend}, +2 on the wheel (they cannot be bought). All given at the end of the payment, numbered in order and written on one paper card. `
       + `Draw at ${CONFIG.event.drawTime}: every sponsor item not won yet (bronze, silver, gold)${CONFIG.JACKPOT_ENABLED ? ', then the jackpot last' : ''}. One draw entry wins once. Winner not there: we draw again. Last payment ${CONFIG.event.lastPayment}.`;
     $('note').textContent = `When a prize tier is sold out, its chance moves down to the next tier (GOLD to SILVER to BRONZE to +2 ${T.tickets}); it never moves up, FREE TRY stays the same. Only when GOLD, SILVER and BRONZE are ALL sold out, staff may switch on a ${cash.label} slice (${cash.onWhenAllEmpty}%, max ${CONFIG.CASH_FALLBACK_MAX_WINS} a day). The wheel screen always shows the live odds. One sponsor prize per person per day. ${T.ageNote || ''}`;
     $('ver').textContent = versionLabel();

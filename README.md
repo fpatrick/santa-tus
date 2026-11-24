@@ -16,7 +16,7 @@ All profit goes to Paediatric Diabetes, UHL.
 
 ## How the game works (short)
 
-1. A player pays. PLAY: €2.50 = 1 try, €6.50 = 3 tries, €10 = 5 tries + 1 bonus draw entry (keys **1**-**3**). DRAW ENTRIES ONLY (no game): €2.50 = 1, €6.50 = 3, €10 = 6 draw entries (keys **4**-**6**). Staff press **F2**, type the code, then the key.
+1. A player pays. PLAY: €2.50 = 1 try, €6.50 = 3 tries, €10 = 5 tries + 1 bonus draw entry (keys **1**-**3**). Draw entries cannot be bought: they come only from playing. Staff press **F2**, type the code, then the key.
 2. The player clicks to fly Santa past the chimneys. The best try counts.
 3. Prizes (at the end of the payment, the best try counts): chimney 10 = +1 draw entry for every try that gets there, and once a sweet or a free try; 20 = a wheel spin (gold / silver / bronze sponsor prizes, free try, +2 draw entries); 30 = +5 draw entries + LEGEND, 40 = MYTHIC, 50 = GODLIKE. All draw entries come on one screen at the end; staff write the numbers on one paper card.
 4. Staff hand over what the screen lists, then press **Enter**.

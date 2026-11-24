@@ -15,7 +15,6 @@ Test link: **https://fpatrick.github.io/santa-tus/**
 | --- | --- |
 | **F2**, or hold **F** + press **2** (or a click in the top-left corner) | Start a paid game. Type the code `PAID`, then Enter. |
 | **1** / **2** / **3** | On the payment screen, PLAY: €2.50 = 1 try / €6.50 = 3 tries / €10 = 5 tries + 1 bonus draw entry |
-| **4** / **5** / **6** | On the payment screen, DRAW ENTRIES ONLY: €2.50 = 1 / €6.50 = 3 / €10 = 6 draw entries |
 | **Mouse click** (or Space) | Fly |
 | **Enter** | Confirm (hand-over, nickname, messages) |
 | **Esc** | Cancel, or skip the nickname |
@@ -23,7 +22,7 @@ Test link: **https://fpatrick.github.io/santa-tus/**
 
 ## What to test
 
-1. A full game with each price (keys 1-3), and each draw-entries-only price (keys 4-6). Check the numbers on the "YOUR DRAW ENTRIES" screen and the hand-over ("WRITE ON THE NEXT CARD").
+1. A full game with each price (keys 1-3). Keys 4-6 must do nothing. Check the numbers on the "YOUR DRAW ENTRIES" screen and the hand-over ("WRITE ON THE NEXT CARD").
 2. Reach chimney 10 and pick each prize once. Pick the free try once.
 3. Reach chimney 20 (the wheel). Watch and listen to the wheel.
 4. Undo a payment from the staff panel.

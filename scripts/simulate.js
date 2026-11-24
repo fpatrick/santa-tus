@@ -20,7 +20,7 @@ const SIM = {
   reach30: [0.1, 0.2],
   reach10: 0.85, // chance a payment's best try passes chimney 10 (when it does not pass 20)
   otherTry10: 0.5, // chance one of the other tries of a payment also passes 10 (a chimney 10 ticket per try, R5)
-  priceMix: { p1: 0.4, p3: 0.3, p5: 0.15, t1: 0.05, t3: 0.05, t6: 0.05 }, // PLAY €2.50 / €6.50 / €10, TICKETS ONLY €2.50 / €6.50 / €10
+  priceMix: { p1: 0.45, p3: 0.35, p5: 0.2 }, // €2.50 / €6.50 / €10
   freeTryAt10: 0.35, // the player picks FREE TRY instead of the sweet
   sameNick: 0.1, // a sponsor winner comes back and wins again (staff press Y)
   notHere: 0.1, // a draw winner is not at the stall
@@ -188,7 +188,7 @@ for (const payments of SIM.payments) for (const reach20 of SIM.reach20) for (con
 }
 
 const lines = [];
-lines.push(`Simulation: ${SIM.days.toLocaleString('en-IE')} days per case, ${results.length} cases (node scripts/simulate.js). Guesses: price mix ${Object.values(SIM.priceMix).map((x) => `${Math.round(x * 100)}%`).join('/')} (PLAY €2.50/€6.50/€10, TICKETS ONLY €2.50/€6.50/€10), another try of the payment passes 10: ${SIM.otherTry10 * 100}%, free try at chimney 10 ${SIM.freeTryAt10 * 100}%, same nickname wins again ${SIM.sameNick * 100}%, draw winner not here ${SIM.notHere * 100}%, payments spread from ${SIM.open} to ${SIM.last}, one crash and reload at mid-day. Jackpot ${CONFIG.JACKPOT_ENABLED ? 'ON' : 'OFF'}, cash fallback ${CONFIG.CASH_FALLBACK_ENABLED ? 'ON' : 'OFF'}.`);
+lines.push(`Simulation: ${SIM.days.toLocaleString('en-IE')} days per case, ${results.length} cases (node scripts/simulate.js). Guesses: price mix ${Object.values(SIM.priceMix).map((x) => `${Math.round(x * 100)}%`).join('/')} (€2.50/€6.50/€10), another try of the payment passes 10: ${SIM.otherTry10 * 100}%, free try at chimney 10 ${SIM.freeTryAt10 * 100}%, same nickname wins again ${SIM.sameNick * 100}%, draw winner not here ${SIM.notHere * 100}%, payments spread from ${SIM.open} to ${SIM.last}, one crash and reload at mid-day. Jackpot ${CONFIG.JACKPOT_ENABLED ? 'ON' : 'OFF'}, cash fallback ${CONFIG.CASH_FALLBACK_ENABLED ? 'ON' : 'OFF'}.`);
 lines.push('');
 lines.push('| Payments | P(20) | P(30) | Spins avg | €10 cash avg / 95% / max | Gold / silver / bronze won (wheel) avg | Sold out % (avg time) G / S / B | Items left for draw avg | Tickets avg | Sweets avg | Taken avg | Left for charity avg / min |');
 lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');

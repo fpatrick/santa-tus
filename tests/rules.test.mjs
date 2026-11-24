@@ -1,4 +1,4 @@
-// Rule tests: T1-T11, T15, T20, T21, T23-T25, T33, T34, T50-T53 from SPEC.md (prices, tickets, ladder, order, free tries).
+// Rule tests: T1-T11, T15, T20, T21, T23-T25, T33, T34, T50-T56 from SPEC.md (prices, tickets, ladder, order, free tries).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CONFIG } from '../src/config.js';
@@ -13,11 +13,11 @@ test('config has no mistakes', () => {
   assert.deepEqual(R.checkConfig(CONFIG), []);
 });
 
-test('T33: keys 1-6: PLAY €2.50/1, €6.50/3, €10/5 + 1 bonus ticket; TICKETS ONLY €2.50/1, €6.50/3, €10/6 (R1)', () => {
-  // key: [amount, tries, bonus, bought tickets]
-  const want = { 1: [2.5, 1, 0, 0], 2: [6.5, 3, 0, 0], 3: [10, 5, 1, 0], 4: [2.5, 0, 0, 1], 5: [6.5, 0, 0, 3], 6: [10, 0, 0, 6] };
-  assert.equal(CONFIG.prices.length, 6);
-  for (const [key, [amount, tries, bonus, buy]] of Object.entries(want)) {
+test('T33: keys 1-3: €2.50/1, €6.50/3, €10/5 + 1 bonus draw entry (R1)', () => {
+  // key: [amount, tries, bonus]
+  const want = { 1: [2.5, 1, 0], 2: [6.5, 3, 0], 3: [10, 5, 1] };
+  assert.equal(CONFIG.prices.length, 3);
+  for (const [key, [amount, tries, bonus]] of Object.entries(want)) {
     const pr = CONFIG.prices.find((p) => p.key === key);
     const sess = newSession();
     const ev = sess.commit(R.payBody(sess.s, pr.id, CONFIG));
@@ -25,7 +25,7 @@ test('T33: keys 1-6: PLAY €2.50/1, €6.50/3, €10/5 + 1 bonus ticket; TICKET
     assert.equal(ev.tries, tries, `key ${key}`);
     assert.equal(R.triesLeft(sess.s.byPid.get(ev.pid)), tries);
     assert.equal(ev.bonus, bonus, `key ${key}`);
-    assert.equal(ev.buy, buy, `key ${key}`);
+    assert.equal(ev.buy, undefined, `key ${key}`);
   }
   assert.equal(CONFIG.prices.find((p) => p.key === '3').badge, 'BEST VALUE +1 BONUS DRAW ENTRY');
   assert.throws(() => R.payBody(newSession().s, 'p2', CONFIG)); // the old €2 price is gone
@@ -48,7 +48,7 @@ test('T55: on screen a draw ticket is always a DRAW ENTRY, never a ticket or raf
   assert.equal(CONFIG.text.tickets, 'DRAW ENTRIES');
   assert.equal(CONFIG.wheel.outcomes.find((o) => o.id === 't2').label, '+2 DRAW ENTRIES');
   assert.equal(CONFIG.wheel.soldOut.replace('\n', ' '), 'SOLD OUT - +2 DRAW ENTRIES');
-  assert.deepEqual(CONFIG.prices.filter((p) => p.type === 'tickets').map((p) => p.label), ['€2.50 = 1 DRAW ENTRY', '€6.50 = 3 DRAW ENTRIES', '€10 = 6 DRAW ENTRIES']);
+  assert.deepEqual(CONFIG.prices.map((p) => p.label), ['€2.50 = 1 TRY', '€6.50 = 3 TRIES', '€10 = 5 TRIES']);
   assert.equal(CONFIG.text.alreadyWonHint.replace('{n}', 2).split(' · ')[0], 'Y = GIVE +2 DRAW ENTRIES INSTEAD');
   assert.equal(fmtRange([12, 13, 14], CONFIG.text.rangeTo), '#0012 TO #0014');
 });
@@ -57,22 +57,20 @@ test('T56: "cards used" = payments that got at least 1 draw entry (one paper car
   const sess = newSession();
   playPayment(sess, 'p1', { tries: [12], choices: ['sweet'] }); // 1 entry: card 1
   playPayment(sess, 'p1', { tries: [4] }); // no entry: no card
-  playPayment(sess, 't6'); // 6 entries: card 2
+  playPayment(sess, 'p1', { tries: [15], choices: ['sweet'] }); // 1 entry: card 2
   playPayment(sess, 'p5', { tries: [3, 3, 3, 3, 3] }); // bonus entry: card 3
   const sm = summary(sess.s, CONFIG);
   assert.equal(sm.cards, 3);
-  assert.equal(sm.tickets, 8);
+  assert.equal(sm.tickets, 3);
 });
 
-test('T50: TICKETS ONLY (keys 4-6): no game, straight to the ticket screen, then the hand-over (R1, R12)', () => {
-  const sess = newSession();
-  for (const [id, n] of [['t1', 1], ['t3', 3], ['t6', 6]]) {
-    const r = playPayment(sess, id);
-    assert.deepEqual(r.steps, ['tickets', 'handover'], id);
-    assert.equal(r.p.tickets.length, n, id);
-    assert.deepEqual(kinds(r.items), ['tickets']);
-  }
-  assert.deepEqual(sess.s.payments.flatMap((p) => p.tickets), [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]); // never repeat, never skip
+test('T50: draw entries come ONLY from playing: no price sells them, and keys 4-6 are not price keys (R1)', () => {
+  assert.deepEqual(CONFIG.prices.map((p) => p.key), ['1', '2', '3']);
+  for (const k of ['4', '5', '6']) assert.equal(CONFIG.prices.find((p) => p.key === k), undefined);
+  assert.ok(CONFIG.prices.every((p) => p.tries > 0 && !p.buy));
+  for (const id of ['t1', 't3', 't6']) assert.throws(() => R.payBody(newSession().s, id, CONFIG));
+  const r = playPayment(newSession(), 'p1', { tries: [4] });
+  assert.deepEqual(r.p.tickets, []); // no play past 10 = no draw entry
 });
 
 test('T51: +1 ticket for EVERY try that reaches chimney 10 (per try, not per payment), all on one screen (R5, R12)', () => {

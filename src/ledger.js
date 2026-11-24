@@ -14,7 +14,7 @@ function newPayment(ev) {
     status: 'open', tries: [], extraTries: 0, freeFrom: [], best: 0, bestTs: 0,
     p10: null, p20: false, wheel: null, p30: false, consolation: false, sponsor: null, item: null, swapped: false,
     tickets: [], cash: 0, jackpotWon: 0, nick: null, nickAsked: false, hidden: false, legendTs: 0, doneTs: 0,
-    bonus: ev.bonus || 0, buy: ev.buy || 0, adds: [], ticketsGiven: false, cashPaid: false, // R12, R27
+    bonus: ev.bonus || 0, adds: [], ticketsGiven: false, cashPaid: false, // R12, R27
   };
 }
 

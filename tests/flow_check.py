@@ -150,16 +150,17 @@ def run():
             assert kinds == ["pay", "try", "award", "nick", "award", "done"], kinds
             print("ok - S2-S10 path: €2.50, best 12, sweet, nickname, 1 ticket, hand-over (T4, T51)")
 
-            # T50: TICKETS ONLY key 5 = €6.50 for 3 tickets: no game, straight to the ticket screen (R1, R12)
-            pay(pg, "5")
-            overlay_title(pg, "YOUR DRAW ENTRIES")
-            overlay_title(pg, "HAND-OVER")
-            assert "WRITE ON THE NEXT CARD: DRAW ENTRIES #0002 TO #0004" in pg.inner_text("#overlay"), pg.inner_text("#overlay")
-            pg.keyboard.press("Enter")
-            pg.wait_for_function("santa.scene === 'attract' && !santa.flowActive", timeout=10000)
-            last = server_events(port)[-3:]
-            assert [e["t"] for e in last] == ["pay", "award", "done"] and last[0]["buy"] == 3 and last[0]["tries"] == 0, last
-            print("ok - T50: tickets only, no game, #0002-#0004")
+            # T50: keys 4, 5 and 6 do nothing on the payment screen (draw entries cannot be bought, R1)
+            n_before = len(server_events(port))
+            pay(pg, "4")
+            for k in ("5", "6"):
+                pg.keyboard.press(k)
+            pg.wait_for_timeout(500)
+            assert pg.locator("text=NEW PAYMENT").count() == 1, "the payment screen must stay open"
+            pg.keyboard.press("Escape")
+            pg.wait_for_function("santa.scene === 'attract' && !santa.flowActive && !document.querySelector('#overlay.on')", timeout=5000)
+            assert len(server_events(port)) == n_before, "keys 4-6 must not save anything"
+            print("ok - T50: keys 4-6 do nothing")
 
             # T12: Chrome closed after try 1 of €6.50: reopens with 2 tries left and the best kept (D3)
             pay(pg, "2", alt=True)  # also checks "hold F + 2"

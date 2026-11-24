@@ -23,10 +23,9 @@ Goal: make money for Paediatric Diabetes UHL. Fun for all ages, fair, easy to un
 | --- | --- | --- | --- |
 | 1 | €2.50 | PLAY: 1 try | |
 | 2 | €6.50 | PLAY: 3 tries | |
-| 3 | €10 | PLAY: 5 tries + 1 bonus draw ticket at payment | "BEST VALUE +1 BONUS TICKET" |
-| 4 | €2.50 | TICKETS ONLY: 1 draw ticket | no game, straight to the ticket screen |
-| 5 | €6.50 | TICKETS ONLY: 3 draw tickets | no game |
-| 6 | €10 | TICKETS ONLY: 6 draw tickets | no game |
+| 3 | €10 | PLAY: 5 tries + 1 bonus draw ticket at payment | "BEST VALUE +1 BONUS DRAW ENTRY" |
+
+- **Draw tickets come ONLY from playing: nobody can buy them.** Keys 4, 5, 6 (and every other key) do nothing on the payment screen. (The "draw entries only" prices were removed on 24 Nov 2026.)
 
 - **R2 Best try counts:** inside one payment, the highest chimney reached in any try decides the prizes (except the chimney 10 ticket, R5).
 - **R3 Free restart:** crash before chimney 5 and the try restarts without using it, at most 3 times per try [`freeRestart`].
@@ -66,11 +65,11 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 
 | Tier | Items (count) | Who picks |
 | --- | --- | --- |
-| GOLD "€20 VOUCHER" | Lidl €20 voucher (2) · One4all €20 voucher (1) | the winner picks one that is left |
+| GOLD "€20 VOUCHER" | Lidl €20 voucher (3) · One4all €20 voucher (1) | the winner picks one that is left |
 | SILVER "GAMING OR DAY OUT" | PlayStation €10 voucher (4) · Xbox €10 voucher (2) · Vue cinema, 4 tickets (1) · Fun World bowling, 4 games (1) | the winner picks one that is left |
 | BRONZE "GIFT" | Rocknshop shirt (3) · The Works book set (1) · The Works art set (1) · Serenity Scents candle (1) · Serenity Scents room spray (1) | the winner picks one that is left |
 
-- RESERVED, never on the wheel (part 2 builds these): Lidl €20 x1 and GTA 6 for PS5 (12:45 draw), One4all €20 x1 (top score prize).
+- RESERVED, never on the wheel (part 2 builds these): GTA 6 for PS5 (12:45 draw), One4all €20 x1 (top score prize).
 - The prize screens show the sponsor name (text only; logos later).
 - **R23 One sponsor prize per nickname per day:** a sponsor winner is always asked for a nickname. If that nickname already won a sponsor prize today, staff see "ALREADY WON A PRIZE TODAY? Y = GIVE +2 DRAW ENTRIES INSTEAD" [`tickets.swap`]. Staff decide (Y or N). The default nickname (skipped) is never matched.
 - **R28 No item wanted:** every sponsor prize pick screen (even with only 1 item left) has "N = +2 DRAW ENTRIES INSTEAD", for a player who does not want any item left in that tier. The item stays in stock (the reservation is freed) and it does NOT count as a sponsor prize win for R23 (saved as an `award` kind `swap` with `why: 'declined'`).
@@ -108,7 +107,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 
 **R12-R14 Tickets, jackpot and draw**
 
-- **R12 Draw tickets:** On screen, draw tickets are called DRAW ENTRIES (one: DRAW ENTRY) [`text.ticket`, `text.tickets`]; a game play is always a TRY. Code, config and SPEC keep "draw ticket". A payment collects tickets from: each try that reaches 10 (+1), key 3 bonus (+1), chimney 30 (+5), the wheel +2 TICKETS slice (+2), R23 swap (+2), and the TICKETS ONLY keys (1, 3 or 6). They are all given at the END of the payment, on ONE ticket screen ("YOUR DRAW ENTRIES") that lists where they came from and their numbers; the hand-over says "WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0015"; this is one `award` event (kind `tickets`). Numbers start at #0001 and go up by 1: they never repeat and never skip. Staff give ONE plain paper card per payment and write the range on it (no cloakroom tickets): about 70-110 cards a day. The F9 summary shows "Cards used" (payments with at least 1 draw entry) and "NEXT DRAW ENTRY".
+- **R12 Draw tickets:** On screen, draw tickets are called DRAW ENTRIES (one: DRAW ENTRY) [`text.ticket`, `text.tickets`]; a game play is always a TRY. Code, config and SPEC keep "draw ticket". A payment collects tickets from: each try that reaches 10 (+1), key 3 bonus (+1), chimney 30 (+5), the wheel +2 TICKETS slice (+2), R23 swap (+2). They are all given at the END of the payment, on ONE ticket screen ("YOUR DRAW ENTRIES") that lists where they came from and their numbers; the hand-over says "WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0015"; this is one `award` event (kind `tickets`). Numbers start at #0001 and go up by 1: they never repeat and never skip. Staff give ONE plain paper card per payment and write the range on it (no cloakroom tickets): about 70-110 cards a day. The F9 summary shows "Cards used" (payments with at least 1 draw entry) and "NEXT DRAW ENTRY".
 - **R13 Jackpot: OFF** [`JACKPOT_ENABLED = false`]. When off, the jackpot is hidden everywhere (title screen, panel, wheel, draw, staff summary, odds sheet) and has no wheel slice. The old jackpot code stays (not deleted) for a later year: start €10, +€10 every hour, max €30, at most 2 wheel wins a day [`jackpot`].
 - **R14 The draw** (12:45 [`event.drawTime`], started by staff in F9, never automatic):
   - The prizes are every sponsor item not won yet. Order: bronze items, then silver, then gold. Each draw is for one named item. (Part 2 adds the GTA 6 draw prize.)
@@ -131,7 +130,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 | --- | --- | --- | --- |
 | S1 | Title (attract mode): logo, prices (play + tickets only), prizes + odds, sponsors, top 15 + draw time (jackpot only when on), demo flight | nobody | attract.js |
 | S2 | Staff code: F2 (or hold F + press 2) or a click in the top-left corner. Dots. Enter checks, Esc cancels. A wrong code just clears. | staff | screens.staffCode |
-| S3 | Payment: PLAY €2.50 / €6.50 / €10 (keys 1-3), TICKETS ONLY €2.50 / €6.50 / €10 (keys 4-6), Cancel (Esc). After 12:35 or after the draw: a red warning, O to go on (R26) | staff | screens.payment |
+| S3 | Payment: €2.50 / €6.50 / €10 (keys 1-3; other keys do nothing), Cancel (Esc). After 12:35 or after the draw: a red warning, O to go on (R26) | staff | screens.payment |
 | S4 | Get ready: "CLICK TO FLY", tries left, best | player | game.js HUD |
 | S5 | Play: chimney count, level, tries left, best, next goal. A new level plays a sound only (no text). A warning glow between chimney and presents just before each level change | player | game.js, flow.flightHooks |
 | S6 | Try over: the crash scene C1-C4 (Santa speaks), or "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce, crash.js |
@@ -205,7 +204,7 @@ Common fields: `id` (unique), `n` (order number), `ts` (time in ms), `t` (type).
 
 | t | Fields | Meaning |
 | --- | --- | --- |
-| `pay` | pid, kind (`p1`, `p3`, `p5`, `t1`, `t3`, `t6`, `free`), amount, tries, bonus (tickets, key 3), buy (tickets, keys 4-6), reason | a new payment |
+| `pay` | pid, kind (`p1`, `p3`, `p5`, `free`), amount, tries, bonus (tickets, key 3), reason | a new payment |
 | `try` | pid, tryNo, pillars, restarts, source (`paid`, `free-p10`, `free-wheel`) | one finished try |
 | `award` | pid, kind (`p10`, `wheel`, `swap`, `tickets`, `consolation`; old days: `p30`), tickets [numbers, only on kind `tickets`], add (tickets to give at the end), freeTry, choice; wheel: result, cash, jackpot (euro), sponsor (tier), odds (the live odds used); tickets: parts [{why, n}], legend | a prize |
 | `item` | pid, tier, item | the sponsor item staff gave at the hand-over |
@@ -275,7 +274,7 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T30 | test link, no server | plays, banner, browser only | F |
 | T32 | crash messages | C1-C4 state, mood and lines are right; no "play again" | N |
 | T31 | flight music | ends exactly at chimney 30, no loop before; tempo 140-260 bpm | N |
-| T33 | each price key 1-6 | PLAY €2.50/1, €6.50/3, €10/5 + 1 bonus ticket "BEST VALUE +1 BONUS TICKET"; TICKETS ONLY €2.50/1, €6.50/3, €10/6; the old €2 price is gone | N |
+| T33 | each price key 1-3 | €2.50/1, €6.50/3, €10/5 + 1 bonus ticket "BEST VALUE +1 BONUS DRAW ENTRY"; only 3 prices, no way to buy draw entries; the old €2 price is gone | N |
 | T34 | chain of free tries 12 -> 21 -> 31 | choice, wheel, then the ticket screen after the last free try (R10); every try that reached 10 keeps its ticket | N |
 | T35 | start of the day | base odds 4/12/14/26/44, no €10 cash, no jackpot; 3 IN 10 | N |
 | T36 | GOLD win | the player picks a €20 voucher, sponsor name shown; stock 3 -> 2 | N, F |
@@ -292,7 +291,7 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T47 | crash and reload | the exact same odds, stock, totals and draw; never spins again. T47b: reload DURING the spin shows "YOUR WHEEL RESULT", one spin only | N, F + simulation |
 | T48 | staff stock edit, jackpot fix, test mode, times | logged with "before"; test ledger has its own stock; 12:30 / 12:35 only on the event day | N |
 | T49 | all sold out, €10 CASH in the browser | "PAY €10" confirmed twice, then a `cash-paid` event | F |
-| T50 | TICKETS ONLY (keys 4-6) | no game: ticket screen, hand-over; numbers in order | N, F |
+| T50 | keys 4-6 on the payment screen | nothing happens (no payment saved) | F |
 | T51 | 5 tries, 4 reach 10 | 4 chimney 10 tickets (+1 bonus on key 3), all on one ticket screen | N, F |
 | T52 | key 3, no try reaches 10 | the bonus ticket still comes | N |
 | T53 | F9 key C | refused (greyed) while any tier has stock; on when all sold out = 2%; stock back = off by itself (logged) | N, F |
@@ -305,7 +304,7 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 
 Quick check for version 0.23.0 (200 days per case; the full 10,000-day run was skipped on request). The €10 cash fallback is manual and off in the simulation.
 
-Simulation: 200 days per case, 18 cases (node scripts/simulate.js). Guesses: price mix 40%/30%/15%/5%/5%/5% (PLAY €2.50/€6.50/€10, TICKETS ONLY €2.50/€6.50/€10), another try of the payment passes 10: 50%, free try at chimney 10 35%, same nickname wins again 10%, draw winner not here 10%, payments spread from 09:00 to 12:35, one crash and reload at mid-day. Jackpot OFF, cash fallback OFF.
+Simulation (before the 24 Nov cleanup that removed keys 4-6; not run again yet): 200 days per case, 18 cases (node scripts/simulate.js). Guesses: price mix 40%/30%/15%/5%/5%/5% (PLAY €2.50/€6.50/€10, TICKETS ONLY €2.50/€6.50/€10), another try of the payment passes 10: 50%, free try at chimney 10 35%, same nickname wins again 10%, draw winner not here 10%, payments spread from 09:00 to 12:35, one crash and reload at mid-day. Jackpot OFF, cash fallback OFF.
 
 | Payments | P(20) | P(30) | Spins avg | €10 cash avg / 95% / max | Gold / silver / bronze won (wheel) avg | Sold out % (avg time) G / S / B | Items left for draw avg | Tickets avg | Sweets avg | Taken avg | Left for charity avg / min |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |

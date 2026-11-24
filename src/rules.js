@@ -48,7 +48,7 @@ export function nextStep(p, s, cfg) {
 
 // R12: every draw ticket this payment gets, by where it comes from. [{ why, n }] + total.
 // per10 = each try that reached chimney 10 (per try, R5), bonus = key 3, p30 = chimney 30 (R8),
-// wheel / swap = added by an award, buy = the TICKETS ONLY keys.
+// wheel / swap = added by an award. (Draw entries come only from playing: they cannot be bought.)
 export function ticketParts(p, cfg) {
   const parts = [];
   const tries10 = p.tries.filter((t) => t.pillars >= cfg.thresholds.choice).length;
@@ -56,7 +56,6 @@ export function ticketParts(p, cfg) {
   if (p.bonus) parts.push({ why: 'bonus', n: p.bonus });
   if (p.best >= cfg.thresholds.legend && !p.p30) parts.push({ why: 'p30', n: cfg.tickets.p30 });
   for (const a of p.adds || []) parts.push({ why: a.kind, n: a.n });
-  if (p.buy) parts.push({ why: 'buy', n: p.buy });
   const list = parts.filter((x) => x.n > 0);
   return { parts: list, total: list.reduce((a, x) => a + x.n, 0) };
 }
@@ -69,15 +68,14 @@ export function needsNick(p, s, cfg) {
   return p.best >= cfg.board.minPillars && rankFor(s, p) <= cfg.board.size;
 }
 
-// R1 + K2: a new payment. priceId is one of CONFIG.prices (p1, p3, p5, t1, t3, t6) or 'free'.
-// bonus = draw tickets that come with a play price (key 3), buy = TICKETS ONLY (no tries). Both given at the end (R12).
+// R1 + K2: a new payment. priceId is one of CONFIG.prices (p1, p3, p5) or 'free'.
+// bonus = draw tickets that come with the price (key 3), given at the end (R12).
 export function payBody(s, priceId, cfg, reason = '') {
   const pid = s.payments.length + 1;
   if (priceId === 'free') return { t: 'pay', pid, kind: 'free', amount: 0, tries: cfg.freePlay.tries, reason };
   const pr = cfg.prices.find((x) => x.id === priceId);
   if (!pr) throw new Error(`Unknown price ${priceId}`);
-  const tickets = pr.type === 'tickets';
-  return { t: 'pay', pid, kind: pr.id, amount: pr.amount, tries: tickets ? 0 : pr.tries, bonus: tickets ? 0 : pr.bonus || 0, buy: tickets ? pr.buy : 0 };
+  return { t: 'pay', pid, kind: pr.id, amount: pr.amount, tries: pr.tries, bonus: pr.bonus || 0 };
 }
 
 // One finished try. restarts = free restarts used inside it (R3).
@@ -272,7 +270,7 @@ export function checkConfig(cfg) {
     if (o.jackpot && o.odds !== 0) errs.push('R13: the jackpot slice must have odds 0 (it uses jackpotOdds when JACKPOT_ENABLED)');
   }
   if (!(cfg.CASH_FALLBACK_MAX_WINS >= 0)) errs.push('R27: CASH_FALLBACK_MAX_WINS must be 0 or more');
-  for (const pr of cfg.prices) if (pr.type === 'tickets' ? !(pr.buy > 0) : !(pr.tries > 0)) errs.push(`R1: price ${pr.id} needs tries (play) or buy (tickets)`);
+  for (const pr of cfg.prices) if (!(pr.tries > 0)) errs.push(`R1: price ${pr.id} needs tries`);
   for (const tier of cfg.drawOrder) if (!cfg.sponsors[tier]) errs.push(`R14: drawOrder has an unknown tier ${tier}`);
   const keys = cfg.prices.map((p) => p.key);
   if (new Set(keys).size !== keys.length) errs.push('R1: two prices use the same key');

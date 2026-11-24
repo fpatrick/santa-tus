@@ -24,7 +24,7 @@ test('T16: a draw with no tickets: the items stay with the team (R14); the jackp
   playPayment(sess, 'p1', { tries: [5] });
   const rest = sess.commit(R.drawBody(sess.s, CONFIG));
   assert.equal(rest.prize, 'rest');
-  assert.equal(rest.items.length, 18); // 7 bronze + 8 silver + 3 gold, in draw order
+  assert.equal(rest.items.length, 19); // 7 bronze + 8 silver + 4 gold, in draw order
   assert.equal(rest.items[0], 'shirt');
   assert.equal(drawState(sess.s, CONFIG).done, true);
   assert.throws(() => R.drawBody(sess.s, CONFIG));
@@ -41,19 +41,19 @@ test('T17: the draw picks only issued tickets, each ticket wins once, and it can
     if (ev.ticket != null) { assert.ok(pool.includes(ev.ticket)); winners.push(ev.ticket); }
   }
   assert.equal(new Set(winners).size, winners.length, 'one ticket wins only once');
-  assert.equal(winners.length, 18); // every item (no jackpot: it is off)
+  assert.equal(winners.length, 19); // every item (no jackpot: it is off)
   assert.throws(() => R.drawBody(sess.s, CONFIG));
   assert.throws(() => R.undoDrawBody(''));
   sess.commit(R.undoDrawBody('wrong button'));
   assert.equal(drawState(sess.s, CONFIG).done, false);
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 3); // the items are back for the new draw
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.left, 4); // the items are back for the new draw
 });
 
 test('T18: test plays live in their own ledger and never reach the live board or totals (K2, D7)', () => {
   const live = newSession();
   const testLedger = newSession();
   playPayment(testLedger, 'p3', { tries: [40, 2, 2], wheel: ['gold'], choices: ['sweet'] });
-  assert.equal(stock(live.s, CONFIG).tiers.gold.left, 3);
+  assert.equal(stock(live.s, CONFIG).tiers.gold.left, 4);
   assert.equal(totals(live.s, CONFIG).moneyIn, 0);
   assert.equal(leaderboard(live.s, CONFIG).length, 0);
 });
@@ -62,7 +62,7 @@ test('T19: undo last payment: out of the totals, the stock and the caps, kept as
   const sess = newSession();
   playPayment(sess, 'p1', { tries: [5] });
   playPayment(sess, 'p3', { tries: [22, 1, 1], choices: ['sweet'], wheel: ['gold'], done: false });
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 2);
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 3);
   sess.commit(R.undoBody(sess.s));
   const t = totals(sess.s, CONFIG);
   assert.equal(t.moneyIn, 2.5);
@@ -70,13 +70,13 @@ test('T19: undo last payment: out of the totals, the stock and the caps, kept as
   assert.equal(sess.s.payments.length, 2);
   assert.deepEqual(drawPool(sess.s), []);
   assert.equal(openPayment(sess.s), null);
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 3);
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 4);
 });
 
 test('R12: ticket numbers keep counting across payments; "#0012-#0013" on the GIVE screen', () => {
   const sess = newSession();
   playPayment(sess, 'p1', { tries: [21], wheel: ['t2'], choices: ['sweet'] }); // #1-#3
-  playPayment(sess, 't3'); // tickets only: #4-#6
+  playPayment(sess, 'p1', { tries: [21], wheel: ['t2'], choices: ['sweet'] }); // #4-#6
   const r = playPayment(sess, 'p1', { tries: [31], wheel: ['t2'], choices: ['sweet'] });
   assert.deepEqual(r.p.tickets, [7, 8, 9, 10, 11, 12, 13, 14]); // 1 + 5 + 2, one run, no gap
   assert.deepEqual(sess.s.payments.flatMap((p) => p.tickets), Array.from({ length: 14 }, (_, i) => i + 1)); // never repeat, never skip
