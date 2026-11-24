@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.24.3 (2026-11-24): R30 photo of the GTA 6 draw prize (supplied by the team) in a gold pixel frame beside the draw box on the right panel; headline "13:00 DRAW:" / big "WIN GTA 6".
 - 0.24.2 (2026-11-24): R29 no top score prize (leaderboard for bragging rights only; no top score text, F9 key, draw step, summary or CSV line). R22 GOLD is Lidl €20 x3 + One4all €20 x2; the only reserved item is GTA 6 (13:00 draw).
 - 0.24.1 (2026-11-24): test T36 updated to GOLD stock 4 (Lidl x3 + One4all x1), so the GitHub check and the test link work again.
 - 0.24.0 (2026-11-24): FINAL part 2. R26 times 12:45 warning, 12:50 last payment, 13:00 draw. R29 top score prize (One4all €20, locks at 12:50, F9 T, undo logged). R14 draw: top score first, then bronze, silver, gold, GTA 6 last; GIVEN / NOT HERE - DRAW AGAIN. Reserved items in F9 stock. R30 engagement lines (13:00 DRAW: WIN GTA 6, draw entries in the box, items left, X IN 10, top score). CSV and end-of-day summary with keys, +2 instead, top score and draw winners.

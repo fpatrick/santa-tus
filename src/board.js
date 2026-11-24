@@ -13,6 +13,7 @@ const esc = (v) => String(v).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 export function createBoard(el) {
   el.innerHTML = `
     <div class="jp">
+      ${CONFIG.text.drawPrizeImg && !CONFIG.JACKPOT_ENABLED ? `<div class="prize-frame"><img src="${CONFIG.text.drawPrizeImg}" alt="${CONFIG.text.drawPrizeAlt}"></div>` : ''}
       <div class="jp-label">${CONFIG.text.jackpot}</div>
       <div class="jp-value">€0</div>
       <div class="jp-next"></div>
@@ -26,7 +27,9 @@ export function createBoard(el) {
   const $ = (s) => el.querySelector(s);
   const b = { shown: null, target: 0, lastDraw: null, freshPid: null, key: '' };
   if (!CONFIG.JACKPOT_ENABLED) { // R13 off: no jackpot anywhere, the box shows the prize draw time only
-    $('.jp-label').textContent = CONFIG.text.drawHeadline.replace('{draw}', CONFIG.event.drawTime);
+    const head = CONFIG.text.drawHeadline.replace('{draw}', CONFIG.event.drawTime);
+    const cut = head.indexOf(': '); // "13:00 DRAW:" on one line, "WIN GTA 6" big on the next
+    $('.jp-label').innerHTML = cut > 0 ? `${esc(head.slice(0, cut + 1))}<br><span class="jp-win">${esc(head.slice(cut + 2))}</span>` : esc(head);
     $('.jp-value').style.display = 'none';
     $('.jp-next').style.display = 'none';
   }

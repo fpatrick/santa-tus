@@ -207,6 +207,8 @@ export const CONFIG = {
     spinChance: 'REACH CHIMNEY {n} = SPIN: {x} IN 10 WIN A PRIZE', // R7: x = live gold + silver + bronze chance / 10
     // R30 engagement lines (title screen and leaderboard). {draw} = draw time, {n} = a number, {tier} = tier name.
     drawHeadline: '{draw} DRAW: WIN GTA 6',
+    drawPrizeImg: 'assets/img/draw-prize.jpg', // R30: photo of the draw prize, shown in a pixel frame beside the draw box ('' = none)
+    drawPrizeAlt: 'GTA 6 FOR PS5',
     entryAt10: 'REACH CHIMNEY {n} = 1 DRAW ENTRY',
     inTheBox: 'DRAW ENTRIES IN THE BOX: {n}',
     tierLeft: '{tier}: {n} LEFT',
