@@ -63,10 +63,11 @@ export const CRASH = {
   loopFrom: 0,
 };
 
-// Title screen (A5): Silent Night as a solo PIANO show piece, like a skilled pianist at a Christmas concert.
-// No drums. 1) a sparkling opening cascade, 2) the melody over a flowing left hand (broken chords) with richer
-// chords and quick runs in the long notes, 3) a key change up: the melody in octaves with a harmony voice and
-// bigger runs, then a sweeping run back to the start. 3/4 at CONFIG.music.menuBpm (144), about 67 s per loop.
+// Title screen (A5): Silent Night as a grand chiptune RPG Christmas theme (an epic adventure-game town theme feel,
+// our own arrangement). Rolling 6/8: one beat = one eighth note, 6 beats a bar, at CONFIG.music.menuBpm (240).
+// 1) a heroic 4-bar fanfare, 2) verse 1: gentle, soft lead with vibrato over harp arpeggios and string pads, light
+// sleigh bells only, a drum roll at the end, 3) a key change up: the lead in octaves with harmony, bell counter-lines,
+// faster harp sweeps, full rolling drums. About 78 s per loop. (The piano chords and runs below are reused.)
 const CASCADE = `
   E6 .25 D6 .25 C6 .25 G5 .25 E6 .25 D6 .25 C6 .25 G5 .25 E6 .25 D6 .25 C6 .25 G5 .25 |
   F6 .25 E6 .25 C6 .25 A5 .25 F6 .25 E6 .25 C6 .25 A5 .25 F6 .25 E6 .25 C6 .25 A5 .25 |
@@ -90,15 +91,18 @@ const RUNS2 = `
   R 3 | R 3 | R 3 | R 1 E6 .25 G6 .25 A6 .25 C#7 .25 A6 .25 G6 .25 E6 .25 C#6 .25 |
   R 3 | R 3 | R 1 C6 .25 E6 .25 G6 .25 C7 .25 G6 .25 E6 .25 C6 .25 G5 .25 | R 1 A6 .25 G6 .25 E6 .25 C6 .25 A5 .25 G5 .25 E5 .25 C5 .25 |
   R 3 | R 3 | R 1 G5 .25 C6 .25 E6 .25 G6 .25 C7 1 |`;
+// 3/4 in quarters -> 6/8 in eighths: every length doubles.
+const dbl = (t) => t.replace(/(\s)(\d*\.?\d+)(?=\s|$)/g, (_, sp, n) => `${sp}${Number(n) * 2}`);
+const FANFARE = 'G4 1 C5 1 E5 1 G5 3 | A4 1 C5 1 E5 1 A5 3 | F5 1 A5 1 C6 1 A5 1 F5 1 C6 1 | B5 2 D6 1 F6 3 |';
 export const MENU = {
   sections: [
-    sec('cascade', CASCADE, 'C F G7 G7', 3, { lead: 'piano', bass: 'flow', drums: 'none', up: 0, vel: 0.8 }),
-    // the turn: A7 leads into the key of D, with a rising run
-    sec('piano', SILENT, `${PIANO1} A7`, 3, { lead: 'piano', bass: 'flow', drums: 'none', up: 0, harm: true, vel: 0.85,
-      counter: `${RUNS1} A4 .25 C#5 .25 E5 .25 G5 .25 A5 .25 C#6 .25 E6 .25 G6 .25 A6 .5 E6 .5 |` }),
-    // 2 semitones up (D), the melody in octaves, fuller left hand. F7 + 2 = G7 sweeps back to the start in C.
-    sec('piano-up', SILENT, `${PIANO2} F7`, 3, { lead: 'piano', bass: 'flowbig', drums: 'none', up: 2, double: true, harm: true, vel: 1,
-      counter: `${RUNS2} F4 .25 A4 .25 C5 .25 Eb5 .25 F5 .25 A5 .25 C6 .25 Eb6 .25 F6 .25 Eb6 .25 C6 .25 A5 .25 |` }),
+    sec('fanfare', FANFARE, 'C Am F G7', 6, { lead: 'rpg', bass: 'harp', pad: true, drums: 'r68intro', up: 0, double: true, fill: true }),
+    // verse 1: gentle; the last bar A7 + a drum roll turns into the key of D
+    sec('verse', dbl(` ${SILENT}`), `${PIANO1} A7`, 6, { lead: 'rpg', bass: 'harp', pad: true, drums: 'r68soft', up: 0, fill: true, vel: 0.85,
+      counter: dbl(` ${'R 3 | '.repeat(23)}A4 .25 C#5 .25 E5 .25 G5 .25 A5 .25 C#6 .25 E6 .25 G6 .25 A6 .5 E6 .5 |`) }),
+    // verse 2: grand, 2 semitones up (D). F7 + 2 = G7 leads back to the fanfare in C.
+    sec('verse-up', dbl(` ${SILENT}`), `${PIANO2} F7`, 6, { lead: 'rpg', bass: 'harpbig', pad: true, drums: 'r68big', up: 2, double: true, harm: true, vel: 1,
+      counter: dbl(` ${RUNS1} F4 .25 A4 .25 C5 .25 Eb5 .25 F5 .25 A5 .25 C6 .25 Eb6 .25 F6 .25 Eb6 .25 C6 .25 A5 .25 |`) }),
   ],
   loopFrom: 0,
 };
@@ -161,7 +165,15 @@ export function sectionEvents(s) {
   bars.forEach((name, bar) => {
     const tones = chordTones(name).map((t) => t + s.up);
     const at = bar * bpb;
-    if (s.bass === 'flow' || s.bass === 'flowbig') { // piano left hand: a rolling broken chord, 6 eighths a bar
+    if (s.bass === 'harp' || s.bass === 'harpbig') { // RPG harp: a rising sweep each bar (big: up and down, twice as fast)
+      const root = 36 + (tones[0] % 12);
+      const third = tones[1] - tones[0];
+      const up = [0, 7, 12, 12 + third, 19, 24];
+      const shape = s.bass === 'harpbig' ? [...up, 24 + third, 24, 19, 12 + third, 12, 7] : up;
+      const step = bpb / shape.length;
+      ev.push({ b: at, len: bpb, kind: 'bass', m: root, vol: vel });
+      shape.forEach((d, k) => { if (k) ev.push({ b: at + k * step, len: step * 2, kind: 'arp', m: root + d, vol: vel * (k % 2 ? 0.6 : 0.75) }); });
+    } else if (s.bass === 'flow' || s.bass === 'flowbig') { // piano left hand: a rolling broken chord, 6 eighths a bar
       const root = 36 + (tones[0] % 12);
       const third = tones[1] - tones[0];
       const shape = s.bass === 'flowbig' ? [0, 7, 12, 12 + third, 19, 24] : [0, 7, 12, 12 + third, 12, 7];
@@ -178,12 +190,29 @@ export function sectionEvents(s) {
       ev.push({ b: at, len: 1, kind: 'bass', m: 36 + (tones[0] % 12), vol }, { b: at + 2, len: 1, kind: 'bass', m: 36 + (tones[2] % 12), vol });
       if (s.bass === 'oompah') ev.push({ b: at + 1, len: 0.5, kind: 'arp', m: 60 + tones[1] }, { b: at + 3, len: 0.5, kind: 'arp', m: 60 + tones[2] });
     }
+    if (s.pad) for (const t of tones.slice(0, 3)) ev.push({ b: at, len: bpb, kind: 'pad', m: 60 + t, vol: vel }); // soft strings
     if (s.arp16) { // 16th-note sparkle: up and down the chord, an octave above the melody
       const run = [0, 1, 2, 3, 2, 1].map((i) => (i < tones.length ? tones[i] : tones[0] + 12));
       for (let k = 0; k < bpb * 4; k++) ev.push({ b: at + k / 4, len: 0.25, kind: 'arp', m: 72 + run[k % run.length], vol: 0.5 });
     }
     if (s.arp) for (let k = 0; k < bpb * 2; k++) ev.push({ b: at + k / 2, len: 0.5, kind: 'arp', m: 72 + tones[k % tones.length], vol: 0.6 });
     const roll = s.fill && bar === bars.length - 1; // last bar: a snare roll that grows
+    if (s.drums && s.drums.startsWith('r68')) { // rolling 6/8 (one beat = one eighth): no dance kick
+      const big = s.drums === 'r68big';
+      if (roll) { // the build: a snare roll in 16ths that grows, and timpani
+        for (let k = 0; k < bpb * 2; k++) ev.push({ b: at + k / 2, len: 0.25, kind: 'snare', vol: 0.2 + (0.6 * k) / (bpb * 2) });
+        ev.push({ b: at, len: 3, kind: 'timp', m: 36 + (tones[0] % 12), vol: 0.8 }, { b: at + 3, len: 3, kind: 'timp', m: 36 + (tones[0] % 12), vol: 1 });
+        return;
+      }
+      if (s.drums === 'r68intro') { ev.push({ b: at, len: 3, kind: 'timp', m: 36 + (tones[0] % 12), vol: 0.7 }); return; }
+      ev.push({ b: at, len: 0.5, kind: 'sleigh', accent: true }, { b: at + 3, len: 0.5, kind: 'sleigh', accent: !big });
+      if (big) {
+        for (const k of [1, 2, 4, 5]) ev.push({ b: at + k, len: 0.5, kind: 'sleigh', accent: false });
+        ev.push({ b: at, len: 0.5, kind: 'kick', vol: 0.9 }, { b: at + 3, len: 0.5, kind: 'snare', vol: 0.6 }, { b: at + 5, len: 0.5, kind: 'kick', vol: 0.45 });
+        if (bar % 4 === 3) ev.push({ b: at + 4, len: 0.5, kind: 'snare', vol: 0.4 }, { b: at + 5, len: 0.5, kind: 'snare', vol: 0.5 }); // a small fill every 4 bars
+      } else if (bar % 2 === 0) ev.push({ b: at, len: 2, kind: 'timp', m: 36 + (tones[0] % 12), vol: 0.35 });
+      return;
+    }
     for (let k = 0; k < bpb * 2; k++) {
       const beat = k / 2;
       if (s.drums !== 'none') ev.push({ b: at + beat, len: 0.25, kind: 'sleigh', accent: k % 2 === 0 });
@@ -204,7 +233,7 @@ export function sectionEvents(s) {
       } else if (s.drums === 'bells' && k % 8 === 0) ev.push({ b: at + beat, len: 0.25, kind: 'kick', vol: 0.6 });
     }
   });
-  if (s.drums === 'big' || s.drums === 'waltzbig' || s.drums === 'dancebig') ev.push({ b: 0, len: 2, kind: 'crash' });
+  if (s.drums === 'big' || s.drums === 'waltzbig' || s.drums === 'dancebig' || s.drums === 'r68big') ev.push({ b: 0, len: 2, kind: 'crash' });
   return ev.sort((x, y) => x.b - y.b);
 }
 

@@ -115,6 +115,19 @@ function play(a, ev, t, dur, out, lead) {
     const human = 0.9 + Math.random() * 0.15;
     return piano(a, ev.m, t + Math.random() * 0.008, dur, PIANO_VOL[ev.kind] * v * human, out, ev.kind === 'bass' || ev.kind === 'arp');
   }
+  if (lead === 'rpg') { // the grand RPG theme (A5): heroic lead, harp, strings, timpani
+    switch (ev.kind) {
+      case 'lead': return osc(a, 'square', ev.m, t, dur * 0.92, 0.07 * v, out, 0.007);
+      case 'lead2': return osc(a, 'triangle', ev.m, t, dur * 0.9, 0.09 * v, out, 0.006);
+      case 'harm': return osc(a, 'square', ev.m, t, dur * 0.88, 0.035 * v, out, 0.005);
+      case 'counter': return bell(a, ev.m, t, dur, 0.09 * v, out);
+      case 'arp': return bell(a, ev.m, t, dur, 0.055 * v, out);
+      case 'bass': return osc(a, 'triangle', ev.m, t, Math.min(dur, 1.2), 0.24 * v, out);
+      case 'pad': return pad(a, ev.m, t, dur, 0.022 * v, out);
+      case 'timp': return timp(a, ev.m, t, 0.5 * v, out);
+      default: break;
+    }
+  }
   switch (ev.kind) {
     case 'lead': return lead === 'bell' ? bell(a, ev.m, t, dur, 0.16 * v, out) : osc(a, 'square', ev.m, t, dur * 0.9, 0.075 * v, out);
     case 'lead2': return osc(a, 'square', ev.m, t, dur * 0.85, 0.03 * v, out);
@@ -139,10 +152,22 @@ function env(a, t, dur, vol, out) {
   return g;
 }
 
-function osc(a, type, m, t, dur, vol, out) {
+// vib = vibrato depth (part of the pitch) on long notes, like a singer or a violin.
+function osc(a, type, m, t, dur, vol, out, vib = 0) {
   const o = a.ctx.createOscillator();
   o.type = type;
   o.frequency.value = freq(m);
+  if (vib && dur > 0.3) {
+    const lfo = a.ctx.createOscillator();
+    const depth = a.ctx.createGain();
+    lfo.frequency.value = 5.5;
+    depth.gain.setValueAtTime(0, t);
+    depth.gain.linearRampToValueAtTime(freq(m) * vib, t + Math.min(0.35, dur * 0.6));
+    lfo.connect(depth);
+    depth.connect(o.frequency);
+    lfo.start(t);
+    lfo.stop(t + dur + 0.05);
+  }
   o.connect(env(a, t, dur, vol, out));
   o.start(t);
   o.stop(t + dur + 0.02);
@@ -177,6 +202,36 @@ function piano(a, m, t, dur, vol, out, pedal) {
     o.start(t);
     o.stop(t + len + 0.05);
   }
+}
+
+// Soft strings: a slow swell and a slow fade under everything.
+function pad(a, m, t, dur, vol, out) {
+  const g = a.ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.linearRampToValueAtTime(vol, t + Math.min(0.4, dur * 0.4));
+  g.gain.setValueAtTime(vol, t + Math.max(0.41, dur * 0.8));
+  g.gain.linearRampToValueAtTime(0.0001, t + dur + 0.25);
+  g.connect(out);
+  for (const det of [-0.004, 0.004]) {
+    const o = a.ctx.createOscillator();
+    o.type = 'triangle';
+    o.frequency.value = freq(m) * (1 + det);
+    o.connect(g);
+    o.start(t);
+    o.stop(t + dur + 0.3);
+  }
+}
+
+// Timpani: a low tuned drum, the pitch falls a little, a long boom.
+function timp(a, m, t, vol, out) {
+  const o = a.ctx.createOscillator();
+  o.type = 'triangle';
+  o.frequency.setValueAtTime(freq(m) * 1.08, t);
+  o.frequency.exponentialRampToValueAtTime(freq(m), t + 0.08);
+  o.connect(env(a, t, 1.1, vol, out));
+  o.start(t);
+  o.stop(t + 1.15);
+  noise(a, t, 0.06, vol * 0.25, 900, 'lowpass', out);
 }
 
 // Music-box bell: a sine with a soft overtone and a long fade.
