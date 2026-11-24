@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.24.7 (2026-11-24): A5 flight song: Jingle Bells as a triumphant adventure march in the RPG sounds (heroic fanfare over Ab-Bb-C, cozy harp verse, triumphant chorus with harmony and scale runs, epic Bb-C ending). Song notes moved to src/songdata.js.
 - 0.24.6 (2026-11-24): A5 title song: Silent Night as a grand chiptune RPG Christmas theme in rolling 6/8: fanfare, gentle harp verse, drum roll and key change, grand verse with harmony, bells and drums. New lead vibrato, harp, strings and timpani sounds.
 - 0.24.5 (2026-11-24): A5 title song: Silent Night as a solo piano show piece (no beat): opening cascade, flowing left hand, richer chords, runs, key change with octaves and harmony. New piano voice in music.js.
 - 0.24.4 (2026-11-24): A5 title song: Silent Night as a loud 4/4 Christmas chiptune dance track (160 bpm): four-on-the-floor kick, pumping octave bass, 16th arpeggios, riffs in every gap, hook, drum roll and key change.

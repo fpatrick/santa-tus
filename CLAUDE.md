@@ -56,7 +56,8 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Wheel sounds: Christmas jackpot machine (click "ka-chunk", fast clatter, Jingle Bells, coin payout) | `src/wheelsound.js` |
 | Particles, rays, coins, fireworks, shake, flash, `celebrate(tier)` | `src/fx.js` |
 | Sound effects | `src/sound.js` |
-| Songs as notes (Jingle Bells, Silent Night, sad crash tune) and their timing to the chimneys | `src/songs.js` |
+| Songs as notes and arrangements (Jingle Bells march, Silent Night RPG theme, sad crash tune) | `src/songdata.js` |
+| Turning songs into notes to play, chords, and the timing to the chimneys | `src/songs.js` |
 | Music player: instruments, modes (menu, lobby, flight), volume duck | `src/music.js` |
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
 | Staff panel F9: summary, stock (incl. reserved), cash fallback switch (C), jackpot fix (only when on), caps, odds (S11, K2) | `src/staff.js` (actions in `src/staffapi.js`) |
