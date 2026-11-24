@@ -8,14 +8,14 @@
     @font-face { font-family: 'Press Start 2P'; src: url('../assets/fonts/PressStart2P.woff2') format('woff2'); }
     @font-face { font-family: 'VT323'; src: url('../assets/fonts/VT323.woff2') format('woff2'); }
     @page { size: A4; margin: 12mm; }
-    body { font-family: 'VT323', monospace; font-size: 15pt; line-height: 1.05; color: #120c3a; margin: 0; }
-    h1 { font: 24pt/1.2 'Press Start 2P', monospace; color: #c8102e; margin: 0 0 2mm; }
-    h2 { font: 11pt/1.3 'Press Start 2P', monospace; margin: 4mm 0 1.5mm; }
+    body { font-family: 'VT323', monospace; font-size: 13.5pt; line-height: 1.0; color: #120c3a; margin: 0; }
+    h1 { font: 20pt/1.2 'Press Start 2P', monospace; color: #c8102e; margin: 0 0 1.5mm; }
+    h2 { font: 10pt/1.3 'Press Start 2P', monospace; margin: 3mm 0 1mm; }
     table { border-collapse: collapse; width: 100%; }
-    td, th { border: 2px solid #120c3a; padding: 0.6mm 2.5mm; text-align: left; vertical-align: top; }
+    td, th { border: 2px solid #120c3a; padding: 0.4mm 2.5mm; text-align: left; vertical-align: top; }
     th { background: #120c3a; color: #fff; font-weight: normal; }
     .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 5mm; }
-    .big { font-size: 18pt; }
+    .big { font-size: 16pt; }
     p { margin: 1.5mm 0; }
     .note { font-size: 14pt; margin-top: 3mm; }
     .ver { position: fixed; bottom: 0; right: 0; font-size: 11pt; color: #666; }
@@ -32,7 +32,7 @@
   <table id="prizes"></table>
   <h2>SPONSOR PRIZES</h2>
   <table id="tiers"></table>
-  <h2>JACKPOT AND DRAW</h2>
+  <h2 id="drawTitle">THE DRAW</h2>
   <p id="jackpot"></p>
   <p id="draw"></p>
   <div class="note" id="note"></div>
@@ -41,6 +41,7 @@
     import { CONFIG } from '../src/config.js';
     import { versionLabel } from '../src/version.js';
     import { fmtEuro } from '../src/ledger.js';
+    import { baseOdds } from '../src/prizes.js';
     const T = CONFIG.text;
     const $ = (id) => document.getElementById(id);
     const th = CONFIG.thresholds;
@@ -48,18 +49,24 @@
     const W = CONFIG.wheel;
     const cash = W.outcomes.find((o) => o.cash);
     $('tagline').textContent = `${T.tagline}. ${T.bestTry}. ${T.charity}.`;
-    $('prices').innerHTML = CONFIG.prices.map((p) => `<tr><td class="big">${p.label}</td><td>${p.badge || ''}</td></tr>`).join('');
+    const row = (p) => `<tr><td class="big">${p.label}</td><td>${p.badge || ''}</td></tr>`;
+    $('prices').innerHTML = `<tr><th colspan="2">${T.play}</th></tr>${CONFIG.prices.filter((p) => p.type !== 'tickets').map(row).join('')}`
+      + `<tr><th colspan="2">${T.ticketsOnly}</th></tr>${CONFIG.prices.filter((p) => p.type === 'tickets').map(row).join('')}`;
     $('odds').innerHTML = '<tr><th>Wheel</th><th>Chance</th></tr>'
-      + W.outcomes.filter((o) => o.odds > 0).map((o) => `<tr><td>${o.label}</td><td>${o.odds}%</td></tr>`).join('');
+      + baseOdds(CONFIG).filter((x) => x.odds > 0).map((x) => `<tr><td>${x.o.label}</td><td>${x.odds}%</td></tr>`).join('');
     $('prizes').innerHTML = '<tr><th>Pass chimney</th><th>You get (once per payment, the best try counts)</th></tr>' + [
-      [th.choice, T.win10], [th.ticket, `${T.win20} (one per payment)`], [th.legend, T.win30], [th.mythic, T.win40], [th.beat, `${T.win50}: ${T.beat}`],
+      [th.choice, `${T.win10} (the sweet or free try once per payment)`], [th.ticket, `${T.win20} (one per payment)`], [th.legend, T.win30], [th.mythic, T.win40], [th.beat, `${T.win50}: ${T.beat}`],
     ].map(([n, t]) => `<tr><td class="big">${n}</td><td>${t}</td></tr>`).join('');
     $('tiers').innerHTML = Object.values(CONFIG.sponsors).map((t) => `<tr><td class="big">${t.name}${t.title ? ` <small>${t.title}</small>` : ''}</td>
       <td>${t.items.map((it) => `${it.label}${it.count > 1 ? ` x${it.count}` : ''}`).join(', ')}${t.pick ? ' <small>(the winner picks one that is left)</small>' : ''}</td></tr>`).join('');
-    $('jackpot').textContent = T.jackpotRule.replace('{start}', fmtEuro(J.start)).replace('{step}', fmtEuro(J.step)).replace('{max}', fmtEuro(J.max)).replace('{draw}', CONFIG.event.drawTime)
-      + ` Max ${J.wheelMaxWins} wheel wins a day.`;
-    $('draw').textContent = `Draw at ${CONFIG.event.drawTime}: every sponsor item not won yet (bronze, silver, gold), then the jackpot last. One ticket wins once. Winner not there: we draw again. No tickets: the jackpot stays with the charity. Last payment ${CONFIG.event.lastPayment}.`;
-    $('note').textContent = `When a prize tier is sold out, its chance goes to +2 TICKETS, and a ${cash.label} slice (${cash.onWhenEmpty}%, max ${cash.maxWins} a day) comes on. The wheel screen always shows the live odds. One sponsor prize per person per day. ${T.ageNote || ''}`;
+    if (CONFIG.JACKPOT_ENABLED) { // R13: hidden when off
+      $('drawTitle').textContent = 'JACKPOT AND DRAW';
+      $('jackpot').textContent = T.jackpotRule.replace('{start}', fmtEuro(J.start)).replace('{step}', fmtEuro(J.step)).replace('{max}', fmtEuro(J.max)).replace('{draw}', CONFIG.event.drawTime)
+        + ` Max ${J.wheelMaxWins} wheel wins a day.`;
+    } else $('jackpot').remove();
+    $('draw').textContent = `Draw tickets: +${CONFIG.tickets.per10} for every try that passes ${th.choice}, +1 bonus with €10 = 5 tries, +${CONFIG.tickets.p30} at ${th.legend}, +2 on the wheel, or buy them (tickets only). All given at the end of the payment, numbered in order. `
+      + `Draw at ${CONFIG.event.drawTime}: every sponsor item not won yet (bronze, silver, gold)${CONFIG.JACKPOT_ENABLED ? ', then the jackpot last' : ''}. One ticket wins once. Winner not there: we draw again. Last payment ${CONFIG.event.lastPayment}.`;
+    $('note').textContent = `When a prize tier is sold out, its chance goes to +2 TICKETS. Only when GOLD, SILVER and BRONZE are ALL sold out, a ${cash.label} slice (${cash.onWhenAllEmpty}%, max ${CONFIG.CASH_FALLBACK_MAX_WINS} a day) comes on. The wheel screen always shows the live odds. One sponsor prize per person per day. ${T.ageNote || ''}`;
     $('ver').textContent = versionLabel();
   </script>
 </body>

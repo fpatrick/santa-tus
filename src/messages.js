@@ -29,7 +29,7 @@ export function pendingPrizes(p, cfg, pillars) {
   const out = [];
   if (p.best >= th.choice && !p.p10) out.push(P.choice);
   if (p.best >= th.ticket && !p.wheel) out.push(P.spin);
-  if (p.best >= th.legend && !p.p30) out.push(P.legend);
+  if (p.best >= th.legend && !p.p30 && !p.ticketsGiven) out.push(P.legend);
   if (pillars >= th.mythic && pillars === p.best) out.push(P.mythic);
   if (R.triesLeft(p) <= 0 && cfg.consolation.on && p.p10 === 'free' && p.best < th.ticket && !p.consolation) out.push(P.consolation);
   return out;
@@ -57,6 +57,8 @@ export function crashMessage(p, info, cfg, rnd = Math.random) {
   }
   const prizes = pendingPrizes(p, cfg, info.pillars);
   v.prizes = joinList(prizes);
+  const nT = p.ticketsGiven ? p.tickets.length : R.ticketParts(p, cfg).total; // R12: tickets come at the end
+  const tv = { ...v, n: nT, TICKETS: nT === 1 ? 'TICKET' : 'TICKETS' };
   if (left > 0) {
     let line;
     if (info.pillars > (info.prevBest || 0) && info.prevBest > 0) line = T.triesNewBest;
@@ -69,11 +71,11 @@ export function crashMessage(p, info, cfg, rnd = Math.random) {
   }
   if (prizes.length) {
     const lines = [fill(T.prizes, v)];
-    if (p.tickets.length) lines.push(fill(T.ticketsOnly, { ...v, n: p.tickets.length, TICKETS: p.tickets.length === 1 ? 'TICKET' : 'TICKETS' }));
+    if (nT) lines.push(fill(T.ticketsOnly, tv));
     return { state: 'prizes', mood: 'happy', title: pick(T.prizesTitle, rnd), lines };
   }
-  if (p.tickets.length) {
-    const lines = [fill(T.ticketsOnly, { ...v, n: p.tickets.length, TICKETS: p.tickets.length === 1 ? 'TICKET' : 'TICKETS' }), T.thanks];
+  if (nT) {
+    const lines = [fill(T.ticketsOnly, tv), T.thanks];
     return { state: 'prizes', mood: 'happy', title: pick(T.prizesTitle, rnd), lines };
   }
   const lines = [v.gap > 0 && v.gap <= 3 && goal === cfg.thresholds.choice ? fill(T.overClose, v) : pick(T.over, rnd), T.thanks];

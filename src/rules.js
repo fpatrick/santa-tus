@@ -30,19 +30,35 @@ export function isFreeRestart(pillars, restartsSoFar, cfg) {
 }
 
 // The next thing that must happen for this payment (R9): all tries first, then at the end of the payment
-// the chimney 10 choice, the wheel, the chimney 30 tickets. A free try (R10) goes back to flying, and then
-// every prize level the payment has not had yet is checked again.
+// the chimney 10 choice, the wheel, the nickname, the sponsor prize check (R23), the ONE ticket screen (R12),
+// the hand-over. A free try (R10) goes back to flying, and then every prize level not had yet is checked again.
 export function nextStep(p, s, cfg) {
   const th = cfg.thresholds;
   if (triesLeft(p) > 0) return { step: 'fly' }; // R2, R10
   if (p.best >= th.choice && !p.p10) return { step: 'choice', freeTile: p.best < th.beat }; // R5, R21
   if (p.best >= th.ticket && !p.wheel) return { step: 'wheel' }; // R6, R7, R15: one spin per payment
-  if (p.best >= th.legend && !p.p30) return { step: 'award', kind: 'p30' }; // R8
   if (cfg.consolation.on && p.p10 === 'free' && p.best < th.ticket && !p.consolation) {
     return { step: 'award', kind: 'consolation' }; // R11
   }
   if (needsNick(p, s, cfg)) return { step: 'nick' }; // S9
+  if (p.sponsor && !p.item && !p.swapped) return { step: 'sponsor' }; // R22, R23
+  if (!p.ticketsGiven && (ticketParts(p, cfg).total > 0 || p.best >= th.legend)) return { step: 'tickets' }; // R12, R8
   return { step: 'handover' }; // S10, R16
+}
+
+// R12: every draw ticket this payment gets, by where it comes from. [{ why, n }] + total.
+// per10 = each try that reached chimney 10 (per try, R5), bonus = key 3, p30 = chimney 30 (R8),
+// wheel / swap = added by an award, buy = the TICKETS ONLY keys.
+export function ticketParts(p, cfg) {
+  const parts = [];
+  const tries10 = p.tries.filter((t) => t.pillars >= cfg.thresholds.choice).length;
+  if (tries10) parts.push({ why: 'per10', n: tries10 * cfg.tickets.per10, tries: tries10 });
+  if (p.bonus) parts.push({ why: 'bonus', n: p.bonus });
+  if (p.best >= cfg.thresholds.legend && !p.p30) parts.push({ why: 'p30', n: cfg.tickets.p30 });
+  for (const a of p.adds || []) parts.push({ why: a.kind, n: a.n });
+  if (p.buy) parts.push({ why: 'buy', n: p.buy });
+  const list = parts.filter((x) => x.n > 0);
+  return { parts: list, total: list.reduce((a, x) => a + x.n, 0) };
 }
 
 // S9: a nickname for the best players list, the ranked players (LEGEND, MYTHIC, GODLIKE) and sponsor winners (R23).
@@ -53,13 +69,15 @@ export function needsNick(p, s, cfg) {
   return p.best >= cfg.board.minPillars && rankFor(s, p) <= cfg.board.size;
 }
 
-// R1 + K2: a new payment. priceId is one of CONFIG.prices (p1, p3, p5) or 'free'.
+// R1 + K2: a new payment. priceId is one of CONFIG.prices (p1, p3, p5, t1, t3, t6) or 'free'.
+// bonus = draw tickets that come with a play price (key 3), buy = TICKETS ONLY (no tries). Both given at the end (R12).
 export function payBody(s, priceId, cfg, reason = '') {
   const pid = s.payments.length + 1;
   if (priceId === 'free') return { t: 'pay', pid, kind: 'free', amount: 0, tries: cfg.freePlay.tries, reason };
   const pr = cfg.prices.find((x) => x.id === priceId);
   if (!pr) throw new Error(`Unknown price ${priceId}`);
-  return { t: 'pay', pid, kind: pr.id, amount: pr.amount, tries: pr.tries };
+  const tickets = pr.type === 'tickets';
+  return { t: 'pay', pid, kind: pr.id, amount: pr.amount, tries: tickets ? 0 : pr.tries, bonus: tickets ? 0 : pr.bonus || 0, buy: tickets ? pr.buy : 0 };
 }
 
 // One finished try. restarts = free restarts used inside it (R3).
@@ -75,13 +93,20 @@ function takeTickets(s, count) {
   return out;
 }
 
-// R8, R11, R23: fixed awards. 'swap' = draw tickets instead of a second sponsor prize today.
+// R8, R11, R12, R23: fixed awards. 'swap' = +2 draw tickets instead of a second sponsor prize today (given on the
+// ticket screen). 'tickets' = the ONE ticket screen at the end: all numbers at once, in order, never twice (R12).
+// 'p30' is only for old saved days (chimney 30 tickets are now part of 'tickets').
 export function awardBody(kind, p, s, cfg) {
   if (kind === 'p30') return { t: 'award', pid: p.pid, kind, tickets: takeTickets(s, cfg.tickets.p30), legend: true };
   if (kind === 'consolation') return { t: 'award', pid: p.pid, kind, item: cfg.consolation.item, tickets: [] };
   if (kind === 'swap') {
     if (!p.sponsor || p.item || p.swapped) throw new Error('Nothing to swap (R23)');
-    return { t: 'award', pid: p.pid, kind, tier: p.sponsor, tickets: takeTickets(s, cfg.tickets.swap) };
+    return { t: 'award', pid: p.pid, kind, tier: p.sponsor, tickets: [], add: cfg.tickets.swap };
+  }
+  if (kind === 'tickets') {
+    if (p.ticketsGiven) throw new Error('This payment already got its tickets (R12)');
+    const tp = ticketParts(p, cfg);
+    return { t: 'award', pid: p.pid, kind, tickets: takeTickets(s, tp.total), parts: tp.parts, legend: p.best >= cfg.thresholds.legend };
   }
   throw new Error(`Unknown award ${kind}`);
 }
@@ -106,7 +131,7 @@ export function wheelBody(p, s, cfg, rnd = secureRandom, now = Date.now()) {
   const o = cfg.wheel.outcomes.find((x) => x.id === id);
   return {
     t: 'award', pid: p.pid, kind: 'wheel', result: id,
-    tickets: takeTickets(s, o.tickets || 0), cash: o.cash || 0, freeTry: !!o.freeTry,
+    tickets: [], add: o.tickets || 0, cash: o.cash || 0, freeTry: !!o.freeTry, // +2 TICKETS: given on the ticket screen (R12)
     jackpot: o.jackpot ? live.jackpot.value : 0, sponsor: o.sponsor || null,
     odds: Object.fromEntries(live.list.map((x) => [x.id, x.odds])),
   };
@@ -228,10 +253,14 @@ export function checkConfig(cfg) {
   if (Math.abs(odds - 100) > 1e-9) errs.push(`R7: wheel odds add up to ${odds}, not 100`);
   const to = W.outcomes.find((o) => o.id === W.fallbackTo);
   if (!to) errs.push('R24: wheel.fallbackTo is not a wheel outcome');
+  const jp = W.outcomes.find((o) => o.jackpot);
   for (const o of W.outcomes) {
     if (o.sponsor && !cfg.sponsors[o.sponsor]) errs.push(`R22: the wheel slice ${o.id} needs the sponsor tier ${o.sponsor}`);
-    if (o.cash && (o.odds !== 0 || !(o.onWhenEmpty > 0) || (to && o.onWhenEmpty > to.odds))) errs.push('R24: the cash slice must have odds 0 and onWhenEmpty <= the fallback odds');
+    if (o.cash && (o.odds !== 0 || !(o.onWhenAllEmpty > 0) || (to && o.onWhenAllEmpty + (jp ? jp.jackpotOdds || 0 : 0) > to.odds))) errs.push('R27: the cash slice must have odds 0 and onWhenAllEmpty <= the fallback odds');
+    if (o.jackpot && o.odds !== 0) errs.push('R13: the jackpot slice must have odds 0 (it uses jackpotOdds when JACKPOT_ENABLED)');
   }
+  if (!(cfg.CASH_FALLBACK_MAX_WINS >= 0)) errs.push('R27: CASH_FALLBACK_MAX_WINS must be 0 or more');
+  for (const pr of cfg.prices) if (pr.type === 'tickets' ? !(pr.buy > 0) : !(pr.tries > 0)) errs.push(`R1: price ${pr.id} needs tries (play) or buy (tickets)`);
   for (const tier of cfg.drawOrder) if (!cfg.sponsors[tier]) errs.push(`R14: drawOrder has an unknown tier ${tier}`);
   const keys = cfg.prices.map((p) => p.key);
   if (new Set(keys).size !== keys.length) errs.push('R1: two prices use the same key');

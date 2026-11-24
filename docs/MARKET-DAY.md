@@ -13,9 +13,9 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 | 2 USB sticks | One for live backups, one spare |
 | Extension lead | Power. **Confirm the power socket with the organisers.** |
 | Spare laptop with the game installed | If the main laptop fails |
-| Pre-numbered cloakroom ticket book | Draw tickets, from #0001 |
+| Pre-numbered cloakroom ticket books | Draw tickets, from #0001. Have **at least 400** (the simulation gives 120-330 a day) |
 | Printed A4 odds sheet (`print/odds.html`, Ctrl+P) | R18 |
-| Prizes and a money float | Sweets, the sponsor prizes on the prize table (gold, silver, bronze), €10 notes for the jackpot (max €30 a win) and the €10 CASH slice |
+| Prizes and a money float | Sweets, the sponsor prizes on the prize table (gold, silver, bronze), 3 x €10 notes for the €10 CASH fallback (only when all sponsor prizes are gone, max €30 a day) |
 | Speakers (optional) | Sound |
 
 ## Morning check (8:30-9:00)
@@ -30,8 +30,10 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 ## During the day
 
 - **No F keys on the keyboard?** Hold **F** and press **2** (= F2), or hold **F** and press **9** (= F9).
-- **New player:** when the payment is received, press **F2**, type the code, press **1** (€2.50 = 1 try), **2** (€6.50 = 3 tries) or **3** (€10 = 5 tries). After 12:35 the game asks for **O** first (saved in the log).
-- **Hand-over:** give exactly what the screen lists (sweet, sponsor item, ticket numbers, money), then press **Enter**. Sponsor prize: the player picks, you press the item's number. "ALREADY WON A PRIZE TODAY?": you decide, **Y** = 2 tickets instead. Money ("PAY JACKPOT €20", "PAY €10"): pay, then **Enter** twice.
+- **New player:** when the payment is received, press **F2**, type the code, press **1** (€2.50 = 1 try), **2** (€6.50 = 3 tries) or **3** (€10 = 5 tries + 1 bonus ticket). **Tickets only** (no game): **4** (€2.50 = 1 ticket), **5** (€6.50 = 3), **6** (€10 = 6). After 12:35 the game asks for **O** first (saved in the log).
+- **Tickets:** all draw tickets of a payment come on ONE screen at the end ("YOUR DRAW TICKETS #0012-#0015"). Give the cloakroom tickets with those numbers, in order.
+- **Hand-over:** give exactly what the screen lists (sweet, sponsor item, ticket numbers, money), then press **Enter**. Sponsor prize: the player picks, you press the item's number. "ALREADY WON A PRIZE TODAY?": you decide, **Y** = 2 tickets instead. "PAY €10" (only when all sponsor prizes are gone): pay, then **Enter** twice.
+- **Cash fallback:** staff panel **C** switches the €10 CASH slice on or off (saved in the log).
 - **Wrong button?** At "CLICK TO FLY", press **F9**, code, **1** (Undo), **Enter**.
 - **Technical problem, player lost a try?** Staff panel **2** (Free play), type the reason, Enter.
 - **Rude nickname?** Staff panel **6**, type the payment number (shown on the hand-over screen), Enter.
@@ -40,10 +42,10 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 
 ## End of day
 
-1. **12:45**: staff panel **8** (Draw). One prize at a time: bronze items, silver, gold, then the jackpot last. **Enter** draws; read the number out loud. Winner here: **Enter** (next prize). Not here: **N**, type the reason, the same prize is drawn again. **Esc** stops; **8** goes on later.
+1. **12:45**: staff panel **8** (Draw). One prize at a time: bronze items, silver, gold (no jackpot this year). **Enter** draws; read the number out loud. Winner here: **Enter** (next prize). Not here: **N**, type the reason, the same prize is drawn again. **Esc** stops; **8** goes on later.
 2. Staff panel **5** (Export CSV) and **4** (Backup now).
 3. Copy `Documents\SantaTUS-data` to the second USB stick.
-4. Count the money against "Total taken", "Jackpot paid" and "€10 cash paid" in the staff panel. Count the sponsor items left against the panel. Give the CSV to the Financial Manager.
+4. Count the money against "Total taken" and "€10 cash paid" in the staff panel. Count the sponsor items left against the panel. Give the CSV to the Financial Manager.
 
 ## Move to the spare laptop (D6, target: under 10 minutes)
 
@@ -52,6 +54,6 @@ Stall open 9:00-13:00. Set-up from 8:30. Draw at 12:45.
 3. Copy all files from `USB:\SantaTUS-backup\` into `Documents\SantaTUS-data\`
    (`santa-live.db`, `santa-live.log.jsonl`, `santa-test.db`, `santa-test.log.jsonl`).
 4. Insert the USB stick in the spare laptop. Double-click **Start Santa TUS**.
-5. Check the leaderboard, the jackpot and the "next ticket" number in the staff panel. Carry on.
+5. Check the leaderboard and the "next ticket" number in the staff panel. Carry on.
 
 Practise this once at the dress rehearsal (23-24 November).

@@ -23,6 +23,11 @@ export function createBoard(el) {
     <div class="panel-foot">${CONFIG.text.charity}</div>`;
   const $ = (s) => el.querySelector(s);
   const b = { shown: null, target: 0, lastDraw: null, freshPid: null, key: '' };
+  if (!CONFIG.JACKPOT_ENABLED) { // R13 off: no jackpot anywhere, the box shows the prize draw time only
+    $('.jp-label').textContent = CONFIG.text.prizeDraw;
+    $('.jp-value').style.display = 'none';
+    $('.jp-next').style.display = 'none';
+  }
 
   // data = { top: [{pid, name, rank, best}], jackpot, jp (prizes.jackpotInfo), lastDraw, freshPid, player }
   b.update = (data) => {
@@ -94,7 +99,7 @@ function jpNext(jp) {
 
 function drawLine(now, lastDraw) {
   const at = CONFIG.event.drawTime;
-  if (lastDraw) {
+  if (lastDraw && CONFIG.JACKPOT_ENABLED) {
     return lastDraw.ticket ? `WINNING ${CONFIG.text.ticket} <b>${fmtTicket(lastDraw.ticket)}</b>` : `NO ${CONFIG.text.tickets}: JACKPOT TO CHARITY`;
   }
   const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
@@ -122,7 +127,7 @@ function playerBox(p) {
   return `<div class="me-head">${p.open ? 'NOW PLAYING' : 'LAST PLAYER'}: ${esc(p.name)} · BEST ${p.best}${p.open ? ` · TRIES ${p.triesLeft}` : ''}</div>
     <div>CHIMNEY ${th.choice} PRIZE: ${p.p10 ? yes(p.p10) : no}</div>
     <div>WHEEL SPIN: ${p.spin ? yes(p.spin) : p.spinEarned ? '<b class="yes">WON, NOT SPUN YET</b>' : no}</div>
-    <div>${CONFIG.text.tickets}: ${p.tickets.length ? `<b class="yes">${fmtTickets(p.tickets)}</b>` : '<span class="no">NONE</span>'}</div>`;
+    <div>${CONFIG.text.tickets}: ${p.tickets.length ? `<b class="yes">${fmtTickets(p.tickets)}</b>` : p.ticketsDue ? `<b class="yes">+${p.ticketsDue} AT THE END</b>` : '<span class="no">NONE</span>'}</div>`;
 }
 
 // A canvas can only be in one place in the page, so each row gets its own copy of the cached badge.

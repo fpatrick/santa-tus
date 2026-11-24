@@ -71,15 +71,16 @@ export function playPayment(sess, priceId, { tries = [], wheel = [], choices = [
       sess.commit(R.choiceBody(p, c, cfg));
     } else if (st.step === 'nick') {
       sess.commit(R.nickBody(p, nick, cfg));
+    } else if (st.step === 'sponsor') { // R23: the "already won?" check, then the item pick (handover.js sponsorPrize)
+      const left = R.itemsLeft(p.sponsor, sess.s, cfg);
+      if (swap || !left.length) sess.commit(R.awardBody('swap', p, sess.s, cfg));
+      else sess.commit(R.itemBody(p, item || left[0].id, sess.s, cfg));
+    } else if (st.step === 'tickets') { // R12: the one ticket screen
+      sess.commit(R.awardBody('tickets', p, sess.s, cfg));
     } else if (st.step === 'handover') {
-      if (p.sponsor && !p.item && !p.swapped) { // S10: the "already won?" check, then the item pick (flow.js)
-        const left = R.itemsLeft(p.sponsor, sess.s, cfg);
-        if (swap || !left.length) sess.commit(R.awardBody('swap', p, sess.s, cfg));
-        else sess.commit(R.itemBody(p, item || left[0].id, sess.s, cfg));
-      }
       const items = R.handoverItems(p, cfg);
       if (done) sess.commit(R.doneBody(p));
-      return { p, steps, items };
+      return { p, steps, items, sess };
     }
   }
   throw new Error('payment never ended');

@@ -37,7 +37,7 @@ export async function runDraw(app, name, jackpotNow) {
 function intro(ds, prize) {
   return new Promise((resolve) => {
     open(`<div class="box gold wide"><h1>DRAW</h1>
-      <p>${ds.pool.length} ${CONFIG.text.tickets} IN THE DRAW · ${ds.unitsLeft} ITEMS + THE ${CONFIG.text.jackpot} TO GO</p>
+      <p>${ds.pool.length} ${CONFIG.text.tickets} IN THE DRAW · ${ds.unitsLeft} ITEMS${CONFIG.JACKPOT_ENABLED ? ` + THE ${CONFIG.text.jackpot}` : ''} TO GO</p>
       <p class="nextprize">NEXT: ${esc(prize)}</p>
       <div class="hint"><kbd>ENTER</kbd> draws it. <kbd>ESC</kbd> stops (go on later with 8).</div></div>`, 'full clear');
     setKeys((e) => {
@@ -89,7 +89,7 @@ export function drawScreen(ev, pool) {
       num.textContent = ev.prize === 'jackpot' ? 'NO TICKETS' : 'TO THE TEAM';
       num.style.fontSize = '80px';
       el.querySelector('.who').textContent = ev.prize === 'jackpot' ? 'THE JACKPOT STAYS WITH THE CHARITY.'
-        : `NOT ENOUGH TICKETS: ${(ev.items || []).length} ITEMS STAY WITH THE TEAM (ONE TICKET IS KEPT FOR THE JACKPOT).`;
+        : `NOT ENOUGH TICKETS: ${(ev.items || []).length} ITEMS STAY WITH THE TEAM${CONFIG.JACKPOT_ENABLED ? ' (ONE TICKET IS KEPT FOR THE JACKPOT)' : ''}.`;
       after();
       return;
     }

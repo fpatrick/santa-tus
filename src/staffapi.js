@@ -4,7 +4,7 @@
 import { CONFIG } from './config.js';
 import * as R from './rules.js';
 import { buildState, openPayment, totals, lastActivePayment } from './ledger.js';
-import { liveOdds, summary, drawState, allItems, stock, timeState } from './prizes.js';
+import { liveOdds, summary, drawState, allItems, stock, timeState, cashSwitch } from './prizes.js';
 import { buildCsv } from './report.js';
 import * as screens from './screens.js';
 import { setMuted, isMuted } from './sound.js';
@@ -62,6 +62,12 @@ export function staffApi(app) {
       if (!it || !(count >= 0)) return 'Type the item number and the count, for example "4 2".';
       const ev = await app.commit(name(), R.stockBody(app.led(), CONFIG, it.id, count));
       return `${it.label}: ${ev.before} -> ${ev.left} left. Saved.`;
+    },
+    // R27: the €10 cash fallback switch, saved as a staff event. Returns the new state.
+    toggleCash: async () => {
+      const on = !cashSwitch(app.led(), CONFIG);
+      await app.commit(name(), { ...R.staffBody('cash-fallback', on ? 'on' : 'off'), on });
+      return on;
     },
     fixJackpot: async (value) => {
       try {

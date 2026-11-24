@@ -4,7 +4,7 @@
 import { CONFIG } from './config.js';
 import { versionLabel, DISCLAIMER, STAGE } from './version.js';
 import { buildState, applyEvent, openPayment, leaderboard, totals, displayName, plainName, rankOf, lastActivePayment, fmtEuro } from './ledger.js';
-import { timeState, itemById } from './prizes.js';
+import { timeState, itemById, drawState } from './prizes.js';
 import * as R from './rules.js';
 import { createStore } from './store.js';
 import { createFlight } from './game.js';
@@ -50,7 +50,7 @@ app.refresh = () => {
   const t = totals(s, CONFIG);
   app.board.update({
     top: leaderboard(s, CONFIG).map((p) => ({ pid: p.pid, name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
-    jackpot: t.jackpotInfo.closed ? (t.lastDraw.amount || 0) : t.jackpot, jp: t.jackpotInfo, lastDraw: t.lastDraw, freshPid: app.freshPid,
+    jackpot: !CONFIG.JACKPOT_ENABLED ? 0 : t.jackpotInfo.closed ? (t.lastDraw.amount || 0) : t.jackpot, jp: t.jackpotInfo, lastDraw: t.lastDraw, freshPid: app.freshPid,
     player: playerInfo(lastActivePayment(app.led ? app.led() : s)),
   });
   banners();
@@ -70,6 +70,7 @@ function playerInfo(p) {
     name: displayName(p, CONFIG), best: p.best, open: p.status === 'open', triesLeft: Math.max(0, R.triesLeft(p)),
     p10: tile ? (tile.id === 'free' ? 'FREE TRY (INSTEAD OF SWEET)' : tile.label) : null,
     spinEarned: p.best >= CONFIG.thresholds.ticket, spin: spinText, tickets: p.tickets,
+    ticketsDue: p.ticketsGiven ? 0 : R.ticketParts(p, CONFIG).total, // R12: given at the end
   };
 }
 
@@ -126,7 +127,7 @@ async function startPaid() {
   if (app.flowActive || screens.isOpen()) return;
   if (!(await screens.staffCode())) return;
   const s = app.led();
-  const pick = await screens.payment({ testMode: app.test, late: timeState(CONFIG) === 'late', drawDone: totals(s, CONFIG).jackpotInfo.closed });
+  const pick = await screens.payment({ testMode: app.test, late: timeState(CONFIG) === 'late', drawDone: drawState(s, CONFIG).done });
   if (!pick) return;
   const name = app.ledgerName();
   if (pick.override) await app.commit(name, R.staffBody('late-payment', 'staff pressed O (R26)'));

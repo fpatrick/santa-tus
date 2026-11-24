@@ -16,11 +16,11 @@ All profit goes to Paediatric Diabetes, UHL.
 
 ## How the game works (short)
 
-1. A player pays: €2.50 = 1 try, €6.50 = 3 tries, €10 = 5 tries. Staff press **F2**, type the code, then **1**, **2** or **3**.
+1. A player pays. PLAY: €2.50 = 1 try, €6.50 = 3 tries, €10 = 5 tries + 1 bonus draw ticket (keys **1**-**3**). TICKETS ONLY (no game): €2.50 = 1, €6.50 = 3, €10 = 6 draw tickets (keys **4**-**6**). Staff press **F2**, type the code, then the key.
 2. The player clicks to fly Santa past the chimneys. The best try counts.
-3. Prizes (at the end of the payment, the best try counts): chimney 10 = a sweet or a free try, 20 = a wheel spin (jackpot, gold / silver / bronze sponsor prizes, free try, +2 draw tickets), 30 = 3 draw tickets + LEGEND, 40 = MYTHIC, 50 = GODLIKE.
+3. Prizes (at the end of the payment, the best try counts): chimney 10 = +1 draw ticket for every try that gets there, and once a sweet or a free try; 20 = a wheel spin (gold / silver / bronze sponsor prizes, free try, +2 draw tickets); 30 = 5 draw tickets + LEGEND, 40 = MYTHIC, 50 = GODLIKE. All draw tickets come on one screen at the end, with their numbers.
 4. Staff hand over what the screen lists, then press **Enter**.
-5. At 12:45 staff run the draw from the staff panel (**F9**): the sponsor items left, then the jackpot (€10, +€10 every hour nobody wins it, max €30).
+5. At 12:45 staff run the draw from the staff panel (**F9**): the sponsor items left. The cash jackpot is OFF this year. A €10 CASH wheel slice only comes on when ALL sponsor prizes are gone (max 3 a day, F9 key **C** switches it).
 
 All rules with their IDs: [SPEC.md](SPEC.md).
 

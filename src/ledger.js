@@ -14,6 +14,7 @@ function newPayment(ev) {
     status: 'open', tries: [], extraTries: 0, freeFrom: [], best: 0, bestTs: 0,
     p10: null, p20: false, wheel: null, p30: false, consolation: false, sponsor: null, item: null, swapped: false,
     tickets: [], cash: 0, jackpotWon: 0, nick: null, nickAsked: false, hidden: false, legendTs: 0, doneTs: 0,
+    bonus: ev.bonus || 0, buy: ev.buy || 0, adds: [], ticketsGiven: false, cashPaid: false, // R12, R27
   };
 }
 
@@ -60,6 +61,7 @@ export function applyEvent(s, ev) {
       break;
     case 'staff':
       s.staff.push({ ts: ev.ts, action: ev.action, detail: ev.detail || '' });
+      if (p && ev.action === 'cash-paid') p.cashPaid = true; // R27: "PAY €10" confirmed twice
       break;
     default:
       break;
@@ -73,6 +75,8 @@ function applyAward(s, p, ev) {
   if (tickets.length) s.nextTicket = Math.max(s.nextTicket, Math.max(...tickets) + 1);
   p.cash += ev.cash || 0;
   p.jackpotWon += ev.jackpot || 0;
+  if (ev.add) p.adds.push({ kind: ev.kind, n: ev.add }); // R12: tickets given later, on the ticket screen
+  if (ev.kind === 'tickets') { p.ticketsGiven = true; if (ev.legend) { p.p30 = true; p.legendTs = ev.ts; } }
   if (ev.freeTry) { p.extraTries += 1; p.freeFrom.push(ev.kind); }
   if (ev.kind === 'p20') p.p20 = true;
   if (ev.kind === 'wheel') { p.wheel = ev.result; p.sponsor = ev.sponsor || null; }

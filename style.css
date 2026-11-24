@@ -124,7 +124,13 @@ body { font-family: var(--term); color: var(--snow); user-select: none; -webkit-
 .btn:focus-visible { outline: 6px solid var(--gold); outline-offset: 6px; }
 .btn:active { transform: translateY(6px); box-shadow: 0 2px 0 var(--dim), 0 0 0 4px var(--ink); }
 .btn.big { font-size: 40px; min-width: 420px; padding: 40px 30px 34px; }
-.prices3 .btn.big { font-size: 30px; min-width: 290px; padding: 36px 18px 30px; }
+.prices3 .btn.big { font-size: 30px; min-width: 290px; padding: 26px 18px 22px; }
+/* S3: PLAY (keys 1-3) on the left, TICKETS ONLY (keys 4-6) on the right */
+.pricecols { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; margin-top: 10px; }
+.pcol { display: flex; flex-direction: column; gap: 18px; }
+.pcol .ptype { margin: 0; font: 22px/1.2 var(--pixel); color: var(--gold); text-align: center; }
+.pcol .btn.big { font-size: 24px; padding: 30px 14px 22px; position: relative; }
+.pcol .badge { position: static; display: block; transform: none; margin: 12px auto 0; width: max-content; font-size: 14px; }
 .btn.green { background: var(--green); box-shadow: 0 8px 0 #12924a, 0 0 0 4px var(--ink); }
 .btn.gold { background: var(--gold); box-shadow: 0 8px 0 #b37c00, 0 0 0 4px var(--ink); }
 .btn.red { background: var(--red); color: #fff; box-shadow: 0 8px 0 #9b1527, 0 0 0 4px var(--ink); }

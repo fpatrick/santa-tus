@@ -20,7 +20,8 @@ const ACTIONS = [
   ['8', 'draw', 'DRAW'],
   ['9', 'newday', 'NEW DAY'],
   ['S', 'stock', 'STOCK: SET ITEMS LEFT'],
-  ['J', 'jackpot', 'JACKPOT: FIX VALUE'],
+  ['C', 'cash', 'CASH FALLBACK ON/OFF'],
+  ...(CONFIG.JACKPOT_ENABLED ? [['J', 'jackpot', 'JACKPOT: FIX VALUE']] : []), // R13: only when the jackpot is on
   ['U', 'undodraw', 'UNDO THE DRAW'],
 ];
 
@@ -36,14 +37,16 @@ function infoHtml(i) {
   }).join('');
   const odds = i.live.list.map((x) => `${CONFIG.wheel.outcomes.find((o) => o.id === x.id).label} ${x.odds}%`).join(' · ');
   const ds = i.draw;
-  const drawText = ds.done ? `done · jackpot ticket ${ds.jackpotDraw.ticket ? fmtTicket(ds.jackpotDraw.ticket) : 'none (charity)'}`
-    : ds.started ? `started · ${ds.unitsLeft} items + jackpot to go` : 'not started';
+  const J = CONFIG.JACKPOT_ENABLED;
+  const drawText = ds.done ? (J && ds.jackpotDraw ? `done · jackpot ticket ${ds.jackpotDraw.ticket ? fmtTicket(ds.jackpotDraw.ticket) : 'none (charity)'}` : 'done')
+    : ds.started ? `started · ${ds.unitsLeft} items${J ? ' + jackpot' : ''} to go` : 'not started';
+  const cash = `<span>€10 cash fallback (R27):</span> <b>${i.live.cashOn ? 'ON' : 'OFF'}</b>${i.live.list.find((x) => x.id === 'cash').odds ? ' · <b>ON THE WHEEL NOW</b>' : ' · only when all tiers are sold out'} · won ${i.live.caps.cashWins}/${CONFIG.CASH_FALLBACK_MAX_WINS}`;
   return `<div class="grid">
     <div class="span2">${prices} · free plays <b>${t.count.free || 0}</b> · undone <b>${t.undone}</b></div>
     <div><span>Total taken:</span> <b>${fmtEuro(sm.taken)}</b></div>
-    <div><span>Jackpot paid:</span> ${fmtEuro(sm.jackpotPaid)} · <span>€10 cash paid:</span> ${fmtEuro(sm.cashPaid)}</div>
-    <div><span>Jackpot now:</span> <b>${jp.closed ? 'drawn' : fmtEuro(jp.value)}</b>${jp.nextMins ? ` (+${fmtEuro(CONFIG.jackpot.step)} in ${jp.nextMins} min)` : ''}</div>
-    <div><span>Caps:</span> wheel jackpot ${i.live.caps.jackpotWins}/${CONFIG.jackpot.wheelMaxWins} · €10 cash ${i.live.caps.cashWins}/${CONFIG.wheel.outcomes.find((o) => o.cash).maxWins}</div>
+    <div>${J ? `<span>Jackpot paid:</span> ${fmtEuro(sm.jackpotPaid)} · ` : ''}<span>€10 cash paid:</span> ${fmtEuro(sm.cashPaid)}</div>
+    ${J ? `<div><span>Jackpot now:</span> <b>${jp.closed ? 'drawn' : fmtEuro(jp.value)}</b>${jp.nextMins ? ` (+${fmtEuro(CONFIG.jackpot.step)} in ${jp.nextMins} min)` : ''} · wheel jackpot ${i.live.caps.jackpotWins}/${CONFIG.jackpot.wheelMaxWins}</div>` : ''}
+    <div class="span2">${cash}</div>
     <div><span>Sweets given:</span> ${sm.sweets} · <span>Tickets:</span> ${sm.tickets} (next ${fmtTicket(i.nextTicket)})</div>
     <div><span>Draw:</span> ${drawText}</div>
     ${tiers}
@@ -96,6 +99,7 @@ export function staffPanel(api) {
       if (id === 'hide') { mode = 'hide-pid'; return say('Type the payment number of the nickname to hide, then ENTER:'); }
       if (id === 'sound') { api.toggleSound(); return say(`Sound is now ${api.info().muted ? 'muted' : 'on'}.`); }
       if (id === 'stock') { mode = 'stock-in'; return say(`${stockList(api.info())}<br>Type the item number and the new count (for example "4 2"), then ENTER:`, true); }
+      if (id === 'cash') { const on = await api.toggleCash(); return say(`€10 cash fallback is now ${on ? 'ON' : 'OFF'} (saved in the log).`); }
       if (id === 'jackpot') { mode = 'jackpot-in'; return say(`Jackpot now ${fmtEuro(api.info().live.jackpot.value)}. Type the new value (0-${CONFIG.jackpot.max}), then ENTER:`); }
       if (id === 'undodraw') {
         if (!api.info().draw.started) return say('The draw has not started.');

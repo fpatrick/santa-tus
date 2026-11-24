@@ -62,19 +62,22 @@ export function staffCode(title = 'STAFF ONLY') {
   });
 }
 
-// S3: the prices (keys 1-3), or cancel. R26: after the last payment time or after the draw, the price keys
+// S3: the prices: PLAY (keys 1-3) and TICKETS ONLY (keys 4-6), or cancel. R26: after the last payment time or after the draw, the price keys
 // work only after O (the caller logs the override). Resolves { id, override } or null.
 export function payment({ testMode = false, late = false, drawDone = false } = {}) {
   return new Promise((resolve) => {
     const T = CONFIG.text;
     let locked = !testMode && (late || drawDone);
-    const btns = CONFIG.prices.map((p) => `<button class="btn big ${p.badge ? 'gold' : 'green'}" data-id="${p.id}">
-      <span class="key">${p.key}</span>${esc(p.label)}${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}</button>`).join('');
+    const btn = (p) => `<button class="btn big ${p.badge ? 'gold' : p.type === 'tickets' ? '' : 'green'}" data-id="${p.id}">
+      <span class="key">${p.key}</span>${esc(p.label)}${p.badge ? `<span class="badge">${esc(p.badge)}</span>` : ''}</button>`;
+    const group = (type) => CONFIG.prices.filter((p) => (p.type || 'play') === type).map(btn).join('');
+    const btns = `<div class="pricecols"><div class="pcol"><h2 class="ptype">${esc(T.play)}</h2>${group('play')}</div>
+      <div class="pcol"><h2 class="ptype">${esc(T.ticketsOnly)}</h2>${group('tickets')}</div></div>`;
     const warn = [late ? T.late.replace('{time}', CONFIG.event.lastPayment) : '', drawDone ? T.lateDraw : ''].filter(Boolean);
-    const el = open(`<div class="box"><h1>NEW PAYMENT</h1>
+    const el = open(`<div class="box wide"><h1>NEW PAYMENT</h1>
       ${testMode ? `<p style="color: var(--gold)">${esc(T.testMode)}</p>` : ''}
       ${warn.length ? `<p class="late" style="color: var(--red)">${warn.map(esc).join('<br>')}${locked ? '<br>PRESS <kbd>O</kbd> TO GO ON ANYWAY (SAVED IN THE LOG).' : ''}</p>` : ''}
-      <div class="btns prices3">${btns}</div>
+      ${btns}
       <div class="btns"><button class="btn ghost" data-id="">CANCEL</button></div>
       <div class="hint">Press ${CONFIG.prices.map((p) => `<kbd>${p.key}</kbd>`).join(' ')} after the payment is received. <kbd>ESC</kbd> cancels.</div></div>`);
     const done = (id) => { if (id && locked) return; close(); resolve(id ? { id, override: !!warn.length && !testMode } : null); };

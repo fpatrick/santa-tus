@@ -98,6 +98,20 @@ def spin_to_end(pg, nick=None):
         pg.keyboard.press("Enter")
 
 
+def to_handover(pg, timeout=20000):
+    """Skips the nickname screen if it comes (score on the board), then waits for the hand-over."""
+    pg.wait_for_function("document.querySelector('#overlay h1') && /RANK|HAND-OVER/.test(document.querySelector('#overlay h1').textContent)", timeout=timeout)
+    if "RANK" in pg.inner_text("#overlay h1"):
+        pg.keyboard.press("Escape")
+        overlay_title(pg, "HAND-OVER")
+
+
+def commit_js(pg, body_js):
+    """Test only: save an event straight into the live ledger (like a staff action), e.g. stock counts."""
+    pg.evaluate("(async () => { const R = await import('./src/rules.js'); const { CONFIG } = await import('./src/config.js'); const P = await import('./src/prizes.js');"
+                f" const s = santa.led('live'); for (const b of ({body_js})) await santa.commit('live', b); }})()")
+
+
 def overlay_title(pg, text, timeout=15000):
     pg.wait_for_function(f"document.querySelector('#overlay h1') && document.querySelector('#overlay h1').textContent.includes({json.dumps(text)})", timeout=timeout)
 
@@ -125,13 +139,27 @@ def run():
             pg.wait_for_function("document.activeElement && document.activeElement.classList.contains('nick')")
             pg.keyboard.type("Sam")
             pg.keyboard.press("Enter")
+            overlay_title(pg, "YOUR DRAW TICKETS")  # R12: the one ticket screen
+            assert "#0001" in pg.inner_text("#overlay")
             overlay_title(pg, "HAND-OVER")
-            assert "SWEET" in pg.inner_text("#overlay"), "hand-over must list the sweet"
+            txt = pg.inner_text("#overlay")
+            assert "SWEET" in txt and "GIVE 1 TICKET #0001" in txt, txt
             pg.keyboard.press("Enter")
             pg.wait_for_function("document.querySelector('.board .nm') && document.querySelector('.board .nm').textContent === 'SAM'")
             kinds = [e["t"] for e in server_events(port)]
-            assert kinds == ["pay", "try", "award", "nick", "done"], kinds
-            print("ok - S2-S10 path: €2.50, best 12, sweet, nickname, hand-over (T4)")
+            assert kinds == ["pay", "try", "award", "nick", "award", "done"], kinds
+            print("ok - S2-S10 path: €2.50, best 12, sweet, nickname, 1 ticket, hand-over (T4, T51)")
+
+            # T50: TICKETS ONLY key 5 = €6.50 for 3 tickets: no game, straight to the ticket screen (R1, R12)
+            pay(pg, "5")
+            overlay_title(pg, "YOUR DRAW TICKETS")
+            overlay_title(pg, "HAND-OVER")
+            assert "GIVE 3 TICKETS #0002-#0004" in pg.inner_text("#overlay"), pg.inner_text("#overlay")
+            pg.keyboard.press("Enter")
+            pg.wait_for_function("santa.scene === 'attract' && !santa.flowActive", timeout=10000)
+            last = server_events(port)[-3:]
+            assert [e["t"] for e in last] == ["pay", "award", "done"] and last[0]["buy"] == 3 and last[0]["tries"] == 0, last
+            print("ok - T50: tickets only, no game, #0002-#0004")
 
             # T12: Chrome closed after try 1 of €6.50: reopens with 2 tries left and the best kept (D3)
             pay(pg, "2", alt=True)  # also checks "hold F + 2"
@@ -163,18 +191,20 @@ def run():
             pg.keyboard.press("Enter")
             pg.wait_for_function("santa.scene === 'attract' && !santa.flowActive", timeout=10000)
 
-            # T36 (F): price key 3 = 5 tries; wheel -> GOLD: nickname, "GOLD: GIVE LIDL €20 VOUCHER" (R1, R22, R16)
+            # T36 (F): price key 3 = 5 tries + 1 bonus ticket; wheel -> GOLD "DAY OUT FOR 4": the player picks (R1, R22, R16)
             force_wheel(pg, "gold")
             pay(pg, "3")
             pg.wait_for_function("santa.scene === 'flight' && santa.hud && santa.hud.triesLeft === 5", timeout=10000)
             for pillars in (22, 6, 6, 6, 6):
                 finish_try(pg, pillars)
             spin_to_end(pg, "Ann")
+            pg.wait_for_selector(".picks", timeout=20000)
+            pg.keyboard.press("1")
             overlay_title(pg, "HAND-OVER", timeout=20000)
             txt = pg.inner_text("#overlay")
-            assert "GOLD: GIVE LIDL" in txt and "SPONSOR: LIDL" in txt, txt
+            assert "GOLD: GIVE VUE CINEMA" in txt and "SPONSOR: VUE CINEMA" in txt and "GIVE 2 TICKETS" in txt, txt
             pg.keyboard.press("Enter")
-            print("ok - T36: €10 = 5 tries, GOLD prize with the sponsor name on the hand-over")
+            print("ok - T36: €10 = 5 tries + bonus ticket, GOLD pick with the sponsor name on the hand-over")
 
             # T37 (F): SILVER: the player picks, staff press the number (R22)
             force_wheel(pg, "silver")
@@ -184,7 +214,7 @@ def run():
             pg.wait_for_selector(".picks", timeout=20000)
             pg.keyboard.press("2")
             overlay_title(pg, "HAND-OVER")
-            assert "FUNWORLD" in pg.inner_text("#overlay")
+            assert "ONE4ALL" in pg.inner_text("#overlay")
             pg.keyboard.press("Enter")
             print("ok - T37: SILVER pick screen, the picked item on the hand-over")
 
@@ -197,38 +227,68 @@ def run():
             pg.keyboard.press("y")
             overlay_title(pg, "HAND-OVER")
             txt = pg.inner_text("#overlay")
-            assert "BRONZE" not in txt and "GIVE 2 TICKETS" in txt, txt
+            assert "BRONZE" not in txt and "GIVE 3 TICKETS" in txt, txt  # chimney 10 + the 2 swap tickets, one screen
             pg.keyboard.press("Enter")
-            print("ok - T38: one sponsor prize per person: Y gives 2 tickets instead")
+            print("ok - T38: one sponsor prize per nickname: Y gives +2 tickets instead")
 
-            # T49 (F): wheel JACKPOT: "PAY JACKPOT" confirmed twice (R16)
-            force_wheel(pg, "jackpot")
+            # T47b (F): a crash and reload DURING the wheel spin: the saved result comes back, never a 2nd spin (D11)
+            force_wheel(pg, "t2")
+            pay(pg, "1")
+            finish_try(pg, 21)
+            pg.wait_for_selector(".tile", timeout=15000)
+            pg.locator(".tile", has_text="SWEET").click()
+            pg.wait_for_function("santa.scene === 'wheel' && santa.wheel.phase === 'ready'", timeout=15000)
+            pg.evaluate("santa.wheel.click()")
+            pg.wait_for_function("santa.wheel.phase === 'spin'", timeout=10000)
+            pg.goto("about:blank")
+            boot(pg, url)
+            overlay_title(pg, "YOUR WHEEL RESULT", timeout=20000)
+            to_handover(pg)
+            assert "GIVE 3 TICKETS" in pg.inner_text("#overlay")
+            pg.keyboard.press("Enter")
+            wheels = [e for e in server_events(port) if e["t"] == "award" and e["kind"] == "wheel"]
+            assert len(wheels) == 4 and len({e["pid"] for e in wheels}) == 4, wheels
+            print("ok - T47b: reload during the spin shows the same result, one spin only")
+
+            # T53 (F): F9 key C switches the €10 cash fallback off and on again, both saved in the log (R27)
+            pg.wait_for_function("santa.scene === 'attract' && !santa.flowActive && !document.querySelector('#overlay.on')", timeout=15000)
+            pg.keyboard.press("F9")
+            pg.wait_for_selector(".dots")
+            pg.keyboard.type("PAID")
+            pg.keyboard.press("Enter")
+            pg.wait_for_selector("text=STAFF PANEL")
+            assert "JACKPOT" not in pg.inner_text("#overlay .acts"), "R13: no jackpot action while it is off"
+            pg.keyboard.press("c")
+            pg.wait_for_selector("text=cash fallback is now OFF")
+            pg.keyboard.press("c")
+            pg.wait_for_selector("text=cash fallback is now ON")
+            pg.keyboard.press("Escape")
+            sw = [e for e in server_events(port) if e["t"] == "staff" and e["action"] == "cash-fallback"]
+            assert [e["on"] for e in sw] == [False, True], sw
+            print("ok - T53: F9 cash fallback switch, logged")
+
+            # T49 (F): ALL tiers sold out -> €10 CASH: "PAY €10" confirmed twice and logged (R27)
+            commit_js(pg, "P.allItems(CONFIG).map((it) => R.stockBody(santa.led('live'), CONFIG, it.id, 0))")
+            pg.evaluate("import('./src/config.js').then(({ CONFIG }) => { for (const o of CONFIG.wheel.outcomes) o.odds = o.id === 't2' ? 100 : 0;"
+                        " CONFIG.wheel.outcomes.find((o) => o.cash).onWhenAllEmpty = 100; })")
             pay(pg, "1")
             finish_try(pg, 21)
             spin_to_end(pg)
-            pg.wait_for_function("document.querySelector('#overlay h1') && /PAY JACKPOT|RANK/.test(document.querySelector('#overlay h1').textContent)", timeout=20000)
+            pg.wait_for_function("document.querySelector('#overlay h1') && /PAY €10|RANK/.test(document.querySelector('#overlay h1').textContent)", timeout=20000)
             if "RANK" in pg.inner_text("#overlay h1"):
                 pg.keyboard.press("Escape")
-                overlay_title(pg, "PAY JACKPOT")
+                overlay_title(pg, "PAY €10")
             pg.keyboard.press("Enter")
             pg.wait_for_selector("text=CONFIRM AGAIN")
             pg.keyboard.press("Enter")
             overlay_title(pg, "HAND-OVER")
-            assert "PAY JACKPOT" in pg.inner_text("#overlay")
+            assert "PAY €10" in pg.inner_text("#overlay")
             pg.keyboard.press("Enter")
-            print("ok - T49: jackpot win, paid after two confirms")
-
-            # two more tickets, so the draw has 4 (one is always kept for the jackpot)
-            force_wheel(pg, "t2")
-            pay(pg, "1")
-            finish_try(pg, 21)
-            spin_to_end(pg)
-            pg.wait_for_function("document.querySelector('#overlay h1') && /HAND-OVER|RANK/.test(document.querySelector('#overlay h1').textContent)", timeout=20000)
-            if "RANK" in pg.inner_text("#overlay h1"):
-                pg.keyboard.press("Escape")
-                overlay_title(pg, "HAND-OVER")
-            assert "GIVE 2 TICKETS" in pg.inner_text("#overlay")
-            pg.keyboard.press("Enter")
+            paid = [e for e in server_events(port) if e["t"] == "staff" and e["action"] == "cash-paid"]
+            assert len(paid) == 1, paid
+            print("ok - T49: all sold out, €10 CASH paid after two confirms and logged")
+            # put some items back for the draw test (logged as staff stock edits)
+            commit_js(pg, "[R.stockBody(santa.led('live'), CONFIG, 'ps10', 3), R.stockBody(santa.led('live'), CONFIG, 'lidl20', 1)]")
 
             # T46 (F): the draw from F9: the first prize, NOT HERE with a reason, the same prize again (R14)
             pg.wait_for_function("santa.scene === 'attract' && !document.querySelector('#overlay.on')", timeout=10000)

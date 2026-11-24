@@ -1,4 +1,4 @@
-// simulate.js: proves the prize math (R25, SPEC.md "Simulation results"). It plays whole market days with the
+// simulate.js: proves the prize math (R25, R27, SPEC.md "Simulation results"). It plays whole market days with the
 // REAL game rules (rules.js, ledger.js, prizes.js): payments, tries, the chimney 10 choice, the wheel with the live
 // odds, sponsor items, the "already won?" swap, a crash and reload in the middle of the day, and the 12:45 draw.
 //
@@ -19,7 +19,8 @@ const SIM = {
   reach20: [0.5, 0.8, 1.0],
   reach30: [0.1, 0.2],
   reach10: 0.85, // chance a payment's best try passes chimney 10 (when it does not pass 20)
-  priceMix: { p1: 0.45, p3: 0.35, p5: 0.2 }, // €2.50 / €6.50 / €10
+  otherTry10: 0.5, // chance one of the other tries of a payment also passes 10 (a chimney 10 ticket per try, R5)
+  priceMix: { p1: 0.4, p3: 0.3, p5: 0.15, t1: 0.05, t3: 0.05, t6: 0.05 }, // PLAY €2.50 / €6.50 / €10, TICKETS ONLY €2.50 / €6.50 / €10
   freeTryAt10: 0.35, // the player picks FREE TRY instead of the sweet
   sameNick: 0.1, // a sponsor winner comes back and wins again (staff press Y)
   notHere: 0.1, // a draw winner is not at the stall
@@ -67,7 +68,7 @@ function playOne(d, c, m, nicks) {
     const st = R.nextStep(p, d.s, CONFIG);
     if (st.step === 'fly') {
       // the payment's chances apply to its best try: the first try is drawn, the other paid tries are short
-      const v = firstTry || p.tries.length >= p.triesBought ? tryResult(c) : 5;
+      const v = firstTry || p.tries.length >= p.triesBought ? tryResult(c) : Math.random() < SIM.otherTry10 ? 10 + Math.floor(Math.random() * 5) : 5;
       firstTry = false;
       d.commit(R.tryBody(p, v));
     } else if (st.step === 'choice') {
@@ -88,17 +89,19 @@ function playOne(d, c, m, nicks) {
     } else if (st.step === 'nick') {
       const again = p.sponsor && nicks.length && Math.random() < SIM.sameNick;
       d.commit(R.nickBody(p, again ? nicks[Math.floor(Math.random() * nicks.length)] : `P${p.pid}`, CONFIG));
-    } else if (st.step === 'handover') {
-      if (p.sponsor && !p.item && !p.swapped) {
-        const left = R.itemsLeft(p.sponsor, d.s, CONFIG);
-        if (!left.length || R.alreadyWon(p, d.s)) d.commit(R.awardBody('swap', p, d.s, CONFIG));
-        else {
-          const it = left[Math.floor(Math.random() * left.length)];
-          d.commit(R.itemBody(p, it.id, d.s, CONFIG));
-          m.won[p.sponsor] += 1;
-          if (p.nick) nicks.push(p.nick);
-        }
+    } else if (st.step === 'sponsor') { // R23
+      const left = R.itemsLeft(p.sponsor, d.s, CONFIG);
+      if (!left.length || R.alreadyWon(p, d.s)) d.commit(R.awardBody('swap', p, d.s, CONFIG));
+      else {
+        const it = left[Math.floor(Math.random() * left.length)];
+        d.commit(R.itemBody(p, it.id, d.s, CONFIG));
+        m.won[p.sponsor] += 1;
+        if (p.nick) nicks.push(p.nick);
       }
+    } else if (st.step === 'tickets') { // R12
+      d.commit(R.awardBody('tickets', p, d.s, CONFIG));
+    } else if (st.step === 'handover') {
+      if (p.cash) d.commit({ ...R.staffBody('cash-paid', `€${p.cash}`), pid: p.pid });
       d.commit(R.doneBody(p));
       return;
     }
@@ -125,7 +128,7 @@ function playDay(c) {
     }
     playOne(d, c, m, nicks);
   });
-  // the 12:45 draw: every item left, then the jackpot
+  // the 12:45 draw: every item left (and the jackpot, only when it is on)
   d.clock = T_DRAW;
   m.itemsForDraw = drawState(d.s, CONFIG).unitsLeft;
   for (let guard = 0; guard < 200; guard++) {
@@ -165,8 +168,8 @@ function runCase(c) {
     c, spins: S('spins'), jackpot: S('jackpotPaid'), wheelJackpots: S('wheelJackpots'), cash: S('cashPaid'), left: S('itemsForDraw'),
     tickets: S('tickets'), sweets: S('sweets'), taken: S('taken'), net: S('net'), tiers,
     checks: {
-      jackpot60: days.every((d) => d.jackpotPaid <= 60),
-      total90: days.every((d) => d.jackpotPaid + d.cashPaid <= 90),
+      cash30: days.every((d) => d.cashPaid <= 10 * CONFIG.CASH_FALLBACK_MAX_WINS), // R27 worst case
+      jackpotOff: CONFIG.JACKPOT_ENABLED || days.every((d) => d.jackpotPaid === 0), // R13
       odds100: days.every((d) => d.oddsBad === 0),
       reload: days.every((d) => d.reloadOk),
     },
@@ -185,16 +188,16 @@ for (const payments of SIM.payments) for (const reach20 of SIM.reach20) for (con
 }
 
 const lines = [];
-lines.push(`Simulation: ${SIM.days.toLocaleString('en-IE')} days per case, ${results.length} cases (node scripts/simulate.js). Guesses: price mix ${Object.values(SIM.priceMix).map((x) => `${x * 100}%`).join('/')} (€2.50/€6.50/€10), free try at chimney 10 ${SIM.freeTryAt10 * 100}%, same nickname wins again ${SIM.sameNick * 100}%, draw winner not here ${SIM.notHere * 100}%, payments spread from ${SIM.open} to ${SIM.last}, one crash and reload at mid-day.`);
+lines.push(`Simulation: ${SIM.days.toLocaleString('en-IE')} days per case, ${results.length} cases (node scripts/simulate.js). Guesses: price mix ${Object.values(SIM.priceMix).map((x) => `${Math.round(x * 100)}%`).join('/')} (PLAY €2.50/€6.50/€10, TICKETS ONLY €2.50/€6.50/€10), another try of the payment passes 10: ${SIM.otherTry10 * 100}%, free try at chimney 10 ${SIM.freeTryAt10 * 100}%, same nickname wins again ${SIM.sameNick * 100}%, draw winner not here ${SIM.notHere * 100}%, payments spread from ${SIM.open} to ${SIM.last}, one crash and reload at mid-day. Jackpot ${CONFIG.JACKPOT_ENABLED ? 'ON' : 'OFF'}, cash fallback ${CONFIG.CASH_FALLBACK_ENABLED ? 'ON' : 'OFF'}.`);
 lines.push('');
-lines.push('| Payments | P(20) | P(30) | Spins avg | Jackpot paid avg / 95% / max | Wheel jackpot wins avg | €10 cash avg / 95% / max | Gold / silver / bronze won (wheel) avg | Sold out % (avg time) G / S / B | Items left for draw avg | Tickets avg | Sweets avg | Taken avg | Left for charity avg / min |');
-lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
+lines.push('| Payments | P(20) | P(30) | Spins avg | €10 cash avg / 95% / max | Gold / silver / bronze won (wheel) avg | Sold out % (avg time) G / S / B | Items left for draw avg | Tickets avg | Sweets avg | Taken avg | Left for charity avg / min |');
+lines.push('| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |');
 for (const r of results) {
   const t = r.tiers;
-  lines.push(`| ${r.c.payments} | ${r.c.reach20} | ${r.c.reach30} | ${f1(r.spins.avg)} | €${f1(r.jackpot.avg)} / €${r.jackpot.p95} / €${r.jackpot.max} | ${f1(r.wheelJackpots.avg)} | €${f1(r.cash.avg)} / €${r.cash.p95} / €${r.cash.max} | ${f1(t.gold.wonAvg)} / ${f1(t.silver.wonAvg)} / ${f1(t.bronze.wonAvg)} | ${f1(t.gold.soldPct)}% (${clock(t.gold.soldAtAvg)}) / ${f1(t.silver.soldPct)}% (${clock(t.silver.soldAtAvg)}) / ${f1(t.bronze.soldPct)}% (${clock(t.bronze.soldAtAvg)}) | ${f1(r.left.avg)} | ${f1(r.tickets.avg)} | ${f1(r.sweets.avg)} | €${f1(r.taken.avg)} | €${f1(r.net.avg)} / €${f1(r.net.min)} |`);
+  lines.push(`| ${r.c.payments} | ${r.c.reach20} | ${r.c.reach30} | ${f1(r.spins.avg)} | €${f1(r.cash.avg)} / €${r.cash.p95} / €${r.cash.max} | ${f1(t.gold.wonAvg)} / ${f1(t.silver.wonAvg)} / ${f1(t.bronze.wonAvg)} | ${f1(t.gold.soldPct)}% (${clock(t.gold.soldAtAvg)}) / ${f1(t.silver.soldPct)}% (${clock(t.silver.soldAtAvg)}) / ${f1(t.bronze.soldPct)}% (${clock(t.bronze.soldAtAvg)}) | ${f1(r.left.avg)} | ${f1(r.tickets.avg)} | ${f1(r.sweets.avg)} | €${f1(r.taken.avg)} | €${f1(r.net.avg)} / €${f1(r.net.min)} |`);
 }
 lines.push('');
 const all = (k) => results.every((r) => r.checks[k]);
-lines.push(`Checks over all ${(SIM.days * results.length).toLocaleString('en-IE')} days: jackpot paid <= €60: **${all('jackpot60') ? 'PASS' : 'FAIL'}** (highest €${Math.max(...results.map((r) => r.jackpot.max))}) · jackpot + €10 cash <= €90: **${all('total90') ? 'PASS' : 'FAIL'}** · odds add up to 100% before every spin: **${all('odds100') ? 'PASS' : 'FAIL'}** · state after reload = before: **${all('reload') ? 'PASS' : 'FAIL'}** · days where prize money was more than the takings: **${results.reduce((a, r) => a + r.lossDays, 0)}**.`);
+lines.push(`Checks over all ${(SIM.days * results.length).toLocaleString('en-IE')} days: €10 cash paid <= €${10 * CONFIG.CASH_FALLBACK_MAX_WINS}: **${all('cash30') ? 'PASS' : 'FAIL'}** (highest €${Math.max(...results.map((r) => r.cash.max))}) · no jackpot paid while it is off: **${all('jackpotOff') ? 'PASS' : 'FAIL'}** · odds add up to 100% before every spin: **${all('odds100') ? 'PASS' : 'FAIL'}** · state after reload = before: **${all('reload') ? 'PASS' : 'FAIL'}** · days where prize money was more than the takings: **${results.reduce((a, r) => a + r.lossDays, 0)}**.`);
 console.log(lines.join('\n'));
-if (!['jackpot60', 'total90', 'odds100', 'reload'].every(all)) process.exitCode = 1;
+if (!['cash30', 'jackpotOff', 'odds100', 'reload'].every(all)) process.exitCode = 1;

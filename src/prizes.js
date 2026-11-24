@@ -1,4 +1,4 @@
-// prizes.js: sponsor stock, the jackpot, the live wheel odds and the draw (R13, R14, R22-R25).
+// prizes.js: sponsor stock, the jackpot, the live wheel odds, the cash fallback and the draw (R13, R14, R22-R27).
 // Pure code: everything is worked out from the ledger state (the saved events in s.events), never from
 // timers in memory (D9). A reload gives the same state. `now` is only the laptop clock, and the latest
 // saved time always counts more (D10), so a clock that goes back never changes a result.
@@ -59,6 +59,24 @@ export function stock(s, cfg) {
   return { left, given, team, tiers };
 }
 
+// R7, R13: the base wheel odds [{ o, odds }]. The jackpot slice is only on when JACKPOT_ENABLED is true;
+// then its chance is taken from the fallback slice, so the base odds always add up to 100.
+export function baseOdds(cfg) {
+  const W = cfg.wheel;
+  const list = W.outcomes.map((o) => ({ o, odds: o.jackpot ? (cfg.JACKPOT_ENABLED ? o.jackpotOdds || 0 : 0) : o.odds }));
+  const jp = list.reduce((a, x) => a + (x.o.jackpot ? x.odds : 0), 0);
+  const to = list.find((x) => x.o.id === W.fallbackTo);
+  if (to) to.odds -= jp;
+  return list;
+}
+
+// R27: is the cash fallback switched on? Config first, then every staff switch in F9 (saved order).
+export function cashSwitch(s, cfg) {
+  let on = !!cfg.CASH_FALLBACK_ENABLED;
+  for (const ev of s.events) if (ev.t === 'staff' && ev.action === 'cash-fallback') on = !!ev.on;
+  return on;
+}
+
 // R24 caps: wheel jackpot wins and €10 cash wins today (undone payments do not count).
 export function caps(s) {
   let jackpotWins = 0;
@@ -115,24 +133,29 @@ export function jackpotInfo(s, cfg, now = Date.now()) {
   return { value, started: start != null, nextMins, atMax: value >= J.max, closed: !!drawn, wheelWins, paid, drawn };
 }
 
-// R7, R24: the live wheel odds. list = [{ id, odds, why }] (always adds up to 100), plus stock and caps.
+// R7, R24, R27: the live wheel odds. list = [{ id, odds, why }] (always adds up to 100), plus stock and caps.
 export function liveOdds(s, cfg, now = Date.now()) {
   const W = cfg.wheel;
   const st = stock(s, cfg);
   const cp = caps(s);
   const jp = jackpotInfo(s, cfg, now);
-  const list = W.outcomes.map((o) => ({ id: o.id, odds: o.odds, why: '' }));
+  const list = baseOdds(cfg).map(({ o, odds }) => ({ id: o.id, odds, why: '' }));
   let anyEmpty = false;
+  let allEmpty = true;
   for (const [k, o] of W.outcomes.entries()) {
-    if (o.sponsor && (!st.tiers[o.sponsor] || st.tiers[o.sponsor].free <= 0)) { list[k].odds = 0; list[k].why = 'soldout'; anyEmpty = true; }
-    if (o.jackpot && (cp.jackpotWins >= cfg.jackpot.wheelMaxWins || jp.closed)) { list[k].odds = 0; list[k].why = 'done'; }
+    if (!o.sponsor) continue;
+    if (!st.tiers[o.sponsor] || st.tiers[o.sponsor].free <= 0) { list[k].odds = 0; list[k].why = 'soldout'; anyEmpty = true; } else allEmpty = false;
   }
   for (const [k, o] of W.outcomes.entries()) {
-    if (o.cash) list[k].odds = anyEmpty && cp.cashWins < o.maxWins ? o.onWhenEmpty : 0;
+    if (o.jackpot && list[k].odds > 0 && (cp.jackpotWins >= cfg.jackpot.wheelMaxWins || jp.closed)) { list[k].odds = 0; list[k].why = 'done'; }
+  }
+  const cashOn = cashSwitch(s, cfg);
+  for (const [k, o] of W.outcomes.entries()) { // R27: only when ALL tiers are empty, the switch is on and the cap is not reached
+    if (o.cash) list[k].odds = allEmpty && cashOn && cp.cashWins < cfg.CASH_FALLBACK_MAX_WINS ? o.onWhenAllEmpty : 0;
   }
   const to = list.find((x) => x.id === W.fallbackTo);
   to.odds = 100 - list.reduce((a, x) => a + (x === to ? 0 : x.odds), 0);
-  return { list, tiers: st.tiers, caps: cp, jackpot: jp, anyEmpty };
+  return { list, tiers: st.tiers, caps: cp, jackpot: jp, anyEmpty, allEmpty, cashOn };
 }
 
 // All tickets that can win (tickets of undone payments are out).
@@ -152,12 +175,20 @@ export function drawState(s, cfg) {
   const units = [];
   for (const tier of cfg.drawOrder) for (const it of st.tiers[tier].items) for (let k = 0; k < it.left; k++) units.push({ tier, item: it.id });
   let next = null;
-  if (!jackpotDraw) {
-    if (!units.length) next = { prize: 'jackpot' };
-    else if (pool.length <= 1) next = { prize: 'rest', items: units.map((u) => u.item) }; // keep the last ticket for the jackpot
-    else next = { prize: 'item', tier: units[0].tier, item: units[0].item };
+  const started = v.draws.length > 0;
+  let done;
+  if (cfg.JACKPOT_ENABLED) {
+    if (!jackpotDraw) {
+      if (!units.length) next = { prize: 'jackpot' };
+      else if (pool.length <= 1) next = { prize: 'rest', items: units.map((u) => u.item) }; // keep the last ticket for the jackpot
+      else next = { prize: 'item', tier: units[0].tier, item: units[0].item };
+    }
+    done = !!jackpotDraw;
+  } else { // R13 off: only the items. No tickets left: the rest stays with the team.
+    if (units.length) next = pool.length ? { prize: 'item', tier: units[0].tier, item: units[0].item } : { prize: 'rest', items: units.map((u) => u.item) };
+    done = started && !next;
   }
-  return { ...v, pool, next, done: !!jackpotDraw, jackpotDraw, started: v.draws.length > 0, unitsLeft: units.length };
+  return { ...v, pool, next, done, jackpotDraw, started, unitsLeft: units.length };
 }
 
 // K2 end-of-day summary (and the CSV totals).

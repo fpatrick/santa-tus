@@ -3,9 +3,9 @@
 
 import { CONFIG } from './config.js';
 import * as R from './rules.js';
-import { rankFor, rankOf, fmtTickets, fmtEuro } from './ledger.js';
+import { rankFor, rankOf, fmtTickets, fmtRange, fmtEuro } from './ledger.js';
 import { liveOdds } from './prizes.js';
-import { runHandover } from './handover.js';
+import { runHandover, sponsorPrize } from './handover.js';
 import * as screens from './screens.js';
 import * as fx from './fx.js';
 import { sfx } from './sound.js';
@@ -31,6 +31,8 @@ export async function runPayment(app, name, p, { resumed = false } = {}) {
       else if (st.step === 'wheel') await spinWheel(app, name, p);
       else if (st.step === 'choice') await pickChoice(app, name, p, st.freeTile);
       else if (st.step === 'nick') await askNick(app, name, p);
+      else if (st.step === 'sponsor') await sponsorPrize(app, name, p);
+      else if (st.step === 'tickets') await giveTickets(app, name, p);
       else if (st.step === 'handover') {
         await runHandover(app, name, p);
         app.freshPid = p.pid;
@@ -90,6 +92,19 @@ async function giveAward(app, name, p, kind) {
   }
 }
 
+// R12: the ONE ticket screen at the end of a payment: where the tickets came from and their numbers.
+// Saved first (D1), so after a crash the same numbers are never given twice.
+async function giveTickets(app, name, p) {
+  const ev = await app.commit(name, R.awardBody('tickets', p, app.led(name), CONFIG));
+  const T = CONFIG.text;
+  const lines = ev.parts.map((x) => `${T.ticketWhy[x.why].replace('{n}', x.tries || x.n)}: +${x.n}`);
+  if (ev.tickets.length) lines.push(`${ev.tickets.length} ${ev.tickets.length === 1 ? T.ticket : T.tickets}: ${fmtRange(ev.tickets)}`);
+  if (ev.legend) lines.push('LEGEND TAG ON YOUR NAME');
+  sfx.milestone(ev.legend ? 3 : 2);
+  fx.celebrate(ev.legend ? 3 : 2, 640, 560, '', '#ffd23f');
+  await screens.message(ev.legend ? 'LEGEND!' : T.ticketsTitle, lines, { secs: CONFIG.timing.awardShow + 2, cls: 'gold' });
+}
+
 // What the player won on the wheel, in words (the reveal message and "YOUR WHEEL RESULT" after a crash).
 function wheelLines(p) {
   const o = CONFIG.wheel.outcomes.find((x) => x.id === p.wheel);
@@ -100,7 +115,7 @@ function wheelLines(p) {
     lines.push(T.title || T.items.map((it) => it.label).join(' / '));
     lines.push(`FROM ${[...new Set(T.items.map((it) => it.sponsor))].join(', ')}`);
   }
-  if (o && o.tickets) lines.push(`+${o.tickets} ${CONFIG.text.tickets}`);
+  if (o && o.tickets) lines.push(`+${o.tickets} ${CONFIG.text.tickets} (AT THE END)`);
   if (p.jackpotWon || p.cash || p.sponsor) lines.push(CONFIG.text.staffPays);
   if (o && o.freeTry) lines.push('ONE MORE TRY!');
   return lines;

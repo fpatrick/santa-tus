@@ -1,6 +1,6 @@
 // wheel.js: the R7 wheel, dressed as a Christmas slot machine (the look is in wheelart.js). flow.js gives it the
 // live odds (setLayout, R24): slice sizes = live odds, an empty tier shows "SOLD OUT - +2 TICKETS", the €10 CASH
-// slice appears when a tier is empty. It waits for the player to click, then flow.js picks
+// slice appears only when ALL tiers are empty (R27). No jackpot slice while JACKPOT_ENABLED is false (R13). It waits for the player to click, then flow.js picks
 // the result with a secure random number and SAVES it, then spin() shows it. Effects grow with the tier (1-4).
 
 import { CONFIG } from './config.js';
@@ -9,6 +9,7 @@ import { wheelSfx } from './wheelsound.js';
 import { drawSky, drawSnow } from './world.js';
 import { outlined } from './game.js';
 import { fmtEuro } from './ledger.js';
+import { baseOdds } from './prizes.js';
 import { CX, CY, RAD, TAU, spotlight, drawBuildRays, drawMarquee, drawWheel } from './wheelart.js';
 
 const POINTER = -Math.PI / 2;
@@ -21,7 +22,8 @@ const T = CONFIG.text;
 export function buildPieces(cfg = CONFIG, live = null) {
   const W = cfg.wheel;
   const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : null;
-  const base = W.outcomes.filter((o) => o.odds > 0);
+  const B = Object.fromEntries(baseOdds(cfg).map((x) => [x.o.id, x.odds])); // R13: no jackpot slice when it is off
+  const base = W.outcomes.filter((o) => B[o.id] > 0);
   const left = base.map((o) => ({ o, n: o.pieces }));
   const order = [];
   while (left.some((l) => l.n > 0)) {
@@ -36,7 +38,7 @@ export function buildPieces(cfg = CONFIG, live = null) {
     const off = L && L[o.id] === 0;
     const show = off ? { ...o, short: o.jackpot ? W.jackpotDone : W.soldOut, icon: 'ticket', color: W.soldOutColor, off: true } : o;
     const gives = off ? W.fallbackTo : o.id;
-    let size = (TAU * o.odds) / 100 / o.pieces;
+    let size = (TAU * B[o.id]) / 100 / o.pieces;
     if (cut && o.id === W.fallbackTo) {
       size -= cashSize;
       out.push({ o: show, gives, start: a, size, k });
@@ -171,8 +173,9 @@ function reveal(w) {
 // S7, R24: the live odds and the items left per tier, always on the wheel screen.
 function drawOddsLine(ctx, live) {
   const W = CONFIG.wheel;
-  const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : Object.fromEntries(W.outcomes.map((o) => [o.id, o.odds]));
-  const parts = W.outcomes.filter((o) => o.odds > 0 || L[o.id] > 0)
+  const B = Object.fromEntries(baseOdds(CONFIG).map((x) => [x.o.id, x.odds]));
+  const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : B;
+  const parts = W.outcomes.filter((o) => B[o.id] > 0 || L[o.id] > 0)
     .map((o) => (L[o.id] > 0 ? `${o.label} ${L[o.id]}%` : `${o.label} ${(o.jackpot ? W.jackpotDone : W.soldOut).split('\n')[0]}`));
   ctx.fillStyle = 'rgba(7, 5, 28, 0.78)';
   ctx.fillRect(20, 968, 1240, 104);
@@ -185,7 +188,7 @@ function drawOddsLine(ctx, live) {
   if (live) {
     const t = live.tiers;
     const tiers = Object.entries(CONFIG.sponsors).map(([k, T]) => `${T.name} ${t[k].free}`).join(' · ');
-    const jp = live.jackpot.closed ? '' : `   ·   ${CONFIG.text.jackpot} ${fmtEuro(live.jackpot.value)}`;
+    const jp = !CONFIG.JACKPOT_ENABLED || live.jackpot.closed ? '' : `   ·   ${CONFIG.text.jackpot} ${fmtEuro(live.jackpot.value)}`;
     ctx.font = '30px VT323';
     ctx.textAlign = 'right'; // the BETA badge sits bottom-left
     ctx.fillStyle = '#ffd23f';
