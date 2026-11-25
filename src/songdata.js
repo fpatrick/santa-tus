@@ -53,20 +53,22 @@ const SILENT_CHORDS = 'C C C C G7 G7 C C F F C C F F C C G7 G7 C C C G7 C C';
 // drums (none | bells | drive | big), up = semitones to transpose, double = lead also an octave up.
 export const sec = (name, melody, chords, beatsPerBar, arr) => ({ name, melody, chords, beatsPerBar, ...arr });
 
-// During flight (A5): Jingle Bells as a grand, triumphant orchestral adventure march (B-flat major, like
-// the big adventure-game themes): a brass fanfare with a timpani roll, a march verse (field-drum triplets,
-// low brass, driving strings, bell runs), a triumphant chorus (cymbals, horn harmony), then key changes up.
+// During flight (A5): Jingle Bells as an epic adventure-game title theme, played by a chip orchestra (orchestra.js):
+// brass on the tune, galloping strings, low brass, horns, timpani, field snare, bass drum, cymbals (songadv.js).
+// The drums build up: 1) intro = anticipation (low strings pulse, timpani coming closer, a roll and a cymbal swell),
+// 2) verse = the journey starts (light march, the full march and trumpets in octaves join at bar 9),
+// 3) chorus = the hero theme (full orchestra, violins run, cymbals), then key changes up at chimney 20 and after 30.
 // The first 3 parts end exactly when chimneys 10, 20 and 30 are passed (see flightMap).
 // After 30 the last two parts loop (verse + chorus a key higher), which fills chimneys 31-50.
-const H = { lead: 'hero', bass: 'hero', pad: true };
+const ADV = { lead: 'adventure', style: 'adventure' };
 export const FLIGHT = {
   sections: [
-    sec('intro', HERO_INTRO, HERO_INTRO_CHORDS, 4, { ...H, drums: 'herointro', up: -2, double: true }),
-    sec('verse', HERO_VERSE, HERO_VERSE_CHORDS, 4, { ...H, drums: 'hero', up: -2, arp: true, double: true, counter: HERO_VERSE_RUNS }),
-    sec('chorus', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...H, drums: 'herobig', up: -2, harm: true, double: true, counter: HERO_CHORUS_RUNS }),
-    sec('chorus-up', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...H, drums: 'herobig', up: 0, harm: true, arp: true, double: true, counter: HERO_CHORUS_RUNS }),
-    sec('verse-top', HERO_VERSE, HERO_VERSE_CHORDS, 4, { ...H, drums: 'herobig', up: 1, harm: true, arp: true, double: true, counter: HERO_VERSE_RUNS }),
-    sec('chorus-top', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...H, drums: 'herobig', up: 1, harm: true, arp: true, double: true, counter: HERO_CHORUS_RUNS }),
+    sec('intro', HERO_INTRO, HERO_INTRO_CHORDS, 4, { ...ADV, part: 'intro', up: -2, double: true }),
+    sec('verse', HERO_VERSE, HERO_VERSE_CHORDS, 4, { ...ADV, part: 'verse', up: -2, double: true, doubleFrom: 8, counter: HERO_VERSE_RUNS, vel: 0.9 }),
+    sec('chorus', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...ADV, part: 'chorus', up: -2, harm: true, double: true, counter: HERO_CHORUS_RUNS }),
+    sec('chorus-up', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...ADV, part: 'chorus', up: 0, harm: true, double: true, counter: HERO_CHORUS_RUNS }),
+    sec('verse-top', HERO_VERSE, HERO_VERSE_CHORDS, 4, { ...ADV, part: 'verse', big: true, up: 1, harm: true, double: true, counter: HERO_VERSE_RUNS }),
+    sec('chorus-top', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...ADV, part: 'chorus', up: 1, harm: true, double: true, counter: HERO_CHORUS_RUNS }),
   ],
   anchors: [10, 20, 30], // chimney numbers where parts end: intro+verse | chorus | chorus-up
   anchorParts: [2, 1, 1], // how many parts each anchor covers

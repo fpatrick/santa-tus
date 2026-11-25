@@ -59,6 +59,8 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Songs as notes and arrangements (Jingle Bells march, Silent Night RPG theme, sad crash tune) | `src/songdata.js` |
 | Turning songs into notes to play, chords, and the timing to the chimneys | `src/songs.js` |
 | Music player: instruments, modes (menu, lobby, flight), volume duck | `src/music.js` |
+| The flight song's band: drum build-ups, strings, basses, horns per bar | `src/songadv.js` |
+| The chip orchestra for the flight song: brass, strings, timpani, snare, bass drum, cymbals, swell, hall echo | `src/orchestra.js` |
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
 | Staff panel F9: summary, stock (incl. reserved), cash fallback switch (C), jackpot fix (only when on), caps, odds (S11, K2) | `src/staff.js` (actions in `src/staffapi.js`) |
 | The draw: one prize at a time, GTA 6 last, GIVEN / NOT HERE (S12, K3, R14) | `src/draw.js` |

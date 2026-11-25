@@ -4,6 +4,7 @@
 // chords: one chord per bar. arr = how the band plays it (music.js reads these names).
 
 import { FLIGHT, LOBBY, MENU, CRASH } from './songdata.js';
+import { adventureBar } from './songadv.js';
 
 export { FLIGHT, LOBBY, MENU, CRASH };
 
@@ -45,7 +46,7 @@ export function sectionEvents(s) {
     const m = midi(note);
     if (m != null) {
       ev.push({ b, len: beats, kind: 'lead', m: m + lead, vol: vel });
-      if (s.double) ev.push({ b, len: beats, kind: 'lead2', m: m + lead + 12, vol: vel });
+      if (s.double && b >= (s.doubleFrom || 0) * s.beatsPerBar) ev.push({ b, len: beats, kind: 'lead2', m: m + lead + 12, vol: vel }); // doubleFrom = the bar the octave joins
       if (s.harm && beats >= 0.5) { // piano harmony: the nearest chord note 3 to 9 semitones under the melody
         const tones = chordAt(b);
         let best = null;
@@ -66,11 +67,8 @@ export function sectionEvents(s) {
   bars.forEach((name, bar) => {
     const tones = chordTones(name).map((t) => t + s.up);
     const at = bar * bpb;
-    if (s.bass === 'hero') { // low brass and cellos: root (with the octave under) on 1, the fifth on 3
-      const root = 36 + (tones[0] % 12);
-      ev.push({ b: at, len: 2, kind: 'bass', m: root, vol: vel }, { b: at, len: 2, kind: 'bass', m: root - 12, vol: vel * 0.6 });
-      ev.push({ b: at + 2, len: 2, kind: 'bass', m: root + 7 - (root + 7 > 47 ? 12 : 0), vol: vel * 0.85 });
-    } else if (s.bass === 'harp' || s.bass === 'harpbig') { // RPG harp: a rising sweep each bar (big: up and down, twice as fast)
+    if (s.style === 'adventure') return adventureBar(s, bar, bars.length, tones, at, ev); // the flight song (songadv.js)
+    if (s.bass === 'harp' || s.bass === 'harpbig') { // RPG harp: a rising sweep each bar (big: up and down, twice as fast)
       const root = 36 + (tones[0] % 12);
       const third = tones[1] - tones[0];
       const up = [0, 7, 12, 12 + third, 19, 24];
@@ -102,23 +100,6 @@ export function sectionEvents(s) {
     }
     if (s.arp) for (let k = 0; k < bpb * 2; k++) ev.push({ b: at + k / 2, len: 0.5, kind: 'arp', m: 72 + tones[k % tones.length], vol: 0.6 });
     const roll = s.fill && bar === bars.length - 1; // last bar: a snare roll that grows
-    if (s.drums && s.drums.startsWith('hero')) { // heroic orchestral march: field-drum triplets, timpani, cymbals
-      const big = s.drums === 'herobig';
-      const root = 36 + (tones[0] % 12);
-      if (s.drums === 'herointro') {
-        ev.push({ b: at, len: 2, kind: 'timp', m: root, vol: 0.8 });
-        if (bar === bars.length - 1) for (let k = 0; k < 12; k++) ev.push({ b: at + k / 3, len: 1 / 3, kind: k < 9 ? 'snare' : 'timp', m: root, vol: 0.25 + 0.06 * k });
-        return;
-      }
-      const v = big ? 1 : 0.65;
-      ev.push({ b: at, len: 2, kind: 'timp', m: root, vol: 0.6 * v }, { b: at, len: 0.25, kind: 'kick', vol: 0.7 * v }, { b: at, len: 0.25, kind: 'snare', vol: 0.6 * v });
-      for (const q of [1, 3]) for (let k = 0; k < 3; k++) ev.push({ b: at + q + k / 3, len: 1 / 3, kind: 'snare', vol: (0.22 + 0.08 * k + (q === 3 ? 0.06 : 0)) * v }); // "da-da-da"
-      ev.push({ b: at + 2, len: 0.25, kind: 'snare', vol: 0.45 * v }, { b: at + 2, len: 0.25, kind: 'kick', vol: 0.5 * v });
-      if (big) ev.push({ b: at + 2, len: 2, kind: 'timp', m: root + 7, vol: 0.45 });
-      if (big && bar % 4 === 0 && bar > 0) ev.push({ b: at, len: 2, kind: 'crash' });
-      for (let k = 0; k < bpb; k++) ev.push({ b: at + k, len: 0.5, kind: 'sleigh', accent: k % 2 === 0 }); // Santa's sleigh bells on every beat
-      return;
-    }
     if (s.drums && s.drums.startsWith('r68')) { // rolling 6/8 (one beat = one eighth): no dance kick
       const big = s.drums === 'r68big';
       if (roll) { // the build: a snare roll in 16ths that grows, and timpani
@@ -167,7 +148,7 @@ export function sectionEvents(s) {
       } else if (s.drums === 'bells' && k % 8 === 0) ev.push({ b: at + beat, len: 0.25, kind: 'kick', vol: 0.6 });
     }
   });
-  if (['big', 'waltzbig', 'dancebig', 'r68big', 'marchbig', 'herobig'].includes(s.drums)) ev.push({ b: 0, len: 2, kind: 'crash' });
+  if (['big', 'waltzbig', 'dancebig', 'r68big', 'marchbig'].includes(s.drums)) ev.push({ b: 0, len: 2, kind: 'crash' });
   return ev.sort((x, y) => x.b - y.b);
 }
 
