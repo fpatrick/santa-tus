@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 1.0.2 (2026-11-25): A5 flight song: the Jingle Bells tune is now a clean 16-bit pulse-wave lead with a soft triangle body (no circus wobble); lighter strings for the laptop.
 - 1.0.1 (2026-11-25): A5 flight song overhauled: an epic adventure title theme on a new chip orchestra (brass, galloping strings, timpani, field snare, bass drum, cymbal swells, hall echo) with drums that build up; same Jingle Bells melody and chimney timing.
 - 1.0.0 (2026-11-25): MARKET-DAY VERSION (FINAL, no beta badge). Part 3: one-page odds sheet (no cash, no jackpot, no top score; GTA 6 last), simulation 36 cases x 10,000 days (all checks pass, table in SPEC), final tests T60-T67 (every sold-out mix, wheel picks, GTA 6 once, crash during the draw, draw undo, CSV totals, no top score, times).
 - 0.24.9 (2026-11-25): A5 flight song: the real Jingle Bells melody and chords again, louder on top; fanfare made from "jingle bells"; sleigh bells on every beat.

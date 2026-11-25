@@ -84,11 +84,68 @@ function brass(a, m, t, dur, vol, out, bright = 5) {
   oscs(a, 'sawtooth', f, [-7, 6], t, t + dur + 0.12, lp, 0.007);
 }
 
+// 16-bit lead (the Jingle Bells tune): a clean pulse wave like a SNES / HD pixel game, with a soft triangle one
+// octave under it for body. No detune and only a light, late vibrato on long notes (no circus wobble).
+const pulses = new WeakMap(); // ctx -> { duty: PeriodicWave }
+function pulse(a, duty) {
+  if (!pulses.has(a.ctx)) pulses.set(a.ctx, {});
+  const cache = pulses.get(a.ctx);
+  if (!cache[duty]) {
+    const n = 48;
+    const re = new Float32Array(n);
+    const im = new Float32Array(n);
+    for (let k = 1; k < n; k++) re[k] = (2 * Math.sin(Math.PI * k * duty)) / (Math.PI * k);
+    cache[duty] = a.ctx.createPeriodicWave(re, im);
+  }
+  return cache[duty];
+}
+
+function chipLead(a, m, t, dur, vol, out, duty, body) {
+  const f = freq(m);
+  const end = t + dur + 0.1;
+  const g = a.ctx.createGain();
+  g.gain.setValueAtTime(0.0001, t);
+  g.gain.exponentialRampToValueAtTime(vol, t + 0.008);
+  g.gain.exponentialRampToValueAtTime(vol * 0.78, t + 0.16);
+  g.gain.setValueAtTime(vol * 0.78, t + Math.max(0.17, dur));
+  g.gain.exponentialRampToValueAtTime(0.0001, t + dur + 0.08);
+  g.connect(out);
+  const lp = lowpass(a, Math.min(9000, f * 10), 0.5, g);
+  const o = a.ctx.createOscillator();
+  o.setPeriodicWave(pulse(a, duty));
+  o.frequency.value = f;
+  if (dur > 0.45) { // a gentle vibrato that only starts late in long notes
+    const lfo = a.ctx.createOscillator();
+    const depth = a.ctx.createGain();
+    lfo.frequency.value = 5.8;
+    depth.gain.setValueAtTime(0, t + 0.3);
+    depth.gain.linearRampToValueAtTime(f * 0.0035, t + 0.5);
+    lfo.connect(depth);
+    depth.connect(o.frequency);
+    lfo.start(t + 0.3);
+    lfo.stop(end);
+  }
+  o.connect(lp);
+  o.start(t);
+  o.stop(end);
+  if (body) { // the soft triangle an octave under (one more oscillator, same envelope)
+    const tri = a.ctx.createOscillator();
+    const tg = a.ctx.createGain();
+    tri.type = 'triangle';
+    tri.frequency.value = f / 2;
+    tg.gain.value = body;
+    tri.connect(tg);
+    tg.connect(g);
+    tri.start(t);
+    tri.stop(end);
+  }
+}
+
 // Bowed strings: short and accented for the gallop, a little softer and rounder for the violins.
 function strings(a, m, t, dur, vol, out, hz) {
   const f = freq(m);
   const g = amp(a, t, 0.012, dur * 0.8, 0.06, vol, out);
-  oscs(a, 'sawtooth', f, [-9, 0, 8], t, t + dur + 0.08, lowpass(a, hz, 0.7, g));
+  oscs(a, 'sawtooth', f, [-8, 8], t, t + dur + 0.08, lowpass(a, hz, 0.7, g)); // 2 voices: light for the laptop
 }
 
 // Sustained horns under everything: a slow swell, warm and soft.
@@ -220,12 +277,12 @@ function glock(a, m, t, vol, out) {
 
 // One event of the flight song. Volumes: the brass melody on top, the band under it, the drums driving.
 export function playOrchestra(a, ev, t, dur, out) {
-  const v = (ev.vol || 1) * 1.25; // the whole orchestra: as loud as the old flight song
+  const v = (ev.vol || 1) * 1.4; // the whole orchestra: as loud as the old flight song
   const o = hallFor(a, out);
   switch (ev.kind) {
-    case 'lead': return brass(a, ev.m, t, dur * 0.94, 0.17 * v, o, 6); // trumpets and horns: the tune
-    case 'lead2': return brass(a, ev.m, t, dur * 0.92, 0.07 * v, o, 4); // trumpets an octave up (the chorus)
-    case 'harm': return brass(a, ev.m, t, dur * 0.94, 0.06 * v, o, 3); // horns in harmony
+    case 'lead': return chipLead(a, ev.m, t, dur * 0.94, 0.145 * v, o, 0.25, 0.9); // the tune: 25% pulse + triangle body
+    case 'lead2': return chipLead(a, ev.m, t, dur * 0.92, 0.04 * v, o, 0.125, 0); // a thin 12.5% pulse an octave up
+    case 'harm': return brass(a, ev.m, t, dur * 0.94, 0.05 * v, o, 3); // horns in harmony (soft brass under the tune)
     case 'pad': return horns(a, ev.m, t, dur, 0.011 * v, o);
     case 'bass': return bass(a, ev.m, t, dur, 0.055 * v, o);
     case 'strings': return strings(a, ev.m, t, dur, 0.065 * v, o, 2400);
