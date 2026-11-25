@@ -73,6 +73,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Colours, layout, screen boxes | `style.css` (tokens in `:root`) |
 | Version and beta badge | `src/version.js` |
 | Saving to disk, backups, USB, export, new day, opening Chrome | `server/server.py` |
+| The market-day programs (one file for Fedora, one .exe for Windows): data folder, one copy only, Firefox kiosk, repair after a power cut, 5-min backups, USB pick (M1-M9) | `server/launcher.py` (repair and backups in `server/recovery.py`); build: `scripts/build-binaries.py`, GitHub `market-builds.yml`; staff guide `docs/README-STAFF.txt` |
 | Windows start file | `Start Santa TUS.bat` (CRLF line endings) |
 | Printed A4 odds sheet (R18) | `print/odds.html` (reads config.js) |
 | Test link and Windows ZIP builds | `.github/workflows/` |
@@ -84,6 +85,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | `npm test` | 78 rule, prize, ledger, course, music, crash-message and final-pass tests (Node, about 10 s) | after every change |
 | `npm run test:server` | 9 server tests (Python) | after a change to `server/` |
 | `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, T36-T38, T46, T47b, T49-T51, T53, about 2 min) | after a change to screens, flow, store, main |
+| `python3 tests/binary_check.py dist/santa-tus-linux-x64` | the one-file program: data next to it, one copy only, killed during the wheel spin then restarted, power-cut log line (M1-M4) | after a change to `server/launcher.py`, `recovery.py` or the build |
 | `node scripts/simulate.js` | 36 cases x 10,000 market days with the real rules (about 12 min; `--days 500` for a quick check) | after a change to prizes, odds, jackpot or stock |
 
 GitHub runs `npm test` and the server tests on every push before it publishes the test link.

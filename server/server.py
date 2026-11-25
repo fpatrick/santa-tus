@@ -163,8 +163,11 @@ def find_usb():
     if os.environ.get("SANTA_USB_DIR"):
         path = os.environ["SANTA_USB_DIR"]
         return path if os.path.isdir(path) else None
-    if sys.platform != "win32":
-        return None
+    if sys.platform != "win32":  # Linux (Fedora): sticks are mounted in /run/media/<user>/<name>
+        user = os.environ.get("USER") or os.path.basename(os.path.expanduser("~"))
+        roots = [p for base in (f"/run/media/{user}", f"/media/{user}", "/media") if os.path.isdir(base)
+                 for p in sorted(os.path.join(base, n) for n in os.listdir(base)) if os.path.isdir(p) and os.access(p, os.W_OK)]
+        return next((p for p in roots if os.path.isdir(os.path.join(p, BACKUP_FOLDER))), roots[0] if roots else None)
     try:
         import ctypes
         mask = ctypes.windll.kernel32.GetLogicalDrives()

@@ -104,6 +104,9 @@ export async function createStore({ forceBrowser = false } = {}) {
     return { ok: true, local: 'downloaded to this computer' };
   };
 
+  // M6: staff pick the USB folder on the laptop (F9 -> P); later backups go there too.
+  st.pickBackup = async () => (st.mode === 'server' ? postJson('api/backup-pick', {}, 600000) : { ok: false, error: 'only on the laptop program' });
+
   st.exportCsv = async (name, csv) => {
     download(`santatus-${name}-${stampNow()}.csv`, csv, 'text/csv');
     if (st.mode === 'server') return request(`api/export?ledger=${name}`, { method: 'POST', headers: { 'Content-Type': 'text/csv' }, body: csv }, 15000);

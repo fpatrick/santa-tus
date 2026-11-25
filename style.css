@@ -224,3 +224,7 @@ body.board-only #panel { left: 0; padding-bottom: 70px; }
 
 /* R27: the cash fallback switch is greyed out until all tiers are sold out */
 .btn.greyed { opacity: 0.35; filter: grayscale(1); }
+
+/* M9: a page error: shown for 2.5 s, then the page reloads by itself */
+#error-reload { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; text-align: center;
+  padding: 60px; background: rgba(7, 5, 28, 0.92); color: var(--gold); font: 40px/1.5 var(--pixel); }

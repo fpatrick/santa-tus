@@ -179,6 +179,8 @@ export const CONFIG = {
     pay: 'PAY AT THE STALL TO PLAY',
     bestTry: 'BEST TRY COUNTS',
     charity: 'ALL PROFIT GOES TO PAEDIATRIC DIABETES, UHL',
+    errorReload: 'SOMETHING WENT WRONG - RELOADING', // M9: a page error: the page reloads by itself, state comes back from the log
+    errorStuck: 'SOMETHING WENT WRONG. PRESS F5 TO RELOAD. (IT KEEPS HAPPENING: RESTART SANTA TUS.)',
     winTitle: 'WHAT YOU CAN WIN',
     win10: 'A SWEET OR A FREE TRY, +1 DRAW ENTRY EVERY PAID TRY',
     win20: 'A SPIN ON THE WHEEL',

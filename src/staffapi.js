@@ -50,6 +50,7 @@ export function staffApi(app) {
       return true;
     },
     backup: async () => { await app.commit(name(), R.staffBody('backup')); return app.store.backup(); },
+    pickBackup: async () => { await app.commit(name(), R.staffBody('backup', 'picked folder')); return app.store.pickBackup(); },
     exportCsv: async () => { await app.commit(name(), R.staffBody('export')); return app.store.exportCsv(name(), buildCsv(app.led(), CONFIG, name())); },
     hide: async (pid) => { if (!app.led().byPid.get(pid)) return false; await app.commit(name(), { t: 'hide', pid }); return true; },
     toggleSound: () => setMuted(!isMuted()),

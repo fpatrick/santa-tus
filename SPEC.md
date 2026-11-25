@@ -242,6 +242,28 @@ L3 updates on hand-over; a second screen can open `?view=board` on the same lapt
 - **W6** Data in Documents\SantaTUS-data. **W7** health check at start. **W8** auto-start (optional, not built).
 - **W9** GitHub Actions builds and tests the ZIP on Windows for each `v*` tag. **W10** docs/INSTALL.md.
 
+## Market-day programs (M1-M9, 25 Nov): one file for Fedora (main), one .exe for Windows (backup)
+
+`dist/santa-tus-linux-x64` and `dist/santa-tus-windows-x64.exe` (PyInstaller one-file, `scripts/build-binaries.py`,
+GitHub workflow `market-builds.yml`). Entry point `server/launcher.py` around `server/server.py` (same data format on both).
+Staff guide: `docs/README-STAFF.txt` (copied to dist/).
+- **M1** Data folder `SantaTUS-data` next to the program; if it cannot write there, `~/SantaTUS-data` and the start-up check says so.
+- **M2** Only ONE copy per data folder (an operating-system lock). A 2nd start only opens the game window again.
+- **M3** A busy port: the next free port (else any free port). Closing the browser does not stop the server.
+- **M4** At start: a half-written last log line (power cut) is moved to `*.partial-<time>` (never deleted, and logged); the
+  database and the log are compared and each gets what the other has; a database SQLite cannot read is moved to `broken-<time>/`
+  and rebuilt from the log. Every log write is append + flush + fsync (D1).
+- **M5** Every 5 minutes a copy in `SantaTUS-data/backups/auto-<time>` (the last 20 are kept) + the latest copy + the USB stick.
+- **M6** USB backup (F9 -> 4): the stick is found by itself (Windows: removable drive; Fedora: /run/media/<user>/...), a stick
+  with a `SantaTUS-backup` folder wins. F9 -> P: staff pick the folder in a window. Later backups go there too.
+- **M7** The browser full screen: Fedora: Firefox `--kiosk` with its own profile in the data folder (sound allowed), then
+  Chromium / Chrome kiosk, else a message with the address. Windows: Chrome or Edge kiosk.
+- **M8** Fedora: after the first start a "Santa TUS" launcher in the app list (and on the Desktop folder, if there is one).
+  Everything the program says goes to `SantaTUS-data/server.log` (no terminal after a double-click).
+- **M9** A page error shows "SOMETHING WENT WRONG - RELOADING" and the page reloads by itself (state from the log).
+  Max 3 reloads in 2 minutes, then it asks staff to press F5 (never a reload loop).
+- Swap laptops: copy `SantaTUS-data` next to the other program and start it: the same day continues (`tests/binary_check.py`).
+
 ## Acceptance tests
 
 Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run test:flow`, **W** = Windows ZIP workflow. Manual = dress rehearsal.

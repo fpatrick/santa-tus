@@ -1,0 +1,85 @@
+# Market-day programs (M1-M9): one file for Fedora, one .exe for Windows, built and tested on real machines.
+#   gh workflow run market-builds.yml --ref main                  (build only: download from the run's artifacts)
+#   gh workflow run market-builds.yml --ref main -f release=true  (also a GitHub release v<VERSION> with both files)
+name: Build the market-day programs
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: "Make a GitHub release with both programs"
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04  # an old glibc (2.35): the program runs on every newer Linux (Fedora 36+)
+            file: santa-tus-linux-x64
+          - os: windows-latest
+            file: santa-tus-windows-x64.exe
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build the one-file program
+        run: |
+          python -m pip install pyinstaller
+          python scripts/build-binaries.py
+
+      - name: Smoke test - data next to the program, health, page, only one copy (M1, M2)
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/copy"
+          cp "dist/${{ matrix.file }}" "$RUNNER_TEMP/copy/"
+          EXE="$RUNNER_TEMP/copy/${{ matrix.file }}"
+          "$EXE" --no-browser &
+          for i in $(seq 1 40); do [ -f "$RUNNER_TEMP/copy/SantaTUS-data/server.json" ] && break; sleep 1; done
+          PORT=$(python -c "import json;print(json.load(open(r'$RUNNER_TEMP/copy/SantaTUS-data/server.json'))['port'])")
+          for i in $(seq 1 20); do curl -sf "http://127.0.0.1:$PORT/api/health" && break; sleep 1; done
+          curl -sf "http://127.0.0.1:$PORT/api/health" | python -c "import json,sys; h=json.load(sys.stdin); assert h['ok'] and h['db']=='ok', h; print(h['version'], h['dataDir'])"
+          curl -sf "http://127.0.0.1:$PORT/" | grep -q "<canvas" || curl -sf "http://127.0.0.1:$PORT/" | grep -qi "santa"
+          curl -sf "http://127.0.0.1:$PORT/src/main.js" > /dev/null
+          "$EXE" --no-browser   # a 2nd start must end by itself (the 1st keeps running)
+          curl -sf "http://127.0.0.1:$PORT/api/health" > /dev/null
+          echo "ok: second start ended, the first server still answers on $PORT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.file }}
+          path: dist/${{ matrix.file }}
+
+  release:
+    needs: build
+    if: github.event.inputs.release == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+      - name: Make or update the GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VER=$(grep -oP "VERSION = '\K[^']+" src/version.js)
+          cp docs/README-STAFF.txt dist/
+          chmod +x dist/santa-tus-linux-x64
+          if gh release view "v$VER" > /dev/null 2>&1; then
+            gh release upload "v$VER" dist/santa-tus-linux-x64 dist/santa-tus-windows-x64.exe dist/README-STAFF.txt --clobber
+          else
+            gh release create "v$VER" dist/santa-tus-linux-x64 dist/santa-tus-windows-x64.exe dist/README-STAFF.txt \
+              --target "$GITHUB_SHA" --title "Santa TUS v$VER (market day)" --latest \
+              --notes "Fedora: santa-tus-linux-x64 (chmod +x, then run). Windows: santa-tus-windows-x64.exe. Read README-STAFF.txt."
+          fi

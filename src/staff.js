@@ -16,7 +16,8 @@ const ACTIONS = [
   ['1', 'undo', 'UNDO LAST PAYMENT'],
   ['2', 'free', 'FREE PLAY'],
   ['3', 'test', 'TEST MODE'],
-  ['4', 'backup', 'BACKUP NOW'],
+  ['4', 'backup', 'BACKUP TO USB'],
+  ['P', 'usbpick', 'BACKUP: PICK THE USB FOLDER'],
   ['5', 'export', 'EXPORT CSV'],
   ['6', 'hide', 'HIDE A NICKNAME'],
   ['7', 'sound', 'SOUND ON/OFF'],
@@ -100,7 +101,8 @@ export function staffPanel(api) {
       }
       if (id === 'free') { mode = 'free-reason'; return say('Type the reason for the free play, then ENTER:'); }
       if (id === 'test') { const ok = await api.setTest(!api.info().test); return say(ok ? `Test mode is now ${api.info().test ? 'ON' : 'off'}.` : 'Finish the open payment first.'); }
-      if (id === 'backup') { say('Backing up...'); const r = await api.backup(); return say(r && r.ok ? `Backup done: ${r.usb || r.local || 'ok'}${r.ok && !r.usb && api.info().mode === 'server' ? ' (no USB stick found!)' : ''}` : 'Backup FAILED. Check the server window.'); }
+      if (id === 'backup') { say('Backing up...'); const r = await api.backup(); return say(r && r.ok ? `Backup done: ${r.usb || r.local || 'ok'}${r.ok && !r.usb && api.info().mode === 'server' ? ' (no USB stick found! Press P to pick the folder)' : ''}` : 'Backup FAILED. Check the server window.'); }
+      if (id === 'usbpick') { say('A folder window opens on the laptop: pick the USB stick...'); const r = await api.pickBackup(); return say(r && r.ok ? `Backup done: ${r.usb || r.local}` : `No backup: ${(r && r.error) || 'failed'}`); }
       if (id === 'export') { const r = await api.exportCsv(); return say(r && r.ok ? `Exported: ${r.path || 'ok'}` : 'Export FAILED.'); }
       if (id === 'hide') { mode = 'hide-pid'; return say('Type the payment number of the nickname to hide, then ENTER:'); }
       if (id === 'sound') { api.toggleSound(); return say(`Sound is now ${api.info().muted ? 'muted' : 'on'}.`); }

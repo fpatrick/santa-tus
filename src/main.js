@@ -23,6 +23,26 @@ import { music } from './music.js';
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 const app = { scene: 'blank', test: false, flowActive: false, ledgers: {}, hud: null, freshPid: null, endFlight: () => {} };
+
+// M9: a page error shows "SOMETHING WENT WRONG - RELOADING" and reloads the page; the state comes back from the
+// saved log. Max 3 reloads in 2 minutes, then it waits for staff (F5), so it never loops.
+function errorReload(err) {
+  const msg = String((err && (err.message || err.reason)) || err || '');
+  if (/ResizeObserver|AudioContext|play\(\) request|NotAllowedError/.test(msg) || document.getElementById('error-reload')) return;
+  let hist = [];
+  try { hist = JSON.parse(sessionStorage.getItem('santa-reloads') || '[]').filter((t) => Date.now() - t < 120000); } catch { hist = []; }
+  const stuck = hist.length >= 3;
+  const box = document.createElement('div');
+  box.id = 'error-reload';
+  box.textContent = stuck ? CONFIG.text.errorStuck : CONFIG.text.errorReload;
+  document.body.appendChild(box);
+  console.error('M9 page error:', err);
+  if (stuck) return;
+  try { sessionStorage.setItem('santa-reloads', JSON.stringify([...hist, Date.now()])); } catch { /* no storage: still reload */ }
+  setTimeout(() => location.reload(), 2500);
+}
+addEventListener('error', (e) => { if (!e.filename || e.filename.startsWith(location.origin)) errorReload(e.error || e.message); });
+addEventListener('unhandledrejection', (e) => errorReload(e.reason));
 window.santa = app; // for the browser flow test (tests/flow_check.py)
 app.music = music;
 
@@ -193,7 +213,7 @@ async function healthCheck() {
   const h = app.store.mode === 'server' ? await app.store.check() : null;
   if (app.store.mode === 'server') {
     checks.push({ name: 'Server', level: h && h.ok ? 'ok' : 'bad', text: h && h.ok ? 'running, saving to the laptop' : 'not answering: restart "Start Santa TUS"' });
-    checks.push({ name: 'Database', level: h && h.db === 'ok' ? 'ok' : 'bad', text: h ? `${h.db} · ${h.dataDir || ''}` : 'unknown' });
+    checks.push({ name: 'Database', level: h && h.db === 'ok' && !h.dataNote ? 'ok' : h && h.db === 'ok' ? 'warn' : 'bad', text: h ? `${h.db} · ${h.dataNote || h.dataDir || ''}` : 'unknown' });
     checks.push({ name: 'USB backup', level: h && h.usb ? 'ok' : 'warn', text: h && h.usb ? h.usb : 'no USB stick found: insert one' });
   } else {
     checks.push({ name: 'Server', level: 'warn', text: 'test link: scores stay in this browser' });

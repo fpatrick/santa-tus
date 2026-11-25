@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 1.2.0 (2026-11-25): Market-day programs M1-M9: one file for Fedora (dist/santa-tus-linux-x64, Firefox kiosk) and one .exe for Windows, data next to the program, one copy only, log repair after a power cut, backups every 5 min (last 20), USB found on Fedora too or picked with F9 -> P, page reloads itself after an error, staff README. No game rules changed.
 - 1.1.3 (2026-11-25): R22b: the sponsor item pick after the wheel is keyboard only (staff press the number or N; clicks do nothing); bigger gold number keys. The chimney 10 choice stays a player click.
 - 1.1.2 (2026-11-25): R23 removed: no limit of one sponsor prize per nickname; the "ALREADY WON A PRIZE TODAY?" question, its code and text are gone. "N = +2 DRAW ENTRIES INSTEAD" (R28) stays. Odds sheet updated.
 - 1.1.1 (2026-11-25): The draw time is written once ("WIN GTA 6" + "DRAW AT 13:00 ON 26/11"). Wheel: new 16-bit prize icons (gold gift card, silver game controller, bronze present, in src/prizeicons.js), bronze is one wider slice so its icon fits, words and icon no longer overlap on narrow slices; the items-left line sits under the photo.
