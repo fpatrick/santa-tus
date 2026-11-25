@@ -161,7 +161,7 @@ export function handover({ items, pid, best, name }) {
   });
 }
 
-// R22: the player picks a sponsor item that is left; staff press its number. Resolves the item id,
+// R22: the player picks a sponsor item that is left; staff press its number (keyboard only: clicks do nothing). Resolves the item id,
 // or null when staff press N: the player wants none of them, +2 draw entries instead (R28).
 export function pickItem(tierId, items) {
   return new Promise((resolve) => {
@@ -172,8 +172,7 @@ export function pickItem(tierId, items) {
       <div class="btns"><button class="btn ghost" data-none="1">${esc(CONFIG.text.declineItem)}</button></div>
       <div class="hint">Staff: press the number of the item the player picks, or <kbd>N</kbd> if the player wants none of them.</div></div>`);
     const done = (id) => { close(); sfx.confirm(); resolve(id); };
-    el.querySelectorAll('[data-id]').forEach((b) => b.addEventListener('click', () => done(b.dataset.id)));
-    el.querySelector('[data-none]').addEventListener('click', () => done(null));
+    el.querySelectorAll('.picks .btn, [data-none]').forEach((b) => { b.tabIndex = -1; }); // keyboard only (staff)
     setKeys((e) => {
       if (e.key.toLowerCase() === 'n') { e.preventDefault(); done(null); return; }
       const it = items[Number(e.key) - 1];

@@ -74,6 +74,7 @@ The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is g
 - RESERVED, never on the wheel [`reserved`]: ONLY GTA 6 for PS5 x1 (the 13:00 draw, last prize). It is in the F9 stock list (staff can edit the count) and can only be given by the draw.
 - The prize screens show the sponsor name (text only; logos later).
 - **R23 No limit per nickname (changed 25 Nov):** anyone can win sponsor prizes as many times as the wheel gives them. There is no "already won a prize today?" check any more. (Old saved days may still have a swap with `why: 'already'`; it is still read and shown as before.)
+- **R22b Sponsor item pick = keyboard only:** after the wheel, the player says which item they want and STAFF press its number (or N for +2 draw entries instead). Clicking the items does nothing, so only staff can choose.
 - **R28 No item wanted:** every sponsor prize pick screen (even with only 1 item left) has "N = +2 DRAW ENTRIES INSTEAD", for a player who does not want any item left in that tier. The item stays in stock (the reservation is freed) (saved as an `award` kind `swap` with `why: 'declined'`).
 - An item is **reserved** when the wheel lands on its tier (so stock can never go below 0) and **given** when staff confirm the item (the pick screen). N in R28 gives +2 draw tickets and frees the reservation.
 
