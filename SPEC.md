@@ -134,7 +134,7 @@ The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is g
 | --- | --- | --- | --- |
 | S1 | Title (attract mode): logo, prices, prizes + odds + "REACH CHIMNEY 20 = SPIN THE WHEEL", sponsors with items left per tier ("GOLD: 2 LEFT"), the draw scene (R30) + top 15, demo flight | nobody | attract.js |
 | S2 | Staff code: F2 (or hold F + press 2) or a click in the top-left corner. Dots. Enter checks, Esc cancels. A wrong code just clears. | staff | screens.staffCode |
-| S3 | Payment: €2.50 / €6.50 / €10 (keys 1-3; other keys do nothing), Cancel (Esc). After 12:50 or after the draw: a red warning, O to go on (R26) | staff | screens.payment |
+| S3 | Payment: €2.50 / €6.50 / €10 (keys 1-3; other keys do nothing), Cancel (Esc). Keyboard only: clicking a price or Cancel does nothing, so a player cannot pick the price. After 12:50 or after the draw: a red warning, O to go on (R26) | staff | screens.payment |
 | S4 | Get ready: "CLICK TO FLY", tries left, best | player | game.js HUD |
 | S5 | Play: chimney count, level, tries left, best, next goal. A new level plays a sound only (no text). A warning glow between chimney and presents just before each level change | player | game.js, flow.flightHooks |
 | S6 | Try over: the crash scene C1-C4 (Santa speaks), or "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce, crash.js |

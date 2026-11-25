@@ -148,6 +148,7 @@ body { font-family: var(--term); color: var(--snow); user-select: none; -webkit-
 .pcol { display: flex; flex-direction: column; gap: 18px; }
 .pcol .ptype { margin: 0; font: 22px/1.2 var(--pixel); color: var(--gold); text-align: center; }
 .pcol .btn.big { font-size: 24px; padding: 30px 14px 22px; position: relative; }
+.pricecols .btn, .pricecols + .btns .btn { pointer-events: none; cursor: default; } /* S3: staff use the keys, players cannot click a price */
 .pcol .badge { position: static; display: block; transform: none; margin: 12px auto 0; width: max-content; font-size: 14px; }
 .btn.green { background: var(--green); box-shadow: 0 8px 0 #12924a, 0 0 0 4px var(--ink); }
 .btn.gold { background: var(--gold); box-shadow: 0 8px 0 #b37c00, 0 0 0 4px var(--ink); }

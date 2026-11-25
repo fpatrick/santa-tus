@@ -79,7 +79,7 @@ export function payment({ testMode = false, late = false, drawDone = false } = {
       <div class="btns"><button class="btn ghost" data-id="">CANCEL</button></div>
       <div class="hint">Press ${CONFIG.prices.map((p) => `<kbd>${p.key}</kbd>`).join(' ')} after the payment is received. <kbd>ESC</kbd> cancels.</div></div>`);
     const done = (id) => { if (id && locked) return; close(); resolve(id ? { id, override: !!warn.length && !testMode } : null); };
-    el.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => done(b.dataset.id)));
+    el.querySelectorAll('button').forEach((b) => { b.tabIndex = -1; }); // S3: keyboard only (staff), a click does nothing
     setKeys((e) => {
       e.preventDefault();
       if (e.key === 'Escape') return done(null);

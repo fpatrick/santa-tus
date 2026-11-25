@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 1.2.2 (2026-11-25): S3: the payment screen is keyboard only (staff press 1-3, Esc cancels); clicking a price does nothing, so a player cannot pick the price.
 - 1.2.1 (2026-11-25): R7: removed "X IN 10 WIN A PRIZE" (too confusing). Title screen and panel now say "REACH CHIMNEY 20 = SPIN THE WHEEL"; the wheel screen shows only the odds and items left.
 - 1.2.0 (2026-11-25): Market-day programs M1-M9: one file for Fedora (dist/santa-tus-linux-x64, Firefox kiosk) and one .exe for Windows, data next to the program, one copy only, log repair after a power cut, backups every 5 min (last 20), USB found on Fedora too or picked with F9 -> P, page reloads itself after an error, staff README. No game rules changed.
 - 1.1.3 (2026-11-25): R22b: the sponsor item pick after the wheel is keyboard only (staff press the number or N; clicks do nothing); bigger gold number keys. The chimney 10 choice stays a player click.
