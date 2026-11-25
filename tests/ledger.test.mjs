@@ -33,9 +33,9 @@ test('T16: a draw with no tickets: the items stay with the team (R14); the jackp
 
 test('T17: the draw picks only issued tickets, each ticket wins once, and it cannot run twice unless undone (R14, D13)', () => {
   const sess = newSession();
-  for (let i = 0; i < 12; i++) playPayment(sess, 'p1', { tries: [33], wheel: ['t2'], choices: ['sweet'] }); // 1 + 5 + 2 = 8 tickets each
+  for (let i = 0; i < 12; i++) playPayment(sess, 'p1', { tries: [33], wheel: ['t2'], choices: ['sweet'] }); // 1 + 3 + 2 = 6 entries each
   const pool = drawPool(sess.s);
-  assert.equal(pool.length, 96);
+  assert.equal(pool.length, 72);
   const winners = [];
   for (let guard = 0; guard < 40 && drawState(sess.s, CONFIG).next; guard++) {
     const ev = sess.commit(R.drawBody(sess.s, CONFIG));
@@ -79,8 +79,8 @@ test('R12: ticket numbers keep counting across payments; "#0012-#0013" on the GI
   playPayment(sess, 'p1', { tries: [21], wheel: ['t2'], choices: ['sweet'] }); // #1-#3
   playPayment(sess, 'p1', { tries: [21], wheel: ['t2'], choices: ['sweet'] }); // #4-#6
   const r = playPayment(sess, 'p1', { tries: [31], wheel: ['t2'], choices: ['sweet'] });
-  assert.deepEqual(r.p.tickets, [7, 8, 9, 10, 11, 12, 13, 14]); // 1 + 5 + 2, one run, no gap
-  assert.deepEqual(sess.s.payments.flatMap((p) => p.tickets), Array.from({ length: 14 }, (_, i) => i + 1)); // never repeat, never skip
+  assert.deepEqual(r.p.tickets, [7, 8, 9, 10, 11, 12]); // 1 + 3 + 2, one run, no gap
+  assert.deepEqual(sess.s.payments.flatMap((p) => p.tickets), Array.from({ length: 12 }, (_, i) => i + 1)); // never repeat, never skip
   assert.equal(fmtRange([12, 13]), '#0012-#0013');
   assert.equal(fmtTickets([41, 42, 43, 50]), '#0041 TO #0043, #0050');
   assert.equal(fmtEuro(21), '€21');

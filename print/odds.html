@@ -53,7 +53,7 @@
     $('odds').innerHTML = '<tr><th>Wheel</th><th>Chance</th></tr>'
       + baseOdds(CONFIG).filter((x) => x.odds > 0).map((x) => `<tr><td>${x.o.label}</td><td>${x.odds}%</td></tr>`).join('');
     $('prizes').innerHTML = '<tr><th>Pass chimney</th><th>You get (once per payment, the best try counts)</th></tr>' + [
-      [th.choice, `${T.win10} (the sweet or free try once per payment)`], [th.ticket, `${T.win20} (one per payment)`], [th.legend, T.win30], [th.mythic, T.win40], [th.beat, `${T.win50}: ${T.beat}`],
+      [th.choice, `${T.win10} (the sweet or free try once per payment; a FREE TRY can still win 20, 30, 40 and 50)`], [th.ticket, `${T.win20} (one per payment)`], [th.legend, T.win30], [th.mythic, T.win40], [th.beat, `${T.win50}: ${T.beat}`],
     ].map(([n, t]) => `<tr><td class="big">${n}</td><td>${t}</td></tr>`).join('');
     $('tiers').innerHTML = Object.values(CONFIG.sponsors).map((t) => `<tr><td class="big">${t.name}${t.title ? ` <small>${t.title}</small>` : ''}</td>
       <td>${t.items.map((it) => `${it.label}${it.count > 1 ? ` x${it.count}` : ''}`).join(', ')}${t.pick ? ' <small>(the winner picks one that is left)</small>' : ''}</td></tr>`).join('');
@@ -63,9 +63,9 @@
         + ` Max ${J.wheelMaxWins} wheel wins a day.`;
     } else $('jackpot').remove();
     const gta = (CONFIG.reserved?.items || []).filter((it) => it.use === 'draw').map((it) => it.label).join(', ');
-    $('draw').textContent = `${T.tickets} come only from playing (they cannot be bought): +${CONFIG.tickets.per10} for every TRY that passes ${th.choice}, +1 bonus with ${CONFIG.prices.find((p) => p.bonus)?.label || '€10'}, +${CONFIG.tickets.p30} at ${th.legend}, +${CONFIG.tickets.swap} on the wheel. Written on one paper card at the end of the payment. `
+    $('draw').textContent = `${T.tickets} come only from playing (they cannot be bought): +${CONFIG.tickets.per10} for every PAID TRY that passes ${th.choice} (FREE TRIES: no chimney ${th.choice} entry), +1 bonus with ${CONFIG.prices.find((p) => p.bonus)?.label || '€10'}, +${CONFIG.tickets.levels.legend} at ${th.legend}, +${CONFIG.tickets.levels.mythic} at ${th.mythic}, +${CONFIG.tickets.levels.beat} at ${th.beat} (they add up: ${CONFIG.tickets.levels.legend + CONFIG.tickets.levels.mythic + CONFIG.tickets.levels.beat} at ${th.beat}, once per payment), +${CONFIG.tickets.swap} on the wheel. Written on one paper card at the end of the payment. `
       + `Last payment ${CONFIG.event.lastPayment}. DRAW AT ${CONFIG.event.drawTime}: every sponsor prize not won yet, then ${gta || 'the main prize'} LAST. One ${T.ticket} wins once. Winner not there: we draw again.`;
-    $('note').textContent = `SOLD OUT: when a tier is sold out, its chance moves down (GOLD to SILVER to BRONZE to +2 ${T.tickets}); FREE TRY stays the same. The wheel screen always shows the live odds. One sponsor prize per nickname per day. ${T.ageNote || ''}`;
+    $('note').textContent = `SOLD OUT: when a tier is sold out, its chance moves down (GOLD to SILVER to BRONZE to +2 ${T.tickets}); FREE TRY stays the same. The wheel screen always shows the live odds. One sponsor prize per nickname per day. Crash before chimney ${CONFIG.freeRestart.below}: free restart, ${CONFIG.freeRestart.max} per payment in total. ${T.ageNote || ''}`;
     $('ver').textContent = versionLabel();
   </script>
 </body>

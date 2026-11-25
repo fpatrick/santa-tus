@@ -80,7 +80,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 
 | Command | What | When |
 | --- | --- | --- |
-| `npm test` | 75 rule, prize, ledger, course, music, crash-message and final-pass tests (Node, about 10 s) | after every change |
+| `npm test` | 78 rule, prize, ledger, course, music, crash-message and final-pass tests (Node, about 10 s) | after every change |
 | `npm run test:server` | 9 server tests (Python) | after a change to `server/` |
 | `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, T36-T38, T46, T47b, T49-T51, T53, about 2 min) | after a change to screens, flow, store, main |
 | `node scripts/simulate.js` | 36 cases x 10,000 market days with the real rules (about 12 min; `--days 500` for a quick check) | after a change to prizes, odds, jackpot or stock |

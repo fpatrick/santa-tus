@@ -20,13 +20,14 @@ export const CONFIG = {
   ],
   freePlay: { tries: 1 }, // K2: a €0 payment after a technical problem
 
-  // R3: a crash before chimney 5 restarts the try for free, at most 3 times per try.
+  // R3: a crash before chimney 5 restarts the try for free, at most 3 times per PAYMENT (shared by all its tries).
   freeRestart: { below: 5, max: 3 },
 
   // Chimney numbers that unlock prizes (R5, R6, R8, R20, R21).
   thresholds: { choice: 10, ticket: 20, legend: 30, mythic: 40, beat: 50 },
-  // R5: +per10 ticket for every try that reaches chimney 10. R8: p30 tickets at chimney 30. R23: swap = tickets instead of a 2nd sponsor prize.
-  tickets: { per10: 1, p30: 5, swap: 2 },
+  // R5: +per10 entry for every PAID try that reaches chimney 10 (free tries: none). R8, R20, R21: levels = entries at
+  // chimney 30 / 40 / 50, they add up, once per payment. p30 = only for old saved days. R23: swap = entries instead of a 2nd sponsor prize.
+  tickets: { per10: 1, levels: { legend: 3, mythic: 4, beat: 5 }, p30: 5, swap: 2 },
   consolation: { on: false, item: 'SWEET' }, // R11 (proposal, off by default)
 
   // R5: the chimney 10 choice. Set enabled: false to hide a tile.
@@ -179,11 +180,11 @@ export const CONFIG = {
     bestTry: 'BEST TRY COUNTS',
     charity: 'ALL PROFIT GOES TO PAEDIATRIC DIABETES, UHL',
     winTitle: 'WHAT YOU CAN WIN',
-    win10: 'A SWEET OR A FREE TRY, +1 DRAW ENTRY EVERY TRY',
+    win10: 'A SWEET OR A FREE TRY, +1 DRAW ENTRY EVERY PAID TRY',
     win20: 'A SPIN ON THE WHEEL',
-    win30: '+5 DRAW ENTRIES + LEGEND',
-    win40: 'MYTHIC TAG',
-    win50: 'GODLIKE TAG',
+    win30: '+3 DRAW ENTRIES + LEGEND',
+    win40: '+4 DRAW ENTRIES + MYTHIC',
+    win50: '+5 DRAW ENTRIES + GODLIKE',
     oddsTitle: 'WHEEL ODDS',
     drawAt: 'DRAW AT',
     clickToFly: 'CLICK TO FLY',
@@ -209,7 +210,7 @@ export const CONFIG = {
     drawHeadline: '{draw} DRAW: WIN GTA 6',
     drawPrizeImg: 'assets/img/draw-prize.jpg', // R30: photo of the draw prize, shown in a pixel frame beside the draw box ('' = none)
     drawPrizeAlt: 'GTA 6 FOR PS5',
-    entryAt10: 'REACH CHIMNEY {n} = 1 DRAW ENTRY',
+    entryAt10: 'PAID TRY AT {n} = 1 DRAW ENTRY',
     inTheBox: 'DRAW ENTRIES IN THE BOX: {n}',
     tierLeft: '{tier}: {n} LEFT',
     drawGiven: 'GIVEN',
@@ -221,7 +222,7 @@ export const CONFIG = {
     cashGreyed: 'CASH FALLBACK CAN ONLY BE SWITCHED ON WHEN GOLD, SILVER AND BRONZE ARE ALL SOLD OUT.',
     rangeTo: ' TO ', // "#0012 TO #0014" (staff write it on the paper card)
     // R12: where the tickets came from, on the ticket screen. {n} = count.
-    ticketWhy: { per10: 'CHIMNEY 10 (x{n} TRIES)', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', declined: 'INSTEAD OF A PRIZE ITEM' },
+    ticketWhy: { per10: 'CHIMNEY 10 (x{n} PAID TRIES)', p40: 'CHIMNEY 40', p50: 'CHIMNEY 50', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', declined: 'INSTEAD OF A PRIZE ITEM' },
     cashOn: 'CASH FALLBACK',
     itemsLeft: 'ITEMS LEFT',
     lastGames: 'LAST GAMES! THE DRAW IS AT {draw}',
@@ -247,6 +248,8 @@ export const CONFIG = {
     wheelTitle: 'SPIN THE WHEEL!',
     clickToSpin: 'CLICK TO SPIN!',
     freeRestart: 'FREE RESTART!',
+    restartsLeft: 'RESTARTS LEFT: {n}', // R3: shown during the payment
+    freeTryNote: 'FREE TRY - no draw entry at chimney 10', // R5, R10: shown during a free try
     beat: 'YOU BEAT SANTA TUS!',
     noPrize: 'NO PRIZE THIS TIME. THANK YOU FOR PLAYING!',
     staffPays: 'STAFF WILL GIVE IT AT THE END',
@@ -260,7 +263,7 @@ export const CONFIG = {
     crash: {
       restartTitle: ['OOPS!', 'WHOOPS!', 'HO HO... OUCH!'],
       restart: ["THAT ONE DOESN'T COUNT. FLY AGAIN!", 'SLIPPERY ROOF! THIS TRY IS FREE.', 'JUST A WARM-UP. HAVE ANOTHER GO!'],
-      restartLeft: 'FREE RESTARTS LEFT: {n}',
+      restartLeft: 'RESTARTS LEFT: {n}',
       triesTitle: ["THAT'S OK!", 'NICE TRY!', 'SHAKE IT OFF!'],
       tries: ["YOU STILL HAVE {tries}. LET'S GO AGAIN!", 'CHIMNEY {chimney}! {tries} TO BEAT IT.', "I'M FINE! {tries} - LET'S FLY!"],
       triesClose: 'SO CLOSE! ONLY {gap} MORE TO {goal}. {tries} LEFT!',
@@ -274,7 +277,7 @@ export const CONFIG = {
       over: ['THE CHIMNEYS WON THIS TIME...', 'I LOST MY HAT AND MY PRESENTS!', 'THAT ROOF CAME OUT OF NOWHERE!'],
       overClose: 'SO CLOSE! CHIMNEY 10 WAS ONLY {gap} AWAY.',
       thanks: 'THANK YOU FOR HELPING KIDS WITH DIABETES AT UHL!',
-      prize: { spin: 'A SPIN ON THE WHEEL', legend: '+5 DRAW ENTRIES AND THE LEGEND TAG', mythic: 'THE MYTHIC TAG', choice: 'A SWEET OR A FREE TRY', consolation: 'A SWEET' },
+      prize: { spin: 'A SPIN ON THE WHEEL', legend: '+3 DRAW ENTRIES AND THE LEGEND TAG', mythic: '+4 DRAW ENTRIES AND THE MYTHIC TAG', godlike: '+5 DRAW ENTRIES AND THE GODLIKE TAG', choice: 'A SWEET OR A FREE TRY', consolation: 'A SWEET' },
       skip: 'CLICK TO CONTINUE',
     },
   },

@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 1.1.0 (2026-11-25): Rule changes R3, R5, R8, R10, R20, R21: chimney 10 draw entry for PAID tries only (free tries show a note); restarts 3 per PAYMENT, shared, with RESTARTS LEFT on screen; chimney 30 / 40 / 50 = +3 / +4 / +5 draw entries (add up to 12, once per payment); ladder, panel and odds sheet updated; tests T68-T70.
 - 1.0.2 (2026-11-25): A5 flight song: the Jingle Bells tune is now a clean 16-bit pulse-wave lead with a soft triangle body (no circus wobble); lighter strings for the laptop.
 - 1.0.1 (2026-11-25): A5 flight song overhauled: an epic adventure title theme on a new chip orchestra (brass, galloping strings, timpani, field snare, bass drum, cymbal swells, hall echo) with drums that build up; same Jingle Bells melody and chimney timing.
 - 1.0.0 (2026-11-25): MARKET-DAY VERSION (FINAL, no beta badge). Part 3: one-page odds sheet (no cash, no jackpot, no top score; GTA 6 last), simulation 36 cases x 10,000 days (all checks pass, table in SPEC), final tests T60-T67 (every sold-out mix, wheel picks, GTA 6 once, crash during the draw, draw undo, CSV totals, no top score, times).

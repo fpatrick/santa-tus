@@ -23,7 +23,7 @@ test('T32 C1: a crash before chimney 5 is a free restart, Santa says it does not
   const { p } = pay('p1');
   const m = crashMessage(p, { pillars: 2, freeRestart: true, restartsLeft: 2 }, CONFIG, first);
   assert.equal(m.state, 'restart');
-  assert.match(text(m), /FREE RESTARTS LEFT: 2/);
+  assert.match(text(m), /RESTARTS LEFT: 2/);
 });
 
 test('T32 C2: tries left: Santa smiles and says how many', () => {
@@ -51,7 +51,7 @@ test('T32 C3: no tries left but prizes: Santa is happy and lists them', () => {
   const m = fly(sess, p, 33);
   assert.equal(m.state, 'prizes');
   assert.equal(m.mood, 'happy');
-  assert.match(m.lines[0], /A SWEET OR A FREE TRY, A SPIN ON THE WHEEL AND \+5 DRAW ENTRIES AND THE LEGEND TAG/);
+  assert.match(m.lines[0], /A SWEET OR A FREE TRY, A SPIN ON THE WHEEL AND \+3 DRAW ENTRIES AND THE LEGEND TAG/);
 });
 
 test('T32 C3: after free tries: the wheel still waits; with tickets kept Santa reminds about the draw', () => {

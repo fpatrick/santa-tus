@@ -28,7 +28,7 @@ Goal: make money for Paediatric Diabetes UHL. Fun for all ages, fair, easy to un
 - **Draw tickets come ONLY from playing: nobody can buy them.** Keys 4, 5, 6 (and every other key) do nothing on the payment screen. (The "draw entries only" prices were removed on 24 Nov 2026.)
 
 - **R2 Best try counts:** inside one payment, the highest chimney reached in any try decides the prizes (except the chimney 10 ticket, R5).
-- **R3 Free restart:** crash before chimney 5 and the try restarts without using it, at most 3 times per try [`freeRestart`].
+- **R3 Free restart:** crash before chimney 5 and the try restarts without using it. At most 3 restarts per PAYMENT in total, shared by all its tries (paid and free), not 3 per try (a 5-try payment also gets 3). With 0 left, a crash before chimney 5 ends the try as normal. The screen shows "RESTARTS LEFT: X" during the payment [`freeRestart`].
 - **R4 The course:** 50 chimneys in 5 levels. Harder at 10, 20, 30, 40; a sound announces each level (no text on screen). Each level has its own sky colour and more snow (almost none at level 1, a storm at level 5) [`scenery`]. Bottom: brick chimneys. Top: a packed stack of wide and tall Christmas presents with no gaps (patterned paper, ribbons, bows on the front); when Santa passes, the presents fly into his TUS bag, which grows with each chimney, and Santa laughs (mouth opens, no sound) [`scenery.laughSecs`]. Passing 50 beats the game and ends the try.
 
 | Level | Chimneys | Feel | What changes [`levels`] | Target pass rate (*proposal*) |
@@ -45,18 +45,20 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 **Prizes are per payment**
 
 - **R2b** The best try of the payment decides the prizes. **R15** Each prize level is given at most once per payment (only the chimney 10 ticket is per try): never more than 1 wheel spin per payment.
-- **R10 Free tries:** a free try (from R5 or the wheel) adds 1 try to the same payment. After it, the game checks again for any prize level the payment has not had yet.
+- **R10 Free tries:** a free try (from R5 or the wheel) adds 1 try to the same payment. A free try can still win every prize level the payment has not had yet (the wheel at 20, the draw entries at 30, 40 and 50), but it NEVER gives the chimney 10 draw entry (R5). During a free try the screen shows "FREE TRY - no draw entry at chimney 10".
 - **R9 Order at the end of a payment** (when no tries are left, `rules.js nextStep`): chimney 10 choice -> wheel -> nickname (if needed) -> sponsor prize check (R23) -> the ticket screen (R12) -> hand-over. Prizes add up: reaching 30 also gives the wheel spin and the 10 choice.
 
 **R5-R8 Prize ladder**
 
 | Chimney | Prize |
 | --- | --- |
-| 10 | **R5** +1 draw ticket for EVERY try that reaches 10 [`tickets.per10`] (5 tries reaching 10 = 5 tickets). And ONCE per payment the player picks **SWEET** or **FREE TRY** [`choice`]. A free try gives up the sweet; the choice is not offered again. After beating the game (50) there is no free-try tile. |
+| 10 | **R5** +1 draw entry for every PAID try that reaches 10 [`tickets.per10`] (5 paid tries reaching 10 = 5 entries). FREE tries (from the chimney 10 choice or the wheel) never give it. Key 3 (€10) still gives +1 bonus entry at payment. And ONCE per payment the player picks **SWEET** or **FREE TRY** [`choice`]. A free try gives up the sweet; the choice is not offered again. After beating the game (50) there is no free-try tile. |
 | 20 | **R6** 1 wheel spin (R7). Max 1 spin per payment. |
-| 30 | **R8** +5 draw tickets [`tickets.p30`] + the LEGEND tag (gold badge). |
-| 40 | **R20** MYTHIC tag (feral purple badge), instead of LEGEND. |
-| 50 | **R21** "YOU BEAT SANTA TUS!", the GODLIKE tag (red and blue divine badge). 50 is the highest score. |
+| 30 | **R8** +3 draw entries [`tickets.levels.legend`] + the LEGEND tag (gold badge). |
+| 40 | **R20** +4 draw entries [`tickets.levels.mythic`] + the MYTHIC tag (feral purple badge), instead of LEGEND. |
+| 50 | **R21** "YOU BEAT SANTA TUS!", +5 draw entries [`tickets.levels.beat`] + the GODLIKE tag (red and blue divine badge). 50 is the highest score. |
+
+The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is given ONCE per payment (the best try counts), by a paid or a free try. (Old saved days keep their old chimney 30 +5.)
 
 - **R19** No new prizes after 30: chimneys 31-50 count only for the leaderboard and the tags. Ranks: LEGEND (30) < MYTHIC (40) < GODLIKE (50).
 - **R11 Consolation** (*proposal*, off) [`consolation.on`]: gave up the 10 prize for a free try and ended below 20: still 1 sweet.
@@ -312,6 +314,9 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T65 | CSV totals (K2, D5) | taken, draw entries, cards, sweets, undone and cash in the CSV = the summary, after an undo | N |
 | T66 | no top score anywhere (R29) | not in the code, the words, the summary or the CSV | N |
 | T67 | times (R26) | 12:45 warning, 12:50 last payment, 13:00 draw; no other file has 12:30, 12:35 or 12:45 written in it | N |
+| T68 | chimney 10 entry, paid tries only (R5, R10) | €2.50 with a free try: 1 entry (not 2); a free try can still win 20 and 30; €10 bonus stays | N |
+| T69 | restarts per payment (R3) | 3 in total for a 5-try payment, shared; 0 left = a crash before 5 ends the try | N |
+| T70 | chimney 30 / 40 / 50 (R8, R20, R21) | 3 / 7 / 12 entries, once per payment (best try) | N |
 
 ## Simulation results (R25, R27, T47)
 

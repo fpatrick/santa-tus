@@ -51,14 +51,14 @@ async function flyOnce(app, name, p) {
   let restarts = 0;
   for (;;) {
     app.flight.reset();
-    app.hud = { triesLeft: R.triesLeft(p), best: p.best, restarts };
+    app.hud = { triesLeft: R.triesLeft(p), best: p.best, restarts, restartsLeft: R.restartsLeft(p, CONFIG, restarts), freeTry: R.nextTryIsFree(p) };
     app.setScene('flight');
     music.lobby();
     const res = await app.waitFlight();
     if (res.aborted || p.status !== 'open') return;
-    if (!res.beat && R.isFreeRestart(res.pillars, restarts, CONFIG)) {
+    if (!res.beat && R.isFreeRestart(res.pillars, R.restartsUsed(p) + restarts, CONFIG)) { // R3: 3 per payment, shared
       restarts += 1;
-      const info = { pillars: res.pillars, freeRestart: true, restartsLeft: CONFIG.freeRestart.max - restarts };
+      const info = { pillars: res.pillars, freeRestart: true, restartsLeft: R.restartsLeft(p, CONFIG, restarts) };
       const m = crashMessage(p, info, CONFIG);
       music.crash(m.mood);
       await app.flight.playCrash(m); // C1

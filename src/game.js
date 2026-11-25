@@ -163,8 +163,10 @@ function drawHud(ctx, f, lv, hud) {
   if (f.state === 'ready') {
     const on = Math.floor(f.t * 2) % 2 === 0;
     outlined(ctx, cfg.text.clickToFly, W / 2, 640, 64, on ? '#ffd23f' : '#f4f7ff', 'center');
-    if (hud.restarts) outlined(ctx, `${cfg.text.freeRestart} (${hud.restarts}/${cfg.freeRestart.max})`, W / 2, 740, 30, '#3dff8b', 'center');
+    if (hud.restarts) outlined(ctx, cfg.text.freeRestart, W / 2, 740, 30, '#3dff8b', 'center');
   }
+  if (hud.restartsLeft != null) outlined(ctx, cfg.text.restartsLeft.replace('{n}', hud.restartsLeft), W - 30, 162, 22, '#9fb3ff', 'right'); // R3
+  if (hud.freeTry) outlined(ctx, cfg.text.freeTryNote.toUpperCase(), W / 2, 250, 22, '#3dff8b', 'center'); // R5, R10
   ctx.textBaseline = 'alphabetic';
 }
 

@@ -121,8 +121,8 @@ test('T4: €2.50, best 12, picks SWEET: "GIVE 1 SWEET" (R5)', () => {
 
 test('T5: best 12, free try, then 14: no prize; with R11 on: 1 sweet', () => {
   const off = playPayment(newSession(), 'p1', { tries: [12, 14], choices: ['free'] });
-  assert.deepEqual(kinds(off.items), ['tickets']); // only the 2 chimney 10 tickets (one per try)
-  assert.equal(off.p.tickets.length, 2);
+  assert.deepEqual(kinds(off.items), ['tickets']); // only the chimney 10 entry of the PAID try (the free try gives none, R5)
+  assert.equal(off.p.tickets.length, 1);
   assert.equal(off.p.best, 14);
   const on = playPayment(newSession(cfgWith({ consolation: { on: true, item: 'SWEET' } })), 'p1', { tries: [12, 14], choices: ['free'] });
   assert.deepEqual(on.items[0], { kind: 'prize', text: '1 SWEET' });
@@ -131,7 +131,7 @@ test('T5: best 12, free try, then 14: no prize; with R11 on: 1 sweet', () => {
 test('T6: best 12, free try, then 21: a wheel spin, no sweet, the choice only once (R5, R6, R10)', () => {
   const r = playPayment(newSession(), 'p1', { tries: [12, 21], choices: ['free'], wheel: ['t2'] });
   assert.equal(r.steps.filter((x) => x.startsWith('choice')).length, 1);
-  assert.equal(r.p.tickets.length, 2 + 2); // 2 tries reached 10 + the wheel +2
+  assert.equal(r.p.tickets.length, 1 + 2); // the paid try reached 10 (the free try gives no ch10 entry) + the wheel +2
   assert.deepEqual(kinds(r.items), ['tickets']);
 });
 
@@ -153,7 +153,7 @@ test('T8: try 22, sweet, wheel free try, next try 9: best 22, no second spin (R2
 test('T9: passes 30, crash at 33: choice, wheel +2, then 5 tickets + LEGEND on the ticket screen (R8, R9)', () => {
   const r = playPayment(newSession(), 'p1', { tries: [33], wheel: ['t2'], choices: ['sweet'] });
   assert.deepEqual(r.steps.filter((x) => x !== 'nick').slice(1, 4), ['choice:free', 'wheel', 'tickets']);
-  assert.deepEqual(r.p.tickets, [1, 2, 3, 4, 5, 6, 7, 8]); // 1 (chimney 10) + 5 (chimney 30) + 2 (wheel)
+  assert.deepEqual(r.p.tickets, [1, 2, 3, 4, 5, 6]); // 1 (chimney 10) + 3 (chimney 30) + 2 (wheel)
   assert.equal(r.p.p30, true);
   assert.ok(kinds(r.items).includes('legend'));
 });
@@ -175,8 +175,8 @@ test('T34: a chain of free tries: 12 -> free try -> 21 -> wheel free try -> 31: 
   assert.deepEqual(r.steps.filter((x) => x !== 'nick'), ['fly', 'choice:free', 'fly', 'wheel', 'fly', 'tickets', 'handover']);
   assert.equal(r.p.tries.length, 3);
   assert.deepEqual(r.p.tries.map((t) => t.source), ['paid', 'free-p10', 'free-wheel']);
-  assert.equal(r.p.tickets.length, 3 + 5); // every try reached 10 (3) + chimney 30 (5)
-  // a free-try chain that ends low still keeps the chimney 10 ticket of each try that reached 10
+  assert.equal(r.p.tickets.length, 1 + 3); // only the PAID try's chimney 10 entry (1) + chimney 30 won by a free try (3)
+  // a free-try chain that ends low keeps the chimney 10 entry of the paid try
   const low = playPayment(newSession(), 'p1', { tries: [12, 4], choices: ['free'] });
   assert.equal(low.p.tickets.length, 1);
 });
@@ -240,7 +240,7 @@ test('R15: each prize level at most once per payment, never 2 wheel spins or 2 c
   const r = playPayment(newSession(), 'p5', { tries: [25, 31, 35, 2, 2], wheel: ['t2'], choices: ['sweet'] });
   assert.equal(r.steps.filter((x) => x === 'tickets').length, 1);
   assert.equal(r.steps.filter((x) => x === 'wheel').length, 1);
-  assert.equal(r.p.tickets.length, 3 + 1 + 5 + 2); // 3 tries reached 10, bonus, chimney 30, wheel
+  assert.equal(r.p.tickets.length, 3 + 1 + 3 + 2); // 3 paid tries reached 10, bonus, chimney 30, wheel
   assert.throws(() => R.awardBody('tickets', r.p, newSession().s, CONFIG)); // never a 2nd ticket screen
   assert.throws(() => R.choiceBody(r.p, 'sweet', CONFIG));
 });

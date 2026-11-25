@@ -157,3 +157,41 @@ test('T67: times: 12:45 warning, 12:50 last payment, 13:00 draw; no other screen
   const day = (h, m) => new Date(2026, 10, 26, h, m);
   assert.deepEqual([timeState(CONFIG, day(12, 44)), timeState(CONFIG, day(12, 45)), timeState(CONFIG, day(12, 50))], ['', 'warn', 'late']);
 });
+
+test('T68: chimney 10 entry for PAID tries only; free tries still win 20/30; key 3 bonus stays (R5, R10)', () => {
+  const sess = newSession();
+  const a = playPayment(sess, 'p1', { tries: [12, 15], choices: ['free'] }); // €2.50: paid 12, free try 15
+  assert.deepEqual(a.p.tries.map((t) => t.source), ['paid', 'free-p10']);
+  assert.equal(a.p.tickets.length, 1, 'the free try reached 10 but gives no entry');
+  const b = playPayment(sess, 'p1', { tries: [12, 31], choices: ['free'], wheel: ['t2'] }); // the free try reaches 31
+  assert.equal(b.p.tickets.length, 1 + 3 + 2, 'paid ch10 + chimney 30 and the wheel won by the free try');
+  const c = playPayment(sess, 'p5', { tries: [3, 3, 3, 3, 3] });
+  assert.equal(c.p.tickets.length, 1, '€10 bonus entry');
+});
+
+test('T69: restarts are 3 per PAYMENT, shared by all its tries (R3)', () => {
+  const sess = newSession();
+  sess.commit(R.payBody(sess.s, 'p5', CONFIG));
+  const p = sess.s.payments.at(-1);
+  assert.equal(R.restartsLeft(p, CONFIG), 3);
+  assert.ok(R.isFreeRestart(2, R.restartsUsed(p) + 2, CONFIG));
+  sess.commit(R.tryBody(p, 8, 2)); // try 1 used 2 restarts
+  assert.equal(R.restartsLeft(sess.s.payments.at(-1), CONFIG), 1);
+  sess.commit(R.tryBody(sess.s.payments.at(-1), 7, 1)); // try 2 used the last one
+  const q = sess.s.payments.at(-1);
+  assert.equal(R.restartsLeft(q, CONFIG), 0);
+  assert.ok(!R.isFreeRestart(2, R.restartsUsed(q), CONFIG), 'with 0 left a crash before 5 ends the try');
+});
+
+test('T70: chimney 30 / 40 / 50 give 3 / 7 / 12 draw entries, once per payment, also in test mode (R8, R20, R21)', () => {
+  for (const [best, want] of [[31, 3], [42, 7], [50, 12]]) {
+    const sess = newSession();
+    sess.commit({ ...R.payBody(sess.s, 'p1', CONFIG), mode: 'test' });
+    const p = sess.s.payments.at(-1);
+    sess.commit(R.tryBody(p, best));
+    const parts = R.ticketParts(sess.s.payments.at(-1), CONFIG).parts.filter((x) => ['p30', 'p40', 'p50'].includes(x.why));
+    assert.equal(parts.reduce((a, x) => a + x.n, 0), want, `best ${best}`);
+  }
+  const r = playPayment(newSession(), 'p3', { tries: [50, 45, 33], choices: ['sweet'], wheel: ['t2'] });
+  assert.equal(r.p.tickets.length, 3 + 12 + 2, 'three paid tries at 10, levels once (best 50), wheel');
+});

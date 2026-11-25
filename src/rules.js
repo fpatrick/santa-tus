@@ -24,7 +24,13 @@ export function triesLeft(p) {
   return p.triesBought + p.extraTries - p.tries.length;
 }
 
-// R3: a crash before pillar 2 restarts the try, at most 3 times per try.
+// R3: restarts used by this payment so far (all its saved tries), and how many are left (shared by all tries).
+export const restartsUsed = (p) => p.tries.reduce((a, t) => a + (t.restarts || 0), 0);
+export const restartsLeft = (p, cfg, current = 0) => Math.max(0, cfg.freeRestart.max - restartsUsed(p) - current);
+// R10: the next try of this payment is a free one (it never gives the chimney 10 entry, R5).
+export const nextTryIsFree = (p) => p.tries.length >= p.triesBought;
+
+// R3: a crash before chimney 5 restarts the try. restartsSoFar = restarts of the whole PAYMENT (max 3 shared).
 export function isFreeRestart(pillars, restartsSoFar, cfg) {
   return pillars < cfg.freeRestart.below && restartsSoFar < cfg.freeRestart.max;
 }
@@ -47,14 +53,16 @@ export function nextStep(p, s, cfg) {
 }
 
 // R12: every draw ticket this payment gets, by where it comes from. [{ why, n }] + total.
-// per10 = each try that reached chimney 10 (per try, R5), bonus = key 3, p30 = chimney 30 (R8),
+// per10 = each PAID try that reached chimney 10 (R5; free tries never), bonus = key 3, p30 / p40 / p50 = chimney 30 / 40 / 50
+// (R8, R20, R21: they add up, once per payment, best try counts),
 // wheel / swap = added by an award. (Draw entries come only from playing: they cannot be bought.)
 export function ticketParts(p, cfg) {
   const parts = [];
-  const tries10 = p.tries.filter((t) => t.pillars >= cfg.thresholds.choice).length;
+  const tries10 = p.tries.filter((t) => t.pillars >= cfg.thresholds.choice && (t.source || 'paid') === 'paid').length;
   if (tries10) parts.push({ why: 'per10', n: tries10 * cfg.tickets.per10, tries: tries10 });
   if (p.bonus) parts.push({ why: 'bonus', n: p.bonus });
-  if (p.best >= cfg.thresholds.legend && !p.p30) parts.push({ why: 'p30', n: cfg.tickets.p30 });
+  const L = cfg.tickets.levels;
+  if (!p.p30) for (const [why, th, n] of [['p30', 'legend', L.legend], ['p40', 'mythic', L.mythic], ['p50', 'beat', L.beat]]) if (p.best >= cfg.thresholds[th]) parts.push({ why, n });
   for (const a of p.adds || []) parts.push({ why: a.kind, n: a.n });
   const list = parts.filter((x) => x.n > 0);
   return { parts: list, total: list.reduce((a, x) => a + x.n, 0) };

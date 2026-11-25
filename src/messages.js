@@ -30,7 +30,8 @@ export function pendingPrizes(p, cfg, pillars) {
   if (p.best >= th.choice && !p.p10) out.push(P.choice);
   if (p.best >= th.ticket && !p.wheel) out.push(P.spin);
   if (p.best >= th.legend && !p.p30 && !p.ticketsGiven) out.push(P.legend);
-  if (pillars >= th.mythic && pillars === p.best) out.push(P.mythic);
+  if (p.best >= th.mythic && !p.p30 && !p.ticketsGiven) out.push(P.mythic);
+  if (p.best >= th.beat && !p.p30 && !p.ticketsGiven) out.push(P.godlike);
   if (R.triesLeft(p) <= 0 && cfg.consolation.on && p.p10 === 'free' && p.best < th.ticket && !p.consolation) out.push(P.consolation);
   return out;
 }
