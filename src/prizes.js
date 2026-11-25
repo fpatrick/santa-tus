@@ -219,7 +219,7 @@ export function summary(s, cfg, now = Date.now()) {
     out.cashPaid += p.cash;
     out.tickets += p.tickets.length;
     if (p.tickets.length) out.cards += 1; // one paper card per payment with at least 1 draw entry
-    if (p.swapped) out.swaps += 1; // "+2 instead" (R23 or R28)
+    if (p.swapped) out.swaps += 1; // "+2 instead" (R28, or R23 in old saved days)
     const pr = cfg.prices.find((x) => x.id === p.kind);
     if (pr) out.byKey[pr.key] += 1;
     if (p.p10 === 'sweet' || p.consolation) out.sweets += 1;

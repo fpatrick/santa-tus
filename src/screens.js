@@ -182,19 +182,6 @@ export function pickItem(tierId, items) {
   });
 }
 
-// R23: the nickname already won a sponsor prize today. Resolves true (Y: give tickets instead) or false (N).
-export function alreadyWon(nick, n) {
-  return new Promise((resolve) => {
-    open(`<div class="box red"><h1>${esc(CONFIG.text.alreadyWon)}</h1>
-      <p>${esc(nick || '')}</p><p>${esc(CONFIG.text.alreadyWonHint.replace('{n}', n))}</p>
-      <div class="hint">Staff decide: press <kbd>Y</kbd> or <kbd>N</kbd>.</div></div>`);
-    setKeys((e) => {
-      const k = e.key.toLowerCase();
-      if (k === 'y' || k === 'n') { e.preventDefault(); close(); resolve(k === 'y'); }
-    });
-  });
-}
-
 // R16: a money prize ("PAY JACKPOT €30", "PAY €10"), confirmed twice with Enter.
 export function payMoney(text) {
   return new Promise((resolve) => {

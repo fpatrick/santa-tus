@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 1.1.2 (2026-11-25): R23 removed: no limit of one sponsor prize per nickname; the "ALREADY WON A PRIZE TODAY?" question, its code and text are gone. "N = +2 DRAW ENTRIES INSTEAD" (R28) stays. Odds sheet updated.
 - 1.1.1 (2026-11-25): The draw time is written once ("WIN GTA 6" + "DRAW AT 13:00 ON 26/11"). Wheel: new 16-bit prize icons (gold gift card, silver game controller, bronze present, in src/prizeicons.js), bronze is one wider slice so its icon fits, words and icon no longer overlap on narrow slices; the items-left line sits under the photo.
 - 1.1.0 (2026-11-25): Rule changes R3, R5, R8, R10, R20, R21: chimney 10 draw entry for PAID tries only (free tries show a note); restarts 3 per PAYMENT, shared, with RESTARTS LEFT on screen; chimney 30 / 40 / 50 = +3 / +4 / +5 draw entries (add up to 12, once per payment); ladder, panel and odds sheet updated; tests T68-T70.
 - 1.0.2 (2026-11-25): A5 flight song: the Jingle Bells tune is now a clean 16-bit pulse-wave lead with a soft triangle body (no circus wobble); lighter strings for the laptop.

@@ -46,7 +46,7 @@ using what a player can surely do [`fair`]. T26 builds 10,000 courses.
 
 - **R2b** The best try of the payment decides the prizes. **R15** Each prize level is given at most once per payment (only the chimney 10 ticket is per try): never more than 1 wheel spin per payment.
 - **R10 Free tries:** a free try (from R5 or the wheel) adds 1 try to the same payment. A free try can still win every prize level the payment has not had yet (the wheel at 20, the draw entries at 30, 40 and 50), but it NEVER gives the chimney 10 draw entry (R5). During a free try the screen shows "FREE TRY - no draw entry at chimney 10".
-- **R9 Order at the end of a payment** (when no tries are left, `rules.js nextStep`): chimney 10 choice -> wheel -> nickname (if needed) -> sponsor prize check (R23) -> the ticket screen (R12) -> hand-over. Prizes add up: reaching 30 also gives the wheel spin and the 10 choice.
+- **R9 Order at the end of a payment** (when no tries are left, `rules.js nextStep`): chimney 10 choice -> wheel -> nickname (if needed) -> sponsor item pick (R22, R28) -> the ticket screen (R12) -> hand-over. Prizes add up: reaching 30 also gives the wheel spin and the 10 choice.
 
 **R5-R8 Prize ladder**
 
@@ -73,9 +73,9 @@ The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is g
 
 - RESERVED, never on the wheel [`reserved`]: ONLY GTA 6 for PS5 x1 (the 13:00 draw, last prize). It is in the F9 stock list (staff can edit the count) and can only be given by the draw.
 - The prize screens show the sponsor name (text only; logos later).
-- **R23 One sponsor prize per nickname per day:** a sponsor winner is always asked for a nickname. If that nickname already won a sponsor prize today, staff see "ALREADY WON A PRIZE TODAY? Y = GIVE +2 DRAW ENTRIES INSTEAD" [`tickets.swap`]. Staff decide (Y or N). The default nickname (skipped) is never matched.
-- **R28 No item wanted:** every sponsor prize pick screen (even with only 1 item left) has "N = +2 DRAW ENTRIES INSTEAD", for a player who does not want any item left in that tier. The item stays in stock (the reservation is freed) and it does NOT count as a sponsor prize win for R23 (saved as an `award` kind `swap` with `why: 'declined'`).
-- An item is **reserved** when the wheel lands on its tier (so stock can never go below 0) and **given** when staff confirm the item (the pick screen). Y in R23 or N in R28 gives +2 draw tickets and frees the reservation.
+- **R23 No limit per nickname (changed 25 Nov):** anyone can win sponsor prizes as many times as the wheel gives them. There is no "already won a prize today?" check any more. (Old saved days may still have a swap with `why: 'already'`; it is still read and shown as before.)
+- **R28 No item wanted:** every sponsor prize pick screen (even with only 1 item left) has "N = +2 DRAW ENTRIES INSTEAD", for a player who does not want any item left in that tier. The item stays in stock (the reservation is freed) (saved as an `award` kind `swap` with `why: 'declined'`).
+- An item is **reserved** when the wheel lands on its tier (so stock can never go below 0) and **given** when staff confirm the item (the pick screen). N in R28 gives +2 draw tickets and frees the reservation.
 
 **R7 The wheel** [`wheel.outcomes`]
 
@@ -109,7 +109,7 @@ The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is g
 
 **R12-R14 Tickets, jackpot and draw**
 
-- **R12 Draw tickets:** On screen, draw tickets are called DRAW ENTRIES (one: DRAW ENTRY) [`text.ticket`, `text.tickets`]; a game play is always a TRY. Code, config and SPEC keep "draw ticket". A payment collects tickets from: each try that reaches 10 (+1), key 3 bonus (+1), chimney 30 (+5), the wheel +2 TICKETS slice (+2), R23 swap (+2). They are all given at the END of the payment, on ONE ticket screen ("YOUR DRAW ENTRIES") that lists where they came from and their numbers; the hand-over says "WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0015"; this is one `award` event (kind `tickets`). Numbers start at #0001 and go up by 1: they never repeat and never skip. Staff give ONE plain paper card per payment and write the range on it (no cloakroom tickets): about 70-110 cards a day. The F9 summary shows "Cards used" (payments with at least 1 draw entry) and "NEXT DRAW ENTRY".
+- **R12 Draw tickets:** On screen, draw tickets are called DRAW ENTRIES (one: DRAW ENTRY) [`text.ticket`, `text.tickets`]; a game play is always a TRY. Code, config and SPEC keep "draw ticket". A payment collects tickets from: each PAID try that reaches 10 (+1), key 3 bonus (+1), chimney 30 / 40 / 50 (+3 / +4 / +5), the wheel +2 TICKETS slice (+2), R28 "+2 instead" (+2). They are all given at the END of the payment, on ONE ticket screen ("YOUR DRAW ENTRIES") that lists where they came from and their numbers; the hand-over says "WRITE ON THE NEXT CARD: DRAW ENTRIES #0012 TO #0015"; this is one `award` event (kind `tickets`). Numbers start at #0001 and go up by 1: they never repeat and never skip. Staff give ONE plain paper card per payment and write the range on it (no cloakroom tickets): about 70-110 cards a day. The F9 summary shows "Cards used" (payments with at least 1 draw entry) and "NEXT DRAW ENTRY".
 - **R13 Jackpot: OFF** [`JACKPOT_ENABLED = false`]. When off, the jackpot is hidden everywhere (title screen, panel, wheel, draw, staff summary, odds sheet) and has no wheel slice. The old jackpot code stays (not deleted) for a later year: start €10, +€10 every hour, max €30, at most 2 wheel wins a day [`jackpot`].
 - **R29 No top score prize** (24 Nov 2026): the best score of the day wins nothing. The leaderboard (L1, L2) is for bragging rights only.
 - **R14 The draw** (13:00 [`event.drawTime`], started by staff in F9 key 8, never automatic; the draw starts straight away):
@@ -140,7 +140,7 @@ The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is g
 | S7 | Wheel: drawn from the live odds (no 0% slices), items left per tier ("ONLY 1 LEFT!"), "REACH CHIMNEY 20 = SPIN: X IN 10 WIN A PRIZE"; "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
 | S8 | Chimney 10 choice: SWEET or FREE TRY, big tiles, mouse | player | screens.choice |
 | S9 | Nickname: for the best players list, LEGEND, MYTHIC, GODLIKE and every sponsor winner (R23). Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
-| S10 | Ticket screen (R12): all tickets of the payment with where they came from and the numbers. Then the hand-over (R16): €10 CASH confirmed twice, then the list. (The "already won today?" check and the item pick (R23) come just before the ticket screen.) Enter saves and goes back to S1 | staff | screens.handover, handover.js |
+| S10 | Ticket screen (R12): all tickets of the payment with where they came from and the numbers. Then the hand-over (R16): €10 CASH confirmed twice, then the list. (The item pick (R22, R28) comes just before the ticket screen.) Enter saves and goes back to S1 | staff | screens.handover, handover.js |
 | S11 | Staff panel: F9 (or hold F + press 9) + code | staff | staff.staffPanel |
 | S12 | Draw (R14): one prize at a time, rolling numbers, the winning draw entry in big text, Enter = GIVEN, N = NOT HERE - DRAW AGAIN + reason | staff | draw.js |
 | S13 | Health check at every start: server, database, USB, clock, screen, fonts, sound, settings | nobody | main.healthCheck |
@@ -284,7 +284,7 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T35 | start of the day | base odds 4/12/14/26/44, no €10 cash, no jackpot; 3 IN 10 | N |
 | T36 | GOLD win | the player picks a €20 voucher, sponsor name shown; stock 3 -> 2 | N, F |
 | T37 | SILVER / BRONZE win | the player picks from what is left | N, F |
-| T38 | same nickname wins again | "ALREADY WON?" Y = +2 tickets on the same ticket screen, the item is free again (R23) | N, F |
+| T38 | same nickname wins again | no question: the same nickname gets a 2nd sponsor item (R23 changed 25 Nov) | N, F |
 | T39 | each tier sells out | chance moves down only (gold -> silver -> bronze -> +2), GOLD never above 4%, FREE TRY 26%, 0% slices not drawn; no cash unless staff switch it on | N |
 | T40 | 3 x €10 CASH (switched on) | cash slice off again; €30 paid = the worst case (R27) | N |
 | T41 | jackpot switched on (test config) | 3% slice, max 2 wheel wins a day | N |
@@ -303,7 +303,7 @@ Automatic: **N** = `npm test`, **S** = `npm run test:server`, **F** = `npm run t
 | T54 | R13 jackpot off | no wheel slice, not in the draw, hidden on all screens | N, screenshots |
 | T55 | on-screen words | no "ticket" or "raffle" in on-screen texts: DRAW ENTRY / DRAW ENTRIES, a play is a TRY | N |
 | T56 | cards used | = payments with at least 1 draw entry | N |
-| T57 | R28 N on the pick screen | +2 draw entries, item stays in stock, not a win for R23 | N |
+| T57 | R28 N on the pick screen | +2 draw entries, item stays in stock | N |
 | T58 | no top score prize (R29) | no top score text on any screen, no F9 top score key, the draw starts straight away | F (quick check) |
 | T59 | draw order with reserved items | bronze, silver, gold, then GTA 6 last; reserved items never on the wheel and never picked at a hand-over | N |
 | T60 | every sold-out mix (R24, R27) | none G4 S12 B14 F26 E44 · gold S16 B14 F26 E44 · silver G4 B26 F26 E44 · gold+silver B30 F26 E44 · bronze G4 S12 F26 E58 · gold+bronze S16 F26 E58 · silver+bronze G4 F26 E70 · all F26 E74 · all + cash ON F26 E72 C2; cash switch refused while any tier has stock | N |

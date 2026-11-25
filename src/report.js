@@ -12,9 +12,10 @@ const cell = (v) => {
 const time = (ts) => (ts ? new Date(ts).toLocaleString('en-IE') : '');
 
 export function buildCsv(s, cfg, label = 'live', now = Date.now()) {
-  const swapWhy = (p) => { // "+2 instead": R23 (already won) or R28 (no item wanted)
+  const swapWhy = (p) => { // "+2 instead": R28 (no item wanted); 'already won today' only in old saved days (R23)
     const ev = s.events.find((e) => e.t === 'award' && e.kind === 'swap' && e.pid === p.pid);
-    return ev ? (ev.why === 'declined' ? '+2 instead (no item wanted)' : '+2 instead (already won today)') : '';
+    const why = { declined: '+2 instead (no item wanted)', soldout: '+2 instead (sold out)', already: '+2 instead (already won today)' };
+    return ev ? why[ev.why] || why.already : '';
   };
   const rows = [[
     'time', 'payment', 'payment_key', 'price_eur', 'status', 'tries_bought', 'tries_played', 'best_chimney', 'nickname',

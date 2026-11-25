@@ -36,7 +36,7 @@ export function isFreeRestart(pillars, restartsSoFar, cfg) {
 }
 
 // The next thing that must happen for this payment (R9): all tries first, then at the end of the payment
-// the chimney 10 choice, the wheel, the nickname, the sponsor prize check (R23), the ONE ticket screen (R12),
+// the chimney 10 choice, the wheel, the nickname, the sponsor item pick (R22, R28), the ONE ticket screen (R12),
 // the hand-over. A free try (R10) goes back to flying, and then every prize level not had yet is checked again.
 export function nextStep(p, s, cfg) {
   const th = cfg.thresholds;
@@ -47,7 +47,7 @@ export function nextStep(p, s, cfg) {
     return { step: 'award', kind: 'consolation' }; // R11
   }
   if (needsNick(p, s, cfg)) return { step: 'nick' }; // S9
-  if (p.sponsor && !p.item && !p.swapped) return { step: 'sponsor' }; // R22, R23
+  if (p.sponsor && !p.item && !p.swapped) return { step: 'sponsor' }; // R22, R28
   if (!p.ticketsGiven && (ticketParts(p, cfg).total > 0 || p.best >= th.legend)) return { step: 'tickets' }; // R12, R8
   return { step: 'handover' }; // S10, R16
 }
@@ -68,7 +68,7 @@ export function ticketParts(p, cfg) {
   return { parts: list, total: list.reduce((a, x) => a + x.n, 0) };
 }
 
-// S9: a nickname for the best players list, the ranked players (LEGEND, MYTHIC, GODLIKE) and sponsor winners (R23).
+// S9: a nickname for the best players list, the ranked players (LEGEND, MYTHIC, GODLIKE) and sponsor winners (R22).
 export function needsNick(p, s, cfg) {
   if (p.nickAsked) return false;
   if (p.best >= cfg.thresholds.legend) return true;
@@ -99,14 +99,14 @@ function takeTickets(s, count) {
   return out;
 }
 
-// R8, R11, R12, R23, R28: fixed awards. 'swap' = +2 draw tickets instead of a sponsor item (given on the ticket
-// screen): why 'already' = a 2nd prize today (R23), 'declined' = the player wants no item left (R28). The item stays in stock. 'tickets' = the ONE ticket screen at the end: all numbers at once, in order, never twice (R12).
+// R8, R11, R12, R28: fixed awards. 'swap' = +2 draw tickets instead of a sponsor item (given on the ticket
+// screen): why 'declined' = the player wants no item left (R28) ('already' = a 2nd prize today, only in old saved days: R23 has no limit now). The item stays in stock. 'tickets' = the ONE ticket screen at the end: all numbers at once, in order, never twice (R12).
 // 'p30' is only for old saved days (chimney 30 tickets are now part of 'tickets').
-export function awardBody(kind, p, s, cfg, why = 'already') {
+export function awardBody(kind, p, s, cfg, why = 'declined') {
   if (kind === 'p30') return { t: 'award', pid: p.pid, kind, tickets: takeTickets(s, cfg.tickets.p30), legend: true };
   if (kind === 'consolation') return { t: 'award', pid: p.pid, kind, item: cfg.consolation.item, tickets: [] };
   if (kind === 'swap') {
-    if (!p.sponsor || p.item || p.swapped) throw new Error('Nothing to swap (R23)');
+    if (!p.sponsor || p.item || p.swapped) throw new Error('Nothing to swap (R28)');
     return { t: 'award', pid: p.pid, kind, tier: p.sponsor, tickets: [], add: cfg.tickets.swap, why };
   }
   if (kind === 'tickets') {
@@ -155,13 +155,6 @@ export function itemBody(p, itemId, s, cfg) {
 // The items of a tier that are left (for the hand-over pick).
 export function itemsLeft(tier, s, cfg) {
   return stock(s, cfg).tiers[tier].items.filter((it) => it.left > 0);
-}
-
-// R23: did this nickname already win a sponsor prize today? (the default nickname never matches)
-export function alreadyWon(p, s) {
-  const nick = (p.nick || '').trim().toUpperCase();
-  if (!nick) return false;
-  return s.payments.some((o) => o !== p && o.status !== 'undone' && o.item && (o.nick || '').trim().toUpperCase() === nick);
 }
 
 // R5: the pillar 10 choice. 'free' gives up the prize for 1 more try.

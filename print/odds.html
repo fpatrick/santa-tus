@@ -65,7 +65,7 @@
     const gta = (CONFIG.reserved?.items || []).filter((it) => it.use === 'draw').map((it) => it.label).join(', ');
     $('draw').textContent = `${T.tickets} come only from playing (they cannot be bought): +${CONFIG.tickets.per10} for every PAID TRY that passes ${th.choice} (FREE TRIES: no chimney ${th.choice} entry), +1 bonus with ${CONFIG.prices.find((p) => p.bonus)?.label || '€10'}, +${CONFIG.tickets.levels.legend} at ${th.legend}, +${CONFIG.tickets.levels.mythic} at ${th.mythic}, +${CONFIG.tickets.levels.beat} at ${th.beat} (they add up: ${CONFIG.tickets.levels.legend + CONFIG.tickets.levels.mythic + CONFIG.tickets.levels.beat} at ${th.beat}, once per payment), +${CONFIG.tickets.swap} on the wheel. Written on one paper card at the end of the payment. `
       + `Last payment ${CONFIG.event.lastPayment}. DRAW AT ${CONFIG.event.drawTime}: every sponsor prize not won yet, then ${gta || 'the main prize'} LAST. One ${T.ticket} wins once. Winner not there: we draw again.`;
-    $('note').textContent = `SOLD OUT: when a tier is sold out, its chance moves down (GOLD to SILVER to BRONZE to +2 ${T.tickets}); FREE TRY stays the same. The wheel screen always shows the live odds. One sponsor prize per nickname per day. Crash before chimney ${CONFIG.freeRestart.below}: free restart, ${CONFIG.freeRestart.max} per payment in total. ${T.ageNote || ''}`;
+    $('note').textContent = `SOLD OUT: when a tier is sold out, its chance moves down (GOLD to SILVER to BRONZE to +2 ${T.tickets}); FREE TRY stays the same. The wheel screen always shows the live odds. Crash before chimney ${CONFIG.freeRestart.below}: free restart, ${CONFIG.freeRestart.max} per payment in total. ${T.ageNote || ''}`;
     $('ver').textContent = versionLabel();
   </script>
 </body>

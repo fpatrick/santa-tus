@@ -49,7 +49,7 @@ test('T55: on screen a draw ticket is always a DRAW ENTRY, never a ticket or raf
   assert.equal(CONFIG.wheel.outcomes.find((o) => o.id === 't2').label, '+2 DRAW ENTRIES');
   assert.equal(CONFIG.wheel.soldOut.replace('\n', ' '), 'SOLD OUT - +2 DRAW ENTRIES');
   assert.deepEqual(CONFIG.prices.map((p) => p.label), ['€2.50 = 1 TRY', '€6.50 = 3 TRIES', '€10 = 5 TRIES']);
-  assert.equal(CONFIG.text.alreadyWonHint.replace('{n}', 2).split(' · ')[0], 'Y = GIVE +2 DRAW ENTRIES INSTEAD');
+  assert.equal(CONFIG.text.declineItem, 'N = +2 DRAW ENTRIES INSTEAD'); // R28 (the R23 "already won" question is gone)
   assert.equal(fmtRange([12, 13, 14], CONFIG.text.rangeTo), '#0012 TO #0014');
 });
 

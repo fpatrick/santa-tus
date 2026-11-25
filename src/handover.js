@@ -1,4 +1,4 @@
-// handover.js: the sponsor prize step (R22, R23: the "already won a prize today?" check and the item pick, staff
+// handover.js: the sponsor prize step (R22, R28: the item pick, N = +2 draw entries instead, staff
 // press the number of the item the player picks) and the S10 hand-over (R16): money confirmed twice (R27), then
 // the list of everything to give. Every choice is saved before the next screen (D1), so after a
 // crash the hand-over starts again where it stopped (D3).
@@ -22,18 +22,14 @@ export async function runHandover(app, name, p) {
   await app.commit(name, R.doneBody(p));
 }
 
-// R22, R23: one sponsor prize per nickname per day; the player picks from what is left. Runs after the nickname
+// R22: the player picks from what is left (no limit per nickname, R23). Runs after the nickname
 // and before the ticket screen (R9), so the +2 swap tickets are on the same ticket screen.
 export async function sponsorPrize(app, name, p) {
   const n = CONFIG.tickets.swap;
   const left = R.itemsLeft(p.sponsor, app.led(name), CONFIG);
   if (!left.length) { // staff changed the stock meanwhile: never below 0 (D12)
-    await app.commit(name, R.awardBody('swap', p, app.led(name), CONFIG));
+    await app.commit(name, R.awardBody('swap', p, app.led(name), CONFIG, 'soldout'));
     await screens.message(fill(T.soldOutNow, { n }), [], { cls: 'gold' });
-    return;
-  }
-  if (R.alreadyWon(p, app.led(name)) && await screens.alreadyWon(p.nick, n)) {
-    await app.commit(name, R.awardBody('swap', p, app.led(name), CONFIG));
     return;
   }
   const id = await screens.pickItem(p.sponsor, left); // always shown, even with 1 item: N = +2 instead (R28)

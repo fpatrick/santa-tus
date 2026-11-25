@@ -26,7 +26,7 @@ export const CONFIG = {
   // Chimney numbers that unlock prizes (R5, R6, R8, R20, R21).
   thresholds: { choice: 10, ticket: 20, legend: 30, mythic: 40, beat: 50 },
   // R5: +per10 entry for every PAID try that reaches chimney 10 (free tries: none). R8, R20, R21: levels = entries at
-  // chimney 30 / 40 / 50, they add up, once per payment. p30 = only for old saved days. R23: swap = entries instead of a 2nd sponsor prize.
+  // chimney 30 / 40 / 50, they add up, once per payment. p30 = only for old saved days. R28: swap = entries instead of a sponsor item ("N = +2 INSTEAD").
   tickets: { per10: 1, levels: { legend: 3, mythic: 4, beat: 5 }, p30: 5, swap: 2 },
   consolation: { on: false, item: 'SWEET' }, // R11 (proposal, off by default)
 
@@ -222,15 +222,13 @@ export const CONFIG = {
     cashGreyed: 'CASH FALLBACK CAN ONLY BE SWITCHED ON WHEN GOLD, SILVER AND BRONZE ARE ALL SOLD OUT.',
     rangeTo: ' TO ', // "#0012 TO #0014" (staff write it on the paper card)
     // R12: where the tickets came from, on the ticket screen. {n} = count.
-    ticketWhy: { per10: 'CHIMNEY 10 (x{n} PAID TRIES)', p40: 'CHIMNEY 40', p50: 'CHIMNEY 50', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A 2ND PRIZE', declined: 'INSTEAD OF A PRIZE ITEM' },
+    ticketWhy: { per10: 'CHIMNEY 10 (x{n} PAID TRIES)', p40: 'CHIMNEY 40', p50: 'CHIMNEY 50', bonus: 'BONUS DRAW ENTRY (€10)', p30: 'CHIMNEY 30', wheel: 'WHEEL', swap: 'INSTEAD OF A PRIZE ITEM', declined: 'INSTEAD OF A PRIZE ITEM' },
     cashOn: 'CASH FALLBACK',
     itemsLeft: 'ITEMS LEFT',
     lastGames: 'LAST GAMES! THE DRAW IS AT {draw}',
     lateTitle: 'NO NEW PAYMENTS',
     late: 'THE LAST PAYMENT TIME ({time}) IS OVER.',
     lateDraw: 'THE DRAW IS DONE: NEW DRAW ENTRIES ARE NOT IN IT.',
-    alreadyWon: 'ALREADY WON A PRIZE TODAY?',
-    alreadyWonHint: 'Y = GIVE +{n} DRAW ENTRIES INSTEAD · N = GIVE THE PRIZE',
     soldOutNow: 'SOLD OUT: GIVE +{n} DRAW ENTRIES INSTEAD',
     wheelBack: 'YOUR WHEEL RESULT',
     // S10 hand-over words. {n} = count, {TICKETS} = DRAW ENTRY/DRAW ENTRIES, {range} = "#0012 TO #0014", {amount} = euro.

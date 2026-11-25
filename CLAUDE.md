@@ -32,7 +32,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Who gets which prize, in which order, the one ticket screen, the cash switch checks (R1-R28) | `src/rules.js` (+ test in `tests/rules.test.mjs`) |
 | Sponsor stock, live wheel odds and the sold-out "move down" rule (R24), the manual €10 cash fallback and its F9 switch (R27), caps, draw order, end-of-day summary, the jackpot (OFF: `JACKPOT_ENABLED`) (R13, R14, R22-R27) | `src/prizes.js` (+ `tests/prizes.test.mjs`) |
 | Leaderboard, totals, ticket numbers (L1, R12) | `src/ledger.js` |
-| Sponsor step: "already won?", item pick (R22, R23); hand-over: €10 cash confirmed twice and logged (R16, R27) | `src/handover.js` |
+| Sponsor step: item pick, N = +2 instead (R22, R28); hand-over: €10 cash confirmed twice and logged (R16, R27) | `src/handover.js` |
 | Prove the prize math: 36 cases x 10,000 days (R25) | `scripts/simulate.js` (results in SPEC.md) |
 | One payment from start to hand-over (screen order) | `src/flow.js` |
 | Flying, gravity, collisions, HUD | `src/game.js` |

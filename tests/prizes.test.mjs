@@ -53,18 +53,17 @@ test('T37: SILVER "GAMING OR DAY OUT" and BRONZE "GIFT": the winner picks what i
   assert.throws(() => R.itemBody(p, 'candle', sess.s, CONFIG)); // already has its item, and none left
 });
 
-test('T38: one sponsor prize per nickname per day: Y gives +2 draw entries instead (on the same ticket screen) and frees the item (R23)', () => {
+test('T38: no limit per nickname: the same nickname wins two sponsor prizes, no "already won" question (R23 changed)', () => {
   const sess = newSession();
-  win(sess, 'gold', { nick: 'SAM' });
-  const r = win(sess, 'gold', { nick: 'sam', swap: true, done: false });
-  assert.equal(R.alreadyWon(r.p, sess.s), true);
-  assert.equal(r.p.swapped, true);
-  assert.equal(r.p.tickets.length, 1 + CONFIG.tickets.swap); // chimney 10 ticket + the swap
-  assert.deepEqual(r.steps.filter((x) => ['nick', 'sponsor', 'tickets'].includes(x)), ['nick', 'sponsor', 'tickets']);
-  assert.ok(!r.items.some((i) => i.kind === 'sponsor'));
-  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 4); // 1 given, the second one is free again
-  const other = win(sess, 'bronze', { nick: 'ANA', done: false });
-  assert.equal(R.alreadyWon(other.p, sess.s), false);
+  const a = win(sess, 'gold', { nick: 'SAM' });
+  const r = win(sess, 'bronze', { nick: 'sam', done: false });
+  assert.ok(a.p.item && r.p.item, 'both get an item');
+  assert.equal(r.p.swapped, false);
+  assert.ok(r.items.some((i) => i.kind === 'sponsor'));
+  assert.equal(stock(sess.s, CONFIG).tiers.gold.free, 4);
+  assert.equal(stock(sess.s, CONFIG).tiers.bronze.free, ALL.bronze - 1);
+  assert.equal(R.alreadyWon, undefined, 'the check is gone');
+  assert.ok(!('alreadyWon' in CONFIG.text));
 });
 
 test('T57: N on the pick screen: +2 draw entries, the item stays in stock, NOT a sponsor win for R23 (R28)', () => {
@@ -77,8 +76,8 @@ test('T57: N on the pick screen: +2 draw entries, the item stays in stock, NOT a
   assert.equal(stock(sess.s, CONFIG).tiers.bronze.free, ALL.bronze); // still all in stock
   const ev = r.sess.events.find((e) => e.t === 'award' && e.kind === 'tickets');
   assert.ok(ev.parts.some((x) => x.why === 'declined' && x.n === 2));
-  const again = win(sess, 'gold', { nick: 'mo', done: false });
-  assert.equal(R.alreadyWon(again.p, sess.s), false); // the declined one does not count
+  const again = win(sess, 'gold', { nick: 'mo', done: false }); // the same nickname can still win an item later
+  assert.ok(again.p.item);
 });
 
 test('T39: sold out: the chance moves DOWN only (gold -> silver -> bronze -> +2), GOLD never above 4%, FREE TRY 26%, 0% slices not drawn (R24)', () => {
