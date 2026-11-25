@@ -33,7 +33,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Sponsor stock, live wheel odds and the sold-out "move down" rule (R24), the manual €10 cash fallback and its F9 switch (R27), caps, draw order, end-of-day summary, the jackpot (OFF: `JACKPOT_ENABLED`) (R13, R14, R22-R27) | `src/prizes.js` (+ `tests/prizes.test.mjs`) |
 | Leaderboard, totals, ticket numbers (L1, R12) | `src/ledger.js` |
 | Sponsor step: "already won?", item pick (R22, R23); hand-over: €10 cash confirmed twice and logged (R16, R27) | `src/handover.js` |
-| Prove the prize math: 18 cases x 10,000 days (R25) | `scripts/simulate.js` (results in SPEC.md) |
+| Prove the prize math: 36 cases x 10,000 days (R25) | `scripts/simulate.js` (results in SPEC.md) |
 | One payment from start to hand-over (screen order) | `src/flow.js` |
 | Flying, gravity, collisions, HUD | `src/game.js` |
 | Course building and the fairness check (R4, T26) | `src/course.js` |
@@ -78,10 +78,10 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 
 | Command | What | When |
 | --- | --- | --- |
-| `npm test` | 67 rule, prize, ledger, course, music and crash-message tests (Node, about 10 s) | after every change |
+| `npm test` | 75 rule, prize, ledger, course, music, crash-message and final-pass tests (Node, about 10 s) | after every change |
 | `npm run test:server` | 9 server tests (Python) | after a change to `server/` |
 | `npm run test:flow` | full browser flow with Playwright (T4, T12, T13, T30, T36-T38, T46, T47b, T49-T51, T53, about 2 min) | after a change to screens, flow, store, main |
-| `node scripts/simulate.js` | 18 cases x 10,000 market days with the real rules (about 12 min; `--days 500` for a quick check) | after a change to prizes, odds, jackpot or stock |
+| `node scripts/simulate.js` | 36 cases x 10,000 market days with the real rules (about 12 min; `--days 500` for a quick check) | after a change to prizes, odds, jackpot or stock |
 
 GitHub runs `npm test` and the server tests on every push before it publishes the test link.
 

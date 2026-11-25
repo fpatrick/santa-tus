@@ -130,7 +130,7 @@ function loop(now) {
   fx.renderFx();
   app.board.tick(dt);
   app.secs = (app.secs || 0) + dt;
-  if (app.secs >= 1) { app.secs = 0; app.refresh(); } // the jackpot grows with time (R13), the 12:30 banner (R26)
+  if (app.secs >= 1) { app.secs = 0; app.refresh(); } // the jackpot grows with time (R13), the last-games banner (R26)
   requestAnimationFrame(loop);
 }
 
