@@ -10,14 +10,14 @@ const all = [...FLIGHT.sections, ...LOBBY.sections, ...MENU.sections, ...CRASH.s
 test('A5: every part has full bars, known notes and known chords', () => {
   for (const s of all) {
     const notes = parseNotes(s.melody);
-    const beats = notes.reduce((a, n) => a + n.beats, 0);
-    assert.equal(beats, sectionBeats(s), `${s.name}: melody has ${beats} beats, chords need ${sectionBeats(s)}`);
+    const beats = Math.round(notes.reduce((a, n) => a + n.beats, 0) * 1e6) / 1e6; // triplets (1/3) add float dust
+    assert.equal(beats, sectionBeats(s),`${s.name}: melody has ${beats} beats, chords need ${sectionBeats(s)}`);
     for (const n of notes) assert.ok(n.note === 'R' || midi(n.note) != null, `${s.name}: bad note ${n.note}`);
     for (const c of s.chords.split(/\s+/)) assert.ok(chordTones(c).length >= 3, `${s.name}: bad chord ${c}`);
     assert.ok(sectionEvents(s).length > 0);
     if (!s.counter) continue;
     const fill = parseNotes(s.counter);
-    assert.equal(fill.reduce((a, n) => a + n.beats, 0), sectionBeats(s), `${s.name}: fills must have full bars`);
+    assert.equal(Math.round(fill.reduce((a, n) => a + n.beats, 0) * 1e6) / 1e6, sectionBeats(s), `${s.name}: fills must have full bars`);
     for (const n of fill) assert.ok(n.note === 'R' || midi(n.note) != null, `${s.name}: bad fill note ${n.note}`);
   }
 });

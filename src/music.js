@@ -115,6 +115,19 @@ function play(a, ev, t, dur, out, lead) {
     const human = 0.9 + Math.random() * 0.15;
     return piano(a, ev.m, t + Math.random() * 0.008, dur, PIANO_VOL[ev.kind] * v * human, out, ev.kind === 'bass' || ev.kind === 'arp');
   }
+  if (lead === 'hero') { // flight (A5): an orchestral adventure march in chip sounds
+    switch (ev.kind) {
+      case 'lead': return osc(a, 'square', ev.m, t, dur * 0.9, 0.065 * v, out, 0.008); // trumpets, with vibrato
+      case 'lead2': return osc(a, 'square', ev.m, t, dur * 0.88, 0.03 * v, out, 0.008); // the octave above
+      case 'harm': return osc(a, 'triangle', ev.m, t, dur * 0.95, 0.11 * v, out, 0.005); // horns in harmony
+      case 'arp': return osc(a, 'triangle', ev.m, t, dur * 0.6, 0.045 * v, out); // strings driving eighths
+      case 'counter': return bell(a, ev.m, t, dur, 0.08 * v, out); // glockenspiel and harp runs
+      case 'bass': return osc(a, 'triangle', ev.m, t, dur * 0.95, 0.22 * v, out); // low brass and cellos
+      case 'pad': return pad(a, ev.m, t, dur, 0.02 * v, out); // sustained horns
+      case 'timp': return timp(a, ev.m, t, 0.5 * v, out);
+      default: break;
+    }
+  }
   if (lead === 'rpg') { // the grand RPG theme (A5): heroic lead, harp, strings, timpani
     switch (ev.kind) {
       case 'lead': return osc(a, 'square', ev.m, t, dur * 0.92, 0.07 * v, out, 0.007);

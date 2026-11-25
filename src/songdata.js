@@ -16,22 +16,37 @@ const JB_CHORUS = `
   F5 1 F5 1 F5 1 F5 1 | F5 1 E5 1 E5 1 E5 .5 E5 .5 | G5 1 G5 1 F5 1 D5 1 | C5 4 |`;
 const JB_CHORUS_CHORDS = 'C C C C F C D7 G7 C C C C F C G7 C';
 
-// Flight intro: a heroic fanfare over the epic chord climb bVI - bVII - I (Ab, Bb, C), into the verse.
-const JB_INTRO = 'G4 .5 C5 .5 E5 .5 G5 .5 C6 2 | C6 .5 Bb5 .5 Ab5 .5 Eb5 .5 C6 2 | D6 .5 C6 .5 Bb5 .5 F5 .5 D6 1 F6 1 | E6 2 G5 .5 F5 .5 E5 .5 D5 .5 |';
-const JB_INTRO_CHORDS = 'C Ab Bb C';
-// The triumphant chorus ends with the same epic move: bar 15 is Bb (bVII) before C.
-const JB_EPIC_CHORDS = 'C C C C F C D7 G7 C C C C F C Bb C';
-// Rising scale runs (bells) in the long melody notes: verse and chorus, one bar per melody bar.
-const JB_VERSE_RUNS = `
-  R 4 | R 1 C5 .25 D5 .25 E5 .25 F5 .25 G5 .5 E5 .5 C5 1 | R 4 | R 1 F5 .25 G5 .25 A5 .25 Bb5 .25 C6 .5 A5 .5 F5 1 |
-  R 4 | R 1 G5 .25 A5 .25 B5 .25 C6 .25 D6 .5 B5 .5 G5 1 | R 4 | R 1 E5 .25 F5 .25 G5 .25 A5 .25 B5 .25 C6 .25 D6 .25 E6 .25 C6 1 |
-  R 4 | R 1 G5 .5 C6 .5 E6 .5 C6 .5 G5 1 | R 4 | R 1 C6 .25 Bb5 .25 A5 .25 G5 .25 F5 .5 A5 .5 C6 1 |
-  R 4 | R 4 | R 4 | R 1 G5 .25 A5 .25 B5 .25 C6 .25 D6 .25 E6 .25 F6 .25 G6 .25 C7 1 |`;
-const JB_CHORUS_RUNS = `
-  R 4 | R 2 G5 .5 A5 .5 B5 .5 C6 .5 | R 4 | R 1 C6 .25 B5 .25 A5 .25 G5 .25 E6 .5 D6 .5 C6 1 |
-  R 4 | R 4 | R 4 | R 2 D6 .25 C6 .25 B5 .25 A5 .25 G5 .25 F5 .25 E5 .25 D5 .25 |
-  R 4 | R 2 G5 .5 A5 .5 B5 .5 C6 .5 | R 4 | R 1 E6 .25 D6 .25 C6 .25 B5 .25 C6 .5 G5 .5 E5 1 |
-  R 4 | R 4 | R 4 | R 1 C6 .25 D6 .25 E6 .25 F6 .25 G6 .5 E6 .5 C6 1 |`;
+// Flight (A5): our own heroic orchestral fanfare (inspired by grand adventure-game themes, no melody copied).
+// Triplet calls over the epic climb I - bVI - bVII - V (C, Ab, Bb, G). "1/3" = one triplet note.
+const HERO_INTRO = `
+  C5 1 G4 1/3 G4 1/3 G4 1/3 C5 2 | Eb5 1 C5 1/3 Eb5 1/3 Ab5 1/3 C6 2 |
+  D6 1 Bb5 1/3 D6 1/3 F6 1/3 D6 1 F6 1 | G5 1/3 A5 1/3 B5 1/3 D6 1/3 E6 1/3 F6 1/3 G6 2 |`;
+const HERO_INTRO_CHORDS = 'C Ab Bb G';
+// The verse with triplet pick-ups (like brass calls) and a surprise Eb (bIII) chord.
+const HERO_VERSE = `
+  G4 1 E5 1 D5 1 C5 1 | G4 3 G4 1/3 G4 1/3 G4 1/3 | G4 1 E5 1 D5 1 C5 1 | A4 3 A4 1/3 B4 1/3 C5 1/3 |
+  A4 1 F5 1 E5 1 D5 1 | B4 4 | G5 1 G5 1 F5 1 D5 1 | E5 3 G4 1/3 G4 1/3 G4 1/3 |
+  G4 1 E5 1 D5 1 C5 1 | G4 4 | G4 1 E5 1 D5 1 C5 1 | A4 3 A4 1/3 B4 1/3 C5 1/3 |
+  A4 1 F5 1 E5 1 D5 1 | G5 1 G5 1 G5 1 G5 1 | A5 1 G5 1 F5 1 D5 1 | C5 3 G4 1/3 C5 1/3 E5 1/3 |`;
+const HERO_VERSE_CHORDS = 'C C C F Dm G G C C Eb C F Dm Eb F C';
+// The chorus: bright E major (III), a D (V of V) turn, a warm Fm (iv) and the Bb - C (bVII - I) finish.
+const HERO_CHORUS = `
+  E5 1 E5 1 E5 2 | E5 1 E5 1 E5 2 | E5 1 G5 1 C5 1.5 D5 .5 | E5 3 C5 1/3 D5 1/3 E5 1/3 |
+  F5 1 F5 1 F5 1.5 F5 .5 | F5 1 E5 1 E5 1 E5 .5 E5 .5 | E5 1 D5 1 D5 1 E5 1 | D5 1 G4 1/3 B4 1/3 D5 1/3 G5 2 |
+  E5 1 E5 1 E5 2 | E5 1 E5 1 E5 2 | E5 1 G5 1 C5 1.5 D5 .5 | E5 3 C5 1/3 D5 1/3 E5 1/3 |
+  F5 1 F5 1 F5 1 F5 1 | F5 1 E5 1 E5 1 E5 .5 E5 .5 | G5 1 G5 1 F5 1 D5 1 | C5 3 G4 1/3 C5 1/3 E5 1/3 |`;
+const HERO_CHORUS_CHORDS = 'C E Am C F C D G C Am F C Fm C Bb C';
+// Bell and string runs (triplet arpeggios) in the long melody notes, one bar per melody bar.
+const HERO_VERSE_RUNS = `
+  R 4 | R 1 G5 1/3 C6 1/3 E6 1/3 G6 1 R 1 | R 4 | R 1 A5 1/3 C6 1/3 F6 1/3 A6 1 R 1 |
+  R 4 | R 1 G5 1/3 B5 1/3 D6 1/3 G6 1 R 1 | R 4 | R 1 C6 1/3 E6 1/3 G6 1/3 C7 1 R 1 |
+  R 4 | R 1 G5 1/3 Bb5 1/3 Eb6 1/3 G6 1 R 1 | R 4 | R 1 F5 1/3 A5 1/3 C6 1/3 F6 1 R 1 |
+  R 4 | R 4 | R 4 | R 2 C6 1/3 D6 1/3 E6 1/3 F6 1/3 G6 1/3 B6 1/3 |`;
+const HERO_CHORUS_RUNS = `
+  R 4 | R 2 E5 1/3 G#5 1/3 B5 1/3 E6 1 | R 4 | R 1 C6 1/3 B5 1/3 A5 1/3 G5 1/3 E5 1/3 G5 1/3 C6 1 |
+  R 4 | R 4 | R 2 D6 1/3 F#6 1/3 A6 1/3 D7 1 | R 2 G5 1/3 A5 1/3 B5 1/3 C6 1/3 D6 1/3 F6 1/3 |
+  R 4 | R 2 A5 1/3 C6 1/3 E6 1/3 A6 1 | R 4 | R 1 E6 1/3 D6 1/3 C6 1/3 G5 1/3 E5 1/3 G5 1/3 C6 1 |
+  R 2 F5 1/3 Ab5 1/3 C6 1/3 F6 1 | R 4 | R 2 Bb5 1/3 D6 1/3 F6 1/3 Bb6 1 | R 1 C6 1/3 E6 1/3 G6 1/3 C7 2 |`;
 
 const SILENT = `
   G4 1.5 A4 .5 G4 1 | E4 3 | G4 1.5 A4 .5 G4 1 | E4 3 |
@@ -46,19 +61,20 @@ const SILENT_CHORDS = 'C C C C G7 G7 C C F F C C F F C C G7 G7 C C C G7 C C';
 // drums (none | bells | drive | big), up = semitones to transpose, double = lead also an octave up.
 export const sec = (name, melody, chords, beatsPerBar, arr) => ({ name, melody, chords, beatsPerBar, ...arr });
 
-// During flight (A5): Jingle Bells as a triumphant adventure march, in the same RPG sounds as the title song:
-// heroic fanfare intro, a cozy verse (harp triplets, strings, sleigh bells, light march), a triumphant chorus
-// (march bass, harmony, scale runs, the epic bVII - I ending), then higher keys with the melody in octaves.
+// During flight (A5): Jingle Bells as a grand, triumphant orchestral adventure march (B-flat major, like
+// the big adventure-game themes): a brass fanfare with a timpani roll, a march verse (field-drum triplets,
+// low brass, driving strings, bell runs), a triumphant chorus (cymbals, horn harmony), then key changes up.
 // The first 3 parts end exactly when chimneys 10, 20 and 30 are passed (see flightMap).
 // After 30 the last two parts loop (verse + chorus a key higher), which fills chimneys 31-50.
+const H = { lead: 'hero', bass: 'hero', pad: true };
 export const FLIGHT = {
   sections: [
-    sec('intro', JB_INTRO, JB_INTRO_CHORDS, 4, { lead: 'rpg', bass: 'harp', pad: true, drums: 'marchintro', up: 0, double: true }),
-    sec('verse', JB_VERSE, JB_VERSE_CHORDS, 4, { lead: 'rpg', bass: 'harp', pad: true, drums: 'march', up: 0, counter: JB_VERSE_RUNS }),
-    sec('chorus', JB_CHORUS, JB_EPIC_CHORDS, 4, { lead: 'rpg', bass: 'oompah', pad: true, harm: true, drums: 'marchbig', up: 0, counter: JB_CHORUS_RUNS }),
-    sec('chorus-up', JB_CHORUS, JB_EPIC_CHORDS, 4, { lead: 'rpg', bass: 'oompah', pad: true, harm: true, arp: true, drums: 'marchbig', up: 2, double: true, counter: JB_CHORUS_RUNS }),
-    sec('verse-top', JB_VERSE, JB_VERSE_CHORDS, 4, { lead: 'rpg', bass: 'harp', pad: true, harm: true, drums: 'marchbig', up: 4, double: true, counter: JB_VERSE_RUNS }),
-    sec('chorus-top', JB_CHORUS, JB_EPIC_CHORDS, 4, { lead: 'rpg', bass: 'oompah', pad: true, harm: true, arp: true, drums: 'marchbig', up: 4, double: true, counter: JB_CHORUS_RUNS }),
+    sec('intro', HERO_INTRO, HERO_INTRO_CHORDS, 4, { ...H, drums: 'herointro', up: -2, double: true }),
+    sec('verse', HERO_VERSE, HERO_VERSE_CHORDS, 4, { ...H, drums: 'hero', up: -2, arp: true, double: true, counter: HERO_VERSE_RUNS }),
+    sec('chorus', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...H, drums: 'herobig', up: -2, harm: true, double: true, counter: HERO_CHORUS_RUNS }),
+    sec('chorus-up', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...H, drums: 'herobig', up: 0, harm: true, arp: true, double: true, counter: HERO_CHORUS_RUNS }),
+    sec('verse-top', HERO_VERSE, HERO_VERSE_CHORDS, 4, { ...H, drums: 'herobig', up: 1, harm: true, arp: true, double: true, counter: HERO_VERSE_RUNS }),
+    sec('chorus-top', HERO_CHORUS, HERO_CHORUS_CHORDS, 4, { ...H, drums: 'herobig', up: 1, harm: true, arp: true, double: true, counter: HERO_CHORUS_RUNS }),
   ],
   anchors: [10, 20, 30], // chimney numbers where parts end: intro+verse | chorus | chorus-up
   anchorParts: [2, 1, 1], // how many parts each anchor covers

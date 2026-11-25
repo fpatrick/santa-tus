@@ -2,6 +2,7 @@
 
 One line per change, newest first. Format: `- VERSION (DATE): what changed (rule or screen IDs).`
 
+- 0.24.8 (2026-11-25): A5 flight Jingle Bells is now a grand heroic orchestral march (B-flat fanfare, triplet field drums, timpani, brass in octaves, key changes), its own style, not the title song style.
 - 0.24.7 (2026-11-24): A5 flight song: Jingle Bells as a triumphant adventure march in the RPG sounds (heroic fanfare over Ab-Bb-C, cozy harp verse, triumphant chorus with harmony and scale runs, epic Bb-C ending). Song notes moved to src/songdata.js.
 - 0.24.6 (2026-11-24): A5 title song: Silent Night as a grand chiptune RPG Christmas theme in rolling 6/8: fanfare, gentle harp verse, drum roll and key change, grand verse with harmony, bells and drums. New lead vibrato, harp, strings and timpani sounds.
 - 0.24.5 (2026-11-24): A5 title song: Silent Night as a solo piano show piece (no beat): opening cascade, flowing left hand, richer chords, runs, key change with octaves and harmony. New piano voice in music.js.
