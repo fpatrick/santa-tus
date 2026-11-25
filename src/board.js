@@ -1,5 +1,5 @@
 // board.js: the right-hand panel (L2, L3): "WIN GTA 6" + "DRAW AT 13:00 ON 26/11" and the R30 lines (draw entries in the box, items left,
-// X IN 10), the jackpot only when it is on (R13), "draw at 13:00"
+// chimney 20 = spin), the jackpot only when it is on (R13), "draw at 13:00"
 // with a countdown, this player's prizes (shown until the next game starts), and the best players
 // with the LEGEND / MYTHIC / GODLIKE pixel badges (rankbadge.js) in front of the names.
 
@@ -124,7 +124,7 @@ function drawLine(now, lastDraw) {
   return `${CONFIG.text.drawAt} <b>${at}</b> · IN ${hh ? `${hh}:` : ''}${pad(mm)}:${pad(ss)}`;
 }
 
-// R30: the engagement lines. e = { entries, x (X IN 10), tiers: [{ name, free }] }
+// R30: the engagement lines. e = { entries, x (not shown any more), tiers: [{ name, free }] }
 export function engageLines(e) {
   if (!e) return '';
   const T = CONFIG.text;
@@ -132,7 +132,7 @@ export function engageLines(e) {
   const tiers = e.tiers.map((t) => (t.free ? T.tierLeft.replace('{tier}', t.name).replace('{n}', t.free) : `${t.name}: ${T.tierSoldOut}`)).join(' · ');
   return line(T.inTheBox.replace('{n}', e.entries), 'big')
     + line(T.entryAt10.replace('{n}', CONFIG.thresholds.choice))
-    + (e.x > 0 ? line(T.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', e.x)) : '')
+    + line(T.spinChance.replace('{n}', CONFIG.thresholds.ticket))
     + line(tiers, 'tiers');
 }
 

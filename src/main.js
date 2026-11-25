@@ -109,7 +109,7 @@ function attractInfo() {
   return {
     top: leaderboard(s, CONFIG).map((p) => ({ name: plainName(p, CONFIG), rank: rankOf(p, CONFIG), best: p.best })),
     jackpot: totals(s, CONFIG).jackpot, jp: totals(s, CONFIG).jackpotInfo, drawTime: CONFIG.event.drawTime,
-    live: liveOdds(s, CONFIG), // R7, R24: the title screen shows the live odds and "X IN 10"
+    live: liveOdds(s, CONFIG), // R7, R24: the title screen shows the live odds
     engage: engageInfo(s), // R30
   };
 }

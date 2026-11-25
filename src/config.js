@@ -207,7 +207,7 @@ export const CONFIG = {
     play: 'PLAY',
     prizeDraw: 'PRIZE DRAW',
     ticketsTitle: 'YOUR DRAW ENTRIES',
-    spinChance: 'REACH CHIMNEY {n} = SPIN: {x} IN 10 WIN A PRIZE', // R7: x = live gold + silver + bronze chance / 10
+    spinChance: 'REACH CHIMNEY {n} = SPIN THE WHEEL', // R7 (the "X IN 10 WIN A PRIZE" part was removed: too confusing)
     // R30 engagement lines (title screen and leaderboard). {draw} = draw time, {n} = a number, {tier} = tier name.
     drawHeadline: 'WIN GTA 6', // the draw time and day are on the line under it, written once (DRAW AT 13:00 ON 26/11)
     drawPrizeImg: 'assets/img/draw-prize.jpg', // R30: photo of the draw prize, shown in a pixel frame beside the draw box ('' = none)

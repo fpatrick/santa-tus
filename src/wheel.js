@@ -9,7 +9,7 @@ import { wheelSfx } from './wheelsound.js';
 import { drawSky, drawSnow } from './world.js';
 import { outlined } from './game.js';
 import { fmtEuro } from './ledger.js';
-import { baseOdds, inTen } from './prizes.js';
+import { baseOdds } from './prizes.js';
 import { CX, CY, RAD, TAU, spotlight, drawBuildRays, drawMarquee, drawWheel } from './wheelart.js';
 
 const POINTER = -Math.PI / 2;
@@ -159,15 +159,8 @@ function drawOddsLine(ctx, live) {
   const B = Object.fromEntries(baseOdds(CONFIG).map((x) => [x.o.id, x.odds]));
   const L = live ? Object.fromEntries(live.list.map((x) => [x.id, x.odds])) : B;
   const parts = W.outcomes.filter((o) => L[o.id] > 0).map((o) => `${o.label} ${L[o.id]}%`); // R24: only what can be won now
-  const x = live ? inTen(live) : 0; // R7: "REACH CHIMNEY 20 = SPIN: 3 IN 10 WIN A PRIZE" (hidden at 0)
-  ctx.fillStyle = 'rgba(7, 5, 28, 0.78)';
-  ctx.fillRect(20, x > 0 ? 930 : 968, 1240, x > 0 ? 142 : 104);
-  if (x > 0) {
-    ctx.font = '30px VT323';
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#3dff8b';
-    ctx.fillText(CONFIG.text.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', x), CX, 962);
-  }
+  ctx.fillStyle = 'rgba(7, 5, 28, 0.78)'; // R7: the odds and items left (no "X IN 10" line: removed, too confusing)
+  ctx.fillRect(20, 968, 1240, 104);
   const line = parts.join(' · ');
   let size = 30;
   do { ctx.font = `${size}px VT323`; size -= 1; } while (ctx.measureText(line).width > 1220 && size > 20);

@@ -167,7 +167,7 @@ export function liveOdds(s, cfg, now = Date.now()) {
   return { list, tiers: st.tiers, caps: cp, jackpot: jp, anyEmpty, allEmpty, cashOn, prizePct };
 }
 
-// R7: "X IN 10 WIN A PRIZE": the live gold + silver + bronze chance in tenths, rounded down (0 = hide the line).
+// R7 (not shown on screen any more, kept for the summary and tests): the live gold + silver + bronze chance in tenths, rounded down (0 = hide the line).
 export const inTen = (live) => Math.floor((live.prizePct + 1e-9) / 10);
 
 // All tickets that can win (tickets of undone payments are out).

@@ -7,7 +7,7 @@ import { drawSky, drawSnow, drawRoof } from './world.js';
 import { drawSanta } from './sprites.js';
 import { createFlight, outlined } from './game.js';
 import { fmtEuro } from './ledger.js';
-import { baseOdds, inTen } from './prizes.js';
+import { baseOdds } from './prizes.js';
 import { wheelIcon } from './wheelicons.js';
 import { rankBadge, RANK_COLOR } from './rankbadge.js';
 
@@ -140,8 +140,7 @@ function prizes(ctx, info = {}) {
   ctx.font = '32px VT323';
   ctx.fillStyle = '#ffd23f';
   if (CONFIG.JACKPOT_ENABLED) wrap(ctx, jackpotRule(), W / 2, 790, 1100, 36); // R13
-  const x = info.live ? inTen(info.live) : 0; // R7: "REACH CHIMNEY 20 = SPIN: 3 IN 10 WIN A PRIZE", hidden at 0
-  if (x > 0) outlined(ctx, T.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', x), W / 2, 800, 26, '#3dff8b', 'center');
+  outlined(ctx, T.spinChance.replace('{n}', CONFIG.thresholds.ticket), W / 2, 800, 26, '#3dff8b', 'center'); // R7: "REACH CHIMNEY 20 = SPIN THE WHEEL"
 }
 
 // R13: the jackpot rule in words, numbers from config.
@@ -189,7 +188,7 @@ function sponsors(ctx, info = {}) {
   ctx.fillText(T.sponsorsHow.replace('{n}', CONFIG.thresholds.ticket).replace('{draw}', CONFIG.event.drawTime), W / 2, 820);
 }
 
-// R30: the draw scene lines (jackpot off): headline, draw time, draw entries in the box, chimney 10, X IN 10.
+// R30: the draw scene lines (jackpot off): headline, draw time, draw entries in the box, chimney 10, chimney 20 = spin.
 function drawLines(ctx, e) {
   outlined(ctx, T.drawHeadline.replace('{draw}', CONFIG.event.drawTime), W / 2, 100, 48, '#ffd23f', 'center');
   if (!e) return;
@@ -197,7 +196,7 @@ function drawLines(ctx, e) {
   ctx.font = '34px VT323';
   ctx.textAlign = 'center';
   ctx.fillStyle = '#3dff8b';
-  const spin = e.x > 0 ? `   ·   ${T.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', e.x)}` : '';
+  const spin = `   ·   ${T.spinChance.replace('{n}', CONFIG.thresholds.ticket)}`;
   ctx.fillText(`${T.entryAt10.replace('{n}', CONFIG.thresholds.choice)}${spin}`, W / 2, 210);
   ctx.fillStyle = '#ffd9a0';
   ctx.fillText(`${T.drawAt} ${CONFIG.event.drawTime} ON ${CONFIG.event.date.slice(8)}/${CONFIG.event.date.slice(5, 7)}`, W / 2, 260); // the only place with the time

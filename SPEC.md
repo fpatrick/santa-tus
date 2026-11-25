@@ -95,7 +95,7 @@ The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is g
   - "Sold out" = no free items in the tier (items left minus items won on the wheel and not given yet).
 - The computer picks the result with `secureRandom()` and SAVES it before the animation (D1). After a crash the same result is shown again; a payment never spins twice (D11).
 - **Wheel drawing:** the wheel is ALWAYS drawn from the live odds: each slice size = its real chance. A slice with 0% is not drawn (no empty or "SOLD OUT" slices). The wheel is drawn again whenever the live odds change (a win, an F9 edit, an undo).
-- The wheel screen always shows the live odds, the items left per tier ("ONLY 1 LEFT!" when a tier has 1 item) and "REACH CHIMNEY 20 = SPIN: X IN 10 WIN A PRIZE" [`text.spinChance`], X = the live prize chance (gold + silver + bronze) / 10, rounded down; hidden when X is 0. The title screen shows the same line.
+- The wheel screen always shows the live odds, and the items left per tier ("ONLY 1 LEFT!" when a tier has 1 item). The title screen and the panel say "REACH CHIMNEY 20 = SPIN THE WHEEL" [`text.spinChance`]. (The "X IN 10 WIN A PRIZE" line was removed on 25 Nov: too confusing.)
 - Each result has a tier 1-4: effects and sounds grow with the tier.
 
 **R27 Cash fallback: MANUAL only** [`CASH_FALLBACK_ENABLED`, `CASH_FALLBACK_MAX_WINS`]
@@ -132,13 +132,13 @@ The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is g
 
 | ID | Screen | Who | Where in code |
 | --- | --- | --- | --- |
-| S1 | Title (attract mode): logo, prices, prizes + odds + "X IN 10", sponsors with items left per tier ("GOLD: 2 LEFT"), the draw scene (R30) + top 15, demo flight | nobody | attract.js |
+| S1 | Title (attract mode): logo, prices, prizes + odds + "REACH CHIMNEY 20 = SPIN THE WHEEL", sponsors with items left per tier ("GOLD: 2 LEFT"), the draw scene (R30) + top 15, demo flight | nobody | attract.js |
 | S2 | Staff code: F2 (or hold F + press 2) or a click in the top-left corner. Dots. Enter checks, Esc cancels. A wrong code just clears. | staff | screens.staffCode |
 | S3 | Payment: €2.50 / €6.50 / €10 (keys 1-3; other keys do nothing), Cancel (Esc). After 12:50 or after the draw: a red warning, O to go on (R26) | staff | screens.payment |
 | S4 | Get ready: "CLICK TO FLY", tries left, best | player | game.js HUD |
 | S5 | Play: chimney count, level, tries left, best, next goal. A new level plays a sound only (no text). A warning glow between chimney and presents just before each level change | player | game.js, flow.flightHooks |
 | S6 | Try over: the crash scene C1-C4 (Santa speaks), or "YOU BEAT SANTA TUS!" (R21) | nobody | flow.flyOnce, crash.js |
-| S7 | Wheel: drawn from the live odds (no 0% slices), items left per tier ("ONLY 1 LEFT!"), "REACH CHIMNEY 20 = SPIN: X IN 10 WIN A PRIZE"; "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
+| S7 | Wheel: drawn from the live odds (no 0% slices), items left per tier ("ONLY 1 LEFT!"); "CLICK TO SPIN!", the player clicks, it spins and shows the result | player | wheel.js |
 | S8 | Chimney 10 choice: SWEET or FREE TRY, big tiles, mouse | player | screens.choice |
 | S9 | Nickname: for the best players list, LEGEND, MYTHIC, GODLIKE and every sponsor winner (R23). Max 12 characters, Esc = "PLAYER 37" | staff | screens.nickname |
 | S10 | Ticket screen (R12): all tickets of the payment with where they came from and the numbers. Then the hand-over (R16): €10 CASH confirmed twice, then the list. (The item pick (R22, R28) comes just before the ticket screen.) Enter saves and goes back to S1 | staff | screens.handover, handover.js |
@@ -146,7 +146,7 @@ The 30, 40 and 50 entries ADD UP (reaching 50 = 3 + 4 + 5 = 12). Each level is g
 | S12 | Draw (R14): one prize at a time, rolling numbers, the winning draw entry in big text, Enter = GIVEN, N = NOT HERE - DRAW AGAIN + reason | staff | draw.js |
 | S13 | Health check at every start: server, database, USB, clock, screen, fonts, sound, settings | nobody | main.healthCheck |
 
-**R30 Engagement lines** (title screen draw scene and the leaderboard panel) [`text`]: on the panel, a photo of the draw prize (supplied by the team, unchanged, in a gold pixel frame) [`text.drawPrizeImg`] sits beside "13:00 DRAW: WIN GTA 6", "REACH CHIMNEY 10 = 1 DRAW ENTRY", "REACH CHIMNEY 20 = SPIN: X IN 10 WIN A PRIZE" (live, R7), "DRAW ENTRIES IN THE BOX: 123" (live: all draw entries given today, not undone), and items left per tier ("GOLD: 2 LEFT", live).
+**R30 Engagement lines** (title screen draw scene and the leaderboard panel) [`text`]: on the panel, a photo of the draw prize (supplied by the team, unchanged, in a gold pixel frame) [`text.drawPrizeImg`] sits beside "13:00 DRAW: WIN GTA 6", "REACH CHIMNEY 10 = 1 DRAW ENTRY", "REACH CHIMNEY 20 = SPIN THE WHEEL" (R7), "DRAW ENTRIES IN THE BOX: 123" (live: all draw entries given today, not undone), and items left per tier ("GOLD: 2 LEFT", live).
 
 **Leaderboard panel (L2):** the R30 lines ("JACKPOT" with "+€10 IN 34 MIN" only when the jackpot is on), "DRAW AT 13:00" + countdown on the event day, this player's prizes (chimney 10 prize, wheel result, draw tickets; shown until the next game starts), "BEST PLAYERS" top 15 (rank, the LEGEND / MYTHIC / GODLIKE badge, name, chimneys).
 Panel text is at least 28 px. **Players never need the keyboard** (mouse or a USB arcade button set as a click).
