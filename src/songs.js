@@ -116,7 +116,7 @@ export function sectionEvents(s) {
       ev.push({ b: at + 2, len: 0.25, kind: 'snare', vol: 0.45 * v }, { b: at + 2, len: 0.25, kind: 'kick', vol: 0.5 * v });
       if (big) ev.push({ b: at + 2, len: 2, kind: 'timp', m: root + 7, vol: 0.45 });
       if (big && bar % 4 === 0 && bar > 0) ev.push({ b: at, len: 2, kind: 'crash' });
-      ev.push({ b: at, len: 0.5, kind: 'sleigh', accent: true }, { b: at + 2, len: 0.5, kind: 'sleigh', accent: false }); // a little Christmas
+      for (let k = 0; k < bpb; k++) ev.push({ b: at + k, len: 0.5, kind: 'sleigh', accent: k % 2 === 0 }); // Santa's sleigh bells on every beat
       return;
     }
     if (s.drums && s.drums.startsWith('r68')) { // rolling 6/8 (one beat = one eighth): no dance kick

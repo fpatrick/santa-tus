@@ -17,36 +17,28 @@ const JB_CHORUS = `
 const JB_CHORUS_CHORDS = 'C C C C F C D7 G7 C C C C F C G7 C';
 
 // Flight (A5): our own heroic orchestral fanfare (inspired by grand adventure-game themes, no melody copied).
-// Triplet calls over the epic climb I - bVI - bVII - V (C, Ab, Bb, G). "1/3" = one triplet note.
+// Built from "Jingle bells, jingle bells, jingle all the way" as a brass fanfare over the epic climb
+// I - bVI - bVII - V (C, Ab, Bb, G), with a triplet call into the song. "1/3" = one triplet note.
 const HERO_INTRO = `
-  C5 1 G4 1/3 G4 1/3 G4 1/3 C5 2 | Eb5 1 C5 1/3 Eb5 1/3 Ab5 1/3 C6 2 |
-  D6 1 Bb5 1/3 D6 1/3 F6 1/3 D6 1 F6 1 | G5 1/3 A5 1/3 B5 1/3 D6 1/3 E6 1/3 F6 1/3 G6 2 |`;
+  E5 1 E5 1 E5 2 | Eb5 1 Eb5 1 Eb5 2 | D5 1 F5 1 Bb4 1.5 C5 .5 | D5 2 G4 1/3 B4 1/3 D5 1/3 G5 1 |`;
 const HERO_INTRO_CHORDS = 'C Ab Bb G';
-// The verse with triplet pick-ups (like brass calls) and a surprise Eb (bIII) chord.
-const HERO_VERSE = `
-  G4 1 E5 1 D5 1 C5 1 | G4 3 G4 1/3 G4 1/3 G4 1/3 | G4 1 E5 1 D5 1 C5 1 | A4 3 A4 1/3 B4 1/3 C5 1/3 |
-  A4 1 F5 1 E5 1 D5 1 | B4 4 | G5 1 G5 1 F5 1 D5 1 | E5 3 G4 1/3 G4 1/3 G4 1/3 |
-  G4 1 E5 1 D5 1 C5 1 | G4 4 | G4 1 E5 1 D5 1 C5 1 | A4 3 A4 1/3 B4 1/3 C5 1/3 |
-  A4 1 F5 1 E5 1 D5 1 | G5 1 G5 1 G5 1 G5 1 | A5 1 G5 1 F5 1 D5 1 | C5 3 G4 1/3 C5 1/3 E5 1/3 |`;
-const HERO_VERSE_CHORDS = 'C C C F Dm G G C C Eb C F Dm Eb F C';
-// The chorus: bright E major (III), a D (V of V) turn, a warm Fm (iv) and the Bb - C (bVII - I) finish.
-const HERO_CHORUS = `
-  E5 1 E5 1 E5 2 | E5 1 E5 1 E5 2 | E5 1 G5 1 C5 1.5 D5 .5 | E5 3 C5 1/3 D5 1/3 E5 1/3 |
-  F5 1 F5 1 F5 1.5 F5 .5 | F5 1 E5 1 E5 1 E5 .5 E5 .5 | E5 1 D5 1 D5 1 E5 1 | D5 1 G4 1/3 B4 1/3 D5 1/3 G5 2 |
-  E5 1 E5 1 E5 2 | E5 1 E5 1 E5 2 | E5 1 G5 1 C5 1.5 D5 .5 | E5 3 C5 1/3 D5 1/3 E5 1/3 |
-  F5 1 F5 1 F5 1 F5 1 | F5 1 E5 1 E5 1 E5 .5 E5 .5 | G5 1 G5 1 F5 1 D5 1 | C5 3 G4 1/3 C5 1/3 E5 1/3 |`;
-const HERO_CHORUS_CHORDS = 'C E Am C F C D G C Am F C Fm C Bb C';
+// The melody is the real Jingle Bells, note for note, so everyone knows it at once.
+const HERO_VERSE = JB_VERSE;
+const HERO_VERSE_CHORDS = JB_VERSE_CHORDS;
+const HERO_CHORUS = JB_CHORUS;
+// Jingle Bells' own chords; only the last turn is the heroic Bb - C (bVII - I).
+const HERO_CHORUS_CHORDS = 'C C C C F C D7 G7 C C C C F C Bb C';
 // Bell and string runs (triplet arpeggios) in the long melody notes, one bar per melody bar.
 const HERO_VERSE_RUNS = `
   R 4 | R 1 G5 1/3 C6 1/3 E6 1/3 G6 1 R 1 | R 4 | R 1 A5 1/3 C6 1/3 F6 1/3 A6 1 R 1 |
   R 4 | R 1 G5 1/3 B5 1/3 D6 1/3 G6 1 R 1 | R 4 | R 1 C6 1/3 E6 1/3 G6 1/3 C7 1 R 1 |
-  R 4 | R 1 G5 1/3 Bb5 1/3 Eb6 1/3 G6 1 R 1 | R 4 | R 1 F5 1/3 A5 1/3 C6 1/3 F6 1 R 1 |
+  R 4 | R 1 G5 1/3 C6 1/3 E6 1/3 G6 1 R 1 | R 4 | R 1 F5 1/3 A5 1/3 C6 1/3 F6 1 R 1 |
   R 4 | R 4 | R 4 | R 2 C6 1/3 D6 1/3 E6 1/3 F6 1/3 G6 1/3 B6 1/3 |`;
 const HERO_CHORUS_RUNS = `
-  R 4 | R 2 E5 1/3 G#5 1/3 B5 1/3 E6 1 | R 4 | R 1 C6 1/3 B5 1/3 A5 1/3 G5 1/3 E5 1/3 G5 1/3 C6 1 |
+  R 4 | R 2 E5 1/3 G5 1/3 C6 1/3 E6 1 | R 4 | R 1 C6 1/3 B5 1/3 A5 1/3 G5 1/3 E5 1/3 G5 1/3 C6 1 |
   R 4 | R 4 | R 2 D6 1/3 F#6 1/3 A6 1/3 D7 1 | R 2 G5 1/3 A5 1/3 B5 1/3 C6 1/3 D6 1/3 F6 1/3 |
-  R 4 | R 2 A5 1/3 C6 1/3 E6 1/3 A6 1 | R 4 | R 1 E6 1/3 D6 1/3 C6 1/3 G5 1/3 E5 1/3 G5 1/3 C6 1 |
-  R 2 F5 1/3 Ab5 1/3 C6 1/3 F6 1 | R 4 | R 2 Bb5 1/3 D6 1/3 F6 1/3 Bb6 1 | R 1 C6 1/3 E6 1/3 G6 1/3 C7 2 |`;
+  R 4 | R 2 G5 1/3 C6 1/3 E6 1/3 G6 1 | R 4 | R 1 E6 1/3 D6 1/3 C6 1/3 G5 1/3 E5 1/3 G5 1/3 C6 1 |
+  R 2 F5 1/3 A5 1/3 C6 1/3 F6 1 | R 4 | R 2 Bb5 1/3 D6 1/3 F6 1/3 Bb6 1 | R 1 C6 1/3 E6 1/3 G6 1/3 C7 2 |`;
 
 const SILENT = `
   G4 1.5 A4 .5 G4 1 | E4 3 | G4 1.5 A4 .5 G4 1 | E4 3 |
