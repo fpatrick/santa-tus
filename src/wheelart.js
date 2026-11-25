@@ -184,6 +184,9 @@ function pieceLabels(w) {
       out.items.push({ img: pixelText(text, 8), r: RAD * 0.66, along: true });
     }
     if (2 * RA * 0.56 * Math.sin(p.size / 2) >= 36) out.icon = WHEEL_ICONS.includes(p.o.icon) ? wheelIcon(p.o.icon, P) : iconCanvas(p.o.icon, 6);
+    out.iconR = RAD * 0.56;
+    const al = out.items.find((it) => it.along);
+    if (al && out.icon) { al.r = RAD * 0.97 - al.img.width / 2; out.iconR = RAD * 0.44; } // no overlap: words at the rim, icon nearer the hub
     return out;
   });
 }
@@ -325,7 +328,7 @@ export function drawWheel(ctx, w, pegs) {
     if (L.icon) {
       ctx.save();
       ctx.rotate(L.mid);
-      ctx.translate(RAD * 0.56, 0);
+      ctx.translate(L.iconR, 0);
       ctx.rotate(Math.PI / 2);
       ctx.drawImage(L.icon, -L.icon.width / 2, -L.icon.height / 2);
       ctx.restore();

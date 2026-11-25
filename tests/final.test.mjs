@@ -153,7 +153,7 @@ test('T67: times: 12:45 warning, 12:50 last payment, 13:00 draw; no other screen
     assert.ok(!/12:(30|35|45)/.test(text), `${name} has an old time written in it`);
   }
   assert.ok(!/12:(30|35|45)/.test(JSON.stringify(CONFIG.text)), 'no old time in the screen words');
-  assert.ok(CONFIG.text.drawHeadline.includes('{draw}'));
+  assert.ok(!/\d\d:\d\d/.test(CONFIG.text.drawHeadline), 'the headline has no time: it comes from event.drawTime, written once');
   const day = (h, m) => new Date(2026, 10, 26, h, m);
   assert.deepEqual([timeState(CONFIG, day(12, 44)), timeState(CONFIG, day(12, 45)), timeState(CONFIG, day(12, 50))], ['', 'warn', 'late']);
 });

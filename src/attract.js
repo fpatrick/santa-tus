@@ -200,7 +200,7 @@ function drawLines(ctx, e) {
   const spin = e.x > 0 ? `   ·   ${T.spinChance.replace('{n}', CONFIG.thresholds.ticket).replace('{x}', e.x)}` : '';
   ctx.fillText(`${T.entryAt10.replace('{n}', CONFIG.thresholds.choice)}${spin}`, W / 2, 210);
   ctx.fillStyle = '#ffd9a0';
-  ctx.fillText(`${T.drawAt} ${CONFIG.event.drawTime}`, W / 2, 260);
+  ctx.fillText(`${T.drawAt} ${CONFIG.event.drawTime} ON ${CONFIG.event.date.slice(8)}/${CONFIG.event.date.slice(5, 7)}`, W / 2, 260); // the only place with the time
 }
 
 function board(ctx, info) {
@@ -211,7 +211,7 @@ function board(ctx, info) {
     outlined(ctx, fmtEuro(info.jackpot), W / 2, 220, 96, '#fff6c8', 'center');
     next = jp && jp.started && !jp.closed ? (jp.atMax ? T.jackpotMax : jp.nextMins ? T.jackpotNext.replace('{step}', fmtEuro(CONFIG.jackpot.step)).replace('{mins}', jp.nextMins) : '') : '';
     outlined(ctx, `${next ? `${next} · ` : ''}${T.drawAt} ${info.drawTime}`, W / 2, 280, 32, '#f4f7ff', 'center');
-  } else drawLines(ctx, info.engage); // R30: "13:00 DRAW: WIN GTA 6" and the live lines
+  } else drawLines(ctx, info.engage); // R30: "WIN GTA 6", "DRAW AT 13:00 ON 26/11" and the live lines
   outlined(ctx, CONFIG.board.title, W / 2, 360, 36, '#3dff8b', 'center');
   ctx.font = '40px VT323';
   if (!info.top.length) {

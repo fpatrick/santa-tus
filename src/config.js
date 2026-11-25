@@ -78,9 +78,9 @@ export const CONFIG = {
   wheel: {
     outcomes: [
       { id: 'jackpot', label: 'JACKPOT', short: 'JACKPOT', icon: 'coin', odds: 0, jackpotOdds: 3, pieces: 1, tier: 4, color: '#ffd23f', jackpot: true },
-      { id: 'gold', label: 'GOLD €20 VOUCHER', short: 'GOLD €20\nVOUCHER', icon: 'gold', odds: 4, pieces: 1, tier: 4, color: '#ffb81f', sponsor: 'gold' },
-      { id: 'silver', label: 'SILVER GAMING / DAY OUT', short: 'SILVER\nGAMING/DAY OUT', icon: 'silver', odds: 12, pieces: 1, tier: 3, color: '#b8c4dc', sponsor: 'silver' },
-      { id: 'bronze', label: 'BRONZE GIFT', short: 'BRONZE\nGIFT', icon: 'bronze', odds: 14, pieces: 2, tier: 3, color: '#d9733a', sponsor: 'bronze' },
+      { id: 'gold', label: 'GOLD €20 VOUCHER', short: 'GOLD €20\nVOUCHER', icon: 'voucher', odds: 4, pieces: 1, tier: 4, color: '#ffb81f', sponsor: 'gold' },
+      { id: 'silver', label: 'SILVER GAMING / DAY OUT', short: 'SILVER\nGAMING/DAY OUT', icon: 'gamepad', odds: 12, pieces: 1, tier: 3, color: '#b8c4dc', sponsor: 'silver' },
+      { id: 'bronze', label: 'BRONZE GIFT', short: 'BRONZE\nGIFT', icon: 'gift', odds: 14, pieces: 1, tier: 3, color: '#d9733a', sponsor: 'bronze' },
       { id: 'free', label: 'FREE TRY', short: 'FREE TRY', icon: 'free', odds: 26, pieces: 3, tier: 1, color: '#27c8ff', freeTry: true },
       { id: 't2', label: '+2 DRAW ENTRIES', short: '+2 DRAW\nENTRIES', icon: 'ticket', odds: 44, pieces: 4, tier: 2, color: '#3dff8b', tickets: 2 },
       { id: 'cash', label: '€10 CASH', short: '€10', icon: 'note', odds: 0, onWhenAllEmpty: 2, pieces: 1, tier: 4, color: '#ff5a6a', cash: 10 },
@@ -207,7 +207,7 @@ export const CONFIG = {
     ticketsTitle: 'YOUR DRAW ENTRIES',
     spinChance: 'REACH CHIMNEY {n} = SPIN: {x} IN 10 WIN A PRIZE', // R7: x = live gold + silver + bronze chance / 10
     // R30 engagement lines (title screen and leaderboard). {draw} = draw time, {n} = a number, {tier} = tier name.
-    drawHeadline: '{draw} DRAW: WIN GTA 6',
+    drawHeadline: 'WIN GTA 6', // the draw time and day are on the line under it, written once (DRAW AT 13:00 ON 26/11)
     drawPrizeImg: 'assets/img/draw-prize.jpg', // R30: photo of the draw prize, shown in a pixel frame beside the draw box ('' = none)
     drawPrizeAlt: 'GTA 6 FOR PS5',
     entryAt10: 'PAID TRY AT {n} = 1 DRAW ENTRY',

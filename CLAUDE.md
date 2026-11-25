@@ -53,6 +53,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | The wheel logic: slices from the live odds, sold-out slices, click to spin, peg clicks, the payout (R7, R24) | `src/wheel.js` |
 | How the wheel looks, in 16-bit pixel art (3 px per art pixel): slot-machine sign, painted face with brass dividers, pixel labels and icons, wooden rim with bulbs, hub, pointer | `src/wheelart.js` |
 | Prize icons in 16-bit HD pixel art: jackpot coin, gold / silver / bronze medals, draw tickets, €10 note, sweet, free try arrow | `src/wheelicons.js` |
+| The sponsor prize icons on the wheel: gold gift card, silver game controller, bronze present | `src/prizeicons.js` |
 | Wheel sounds: Christmas jackpot machine (click "ka-chunk", fast clatter, Jingle Bells, coin payout) | `src/wheelsound.js` |
 | Particles, rays, coins, fireworks, shake, flash, `celebrate(tier)` | `src/fx.js` |
 | Sound effects | `src/sound.js` |
@@ -64,7 +65,7 @@ Everything is drawn in 16-bit HD pixel art (rule A0). Check the result with a zo
 | Staff screens: code, payment, choice, nickname, hand-over, health (S2-S10, S13) | `src/screens.js` |
 | Staff panel F9: summary, stock (incl. reserved), cash fallback switch (C), jackpot fix (only when on), caps, odds (S11, K2) | `src/staff.js` (actions in `src/staffapi.js`) |
 | The draw: one prize at a time, GTA 6 last, GIVEN / NOT HERE (S12, K3, R14) | `src/draw.js` |
-| Right-hand panel: "13:00 DRAW: WIN GTA 6" + live lines (R30), player prize box, best players (L2) | `src/board.js` |
+| Right-hand panel: "WIN GTA 6" + "DRAW AT 13:00 ON 26/11" + live lines (R30), player prize box, best players (L2) | `src/board.js` |
 | Rank badges LEGEND (gold) / MYTHIC (feral purple) / GODLIKE (red-blue divine) before names (R8, R20, R21) | `src/rankbadge.js` (rank = `rankOf()` in ledger.js) |
 | Saving: server or browser, offline queue (D1, D4, P1) | `src/store.js` |
 | Start-up, keys, mouse, banners, health check, staff actions | `src/main.js` |

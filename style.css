@@ -63,6 +63,7 @@ body { font-family: var(--term); color: var(--snow); user-select: none; -webkit-
 .jp:has(.prize-frame) .engage, .jp:has(.prize-frame) .jp-draw { font-size: 24px; }
 .jp:has(.prize-frame) .engage .big { font-size: 28px; }
 .engage div { text-wrap: balance; }
+.jp:has(.prize-frame) .engage .tiers { clear: both; padding-top: 4px; } /* the items-left line under the photo, full width, one line */
 .board-title { font: 28px/1 var(--pixel); flex: none; color: var(--green); text-shadow: 0 0 10px rgba(61, 255, 139, 0.6); margin: 6px 0 4px; }
 .board { list-style: none; margin: 0; padding: 0; flex: 1; overflow: hidden; }
 .board li { display: grid; grid-template-columns: 50px 1fr 70px; align-items: center; font: 30px/1.0 var(--term); padding: 0 6px; }

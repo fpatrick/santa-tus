@@ -5,6 +5,7 @@
 // 'free' (a green replay arrow round Santa's hat). Older ones: 'jackpot', 'jackpotBig' (pots of gold), 'cash'.
 
 import { pixelate, enlarge } from './pixelart.js';
+import { voucher, gamepad, gift } from './prizeicons.js'; // the sponsor prizes on the wheel slices
 
 const N = 36; // art pixels per side
 const cache = new Map();
@@ -224,12 +225,16 @@ const DRAW = {
   jackpotBig: (g) => { pot(g, true); },
   cash,
   free,
+  voucher,
+  gamepad,
+  gift,
 };
 const SPARKS = { coin: [[31, 4, true], [4, 6], [33, 18]], gold: [[31, 18, true], [4, 22]], silver: [[31, 18]], bronze: [], ticket: [[32, 6]], note: [[33, 4, true]], sweet: [[30, 7]],
-  jackpot: [[30, 6, true], [5, 10]], jackpotBig: [[31, 4, true], [4, 8, true], [33, 26]], cash: [[31, 4, true], [3, 18]], free: [] };
+  jackpot: [[30, 6, true], [5, 10]], jackpotBig: [[31, 4, true], [4, 8, true], [33, 26]], cash: [[31, 4, true], [3, 18]], free: [],
+  voucher: [[33, 6, true], [3, 30]], gamepad: [[32, 6]], gift: [[32, 14]] };
 
 // Returns the icon as a canvas, `scale` screen pixels per art pixel.
-export const WHEEL_ICONS = ['coin', 'gold', 'silver', 'bronze', 'ticket', 'note', 'sweet', 'free', 'jackpot', 'jackpotBig', 'cash'];
+export const WHEEL_ICONS = ['coin', 'gold', 'silver', 'bronze', 'ticket', 'note', 'sweet', 'free', 'jackpot', 'jackpotBig', 'cash', 'voucher', 'gamepad', 'gift'];
 export function wheelIcon(name, scale = 3) {
   const key = `${name}|${scale}`;
   if (!cache.has(key)) {

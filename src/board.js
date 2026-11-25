@@ -1,4 +1,4 @@
-// board.js: the right-hand panel (L2, L3): "13:00 DRAW: WIN GTA 6" and the R30 lines (draw entries in the box, items left,
+// board.js: the right-hand panel (L2, L3): "WIN GTA 6" + "DRAW AT 13:00 ON 26/11" and the R30 lines (draw entries in the box, items left,
 // X IN 10), the jackpot only when it is on (R13), "draw at 13:00"
 // with a countdown, this player's prizes (shown until the next game starts), and the best players
 // with the LEGEND / MYTHIC / GODLIKE pixel badges (rankbadge.js) in front of the names.
@@ -28,8 +28,8 @@ export function createBoard(el) {
   const b = { shown: null, target: 0, lastDraw: null, freshPid: null, key: '' };
   if (!CONFIG.JACKPOT_ENABLED) { // R13 off: no jackpot anywhere, the box shows the prize draw time only
     const head = CONFIG.text.drawHeadline.replace('{draw}', CONFIG.event.drawTime);
-    const cut = head.indexOf(': '); // "13:00 DRAW:" on one line, "WIN GTA 6" big on the next
-    $('.jp-label').innerHTML = cut > 0 ? `${esc(head.slice(0, cut + 1))}<br><span class="jp-win">${esc(head.slice(cut + 2))}</span>` : esc(head);
+    const cut = head.indexOf(': '); // "A:" small on one line (if any), the prize big on the next
+    $('.jp-label').innerHTML = cut > 0 ? `${esc(head.slice(0, cut + 1))}<br><span class="jp-win">${esc(head.slice(cut + 2))}</span>` : `<span class="jp-win">${esc(head)}</span>`;
     $('.jp-value').style.display = 'none';
     $('.jp-next').style.display = 'none';
   }
