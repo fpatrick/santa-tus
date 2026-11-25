@@ -3,7 +3,7 @@
 
 import { CONFIG } from './config.js';
 import * as R from './rules.js';
-import { buildState, openPayment, totals, lastActivePayment } from './ledger.js';
+import { buildState, openPayment, totals, lastActivePayment, leaderboard, plainName } from './ledger.js';
 import { liveOdds, summary, drawState, allItems, stock, timeState, cashSwitch } from './prizes.js';
 import { buildCsv } from './report.js';
 import * as screens from './screens.js';
@@ -53,6 +53,15 @@ export function staffApi(app) {
     pickBackup: async () => { await app.commit(name(), R.staffBody('backup', 'picked folder')); return app.store.pickBackup(); },
     exportCsv: async () => { await app.commit(name(), R.staffBody('export')); return app.store.exportCsv(name(), buildCsv(app.led(), CONFIG, name())); },
     hide: async (pid) => { if (!app.led().byPid.get(pid)) return false; await app.commit(name(), { t: 'hide', pid }); return true; },
+    // L2: hide by the place number shown on BEST PLAYERS (1-15). Returns { place, name, pid } or null.
+    hidePlace: async (place) => {
+      const p = leaderboard(app.led(), CONFIG)[place - 1];
+      if (!p) return null;
+      const was = plainName(p, CONFIG);
+      await app.commit(name(), { t: 'hide', pid: p.pid });
+      return { place, name: was, pid: p.pid, now: plainName(app.led().byPid.get(p.pid), CONFIG) };
+    },
+    boardNames: () => leaderboard(app.led(), CONFIG).map((p, k) => `${k + 1} ${plainName(p, CONFIG)}`),
     toggleSound: () => setMuted(!isMuted()),
     askCode: () => screens.staffCode('CODE AGAIN FOR NEW DAY'),
     newDay: async () => {

@@ -217,7 +217,7 @@ Common fields: `id` (unique), `n` (order number), `ts` (time in ms), `t` (type).
 | `nick` | pid, nick (null = skipped) | nickname |
 | `done` | pid | hand-over confirmed |
 | `undo` | pid (a payment) or what: `draw` + reason | undo a payment, or the whole draw |
-| `hide` | pid | nickname hidden |
+| `hide` | pid | nickname hidden (staff: F9 -> 6, type the PLACE NUMBER shown on BEST PLAYERS; it shows "PLAYER 37" after) |
 | `draw` | prize (`item`, `rest`, `jackpot`), tier, item, items, ticket (null = no tickets), amount, count | one draw step |
 | `nothere` | draw (id), ticket, reason | the drawn winner was not there |
 | `stock` | item, left, before | staff set the items left |

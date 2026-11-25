@@ -73,7 +73,7 @@ function stockList(i) {
 export function staffPanel(api) {
   return new Promise((resolve) => {
     let msg = '';
-    let mode = null; // waiting for: 'undo-confirm' | 'free-reason' | 'hide-pid' | 'stock-in' | 'jackpot-in' | 'undodraw-reason'
+    let mode = null; // waiting for: 'undo-confirm' | 'free-reason' | 'hide-place' | 'stock-in' | 'jackpot-in' | 'undodraw-reason'
     const render = () => {
       const i = api.info();
       const el = open(`<div class="box wide staff"><h1>STAFF PANEL</h1>
@@ -82,7 +82,7 @@ export function staffPanel(api) {
         <div class="msg">${msg}</div>
         <div class="hint">Press a number or letter. <kbd>ESC</kbd> closes the panel.</div></div>`, 'full');
       el.querySelectorAll('[data-id]').forEach((b) => b.addEventListener('click', () => act(b.dataset.id)));
-      if ((mode && mode.endsWith('reason')) || (mode && mode.endsWith('-in')) || mode === 'hide-pid') {
+      if ((mode && mode.endsWith('reason')) || (mode && mode.endsWith('-in')) || mode === 'hide-place') {
         const box = el.querySelector('.msg');
         box.insertAdjacentHTML('beforeend', '<input class="staff-in" maxlength="60" spellcheck="false">');
         setTimeout(() => box.querySelector('input').focus(), 20);
@@ -104,7 +104,12 @@ export function staffPanel(api) {
       if (id === 'backup') { say('Backing up...'); const r = await api.backup(); return say(r && r.ok ? `Backup done: ${r.usb || r.local || 'ok'}${r.ok && !r.usb && api.info().mode === 'server' ? ' (no USB stick found! Press P to pick the folder)' : ''}` : 'Backup FAILED. Check the server window.'); }
       if (id === 'usbpick') { say('A folder window opens on the laptop: pick the USB stick...'); const r = await api.pickBackup(); return say(r && r.ok ? `Backup done: ${r.usb || r.local}` : `No backup: ${(r && r.error) || 'failed'}`); }
       if (id === 'export') { const r = await api.exportCsv(); return say(r && r.ok ? `Exported: ${r.path || 'ok'}` : 'Export FAILED.'); }
-      if (id === 'hide') { mode = 'hide-pid'; return say('Type the payment number of the nickname to hide, then ENTER:'); }
+      if (id === 'hide') { // L2: by the place number on BEST PLAYERS
+        const names = api.boardNames();
+        if (!names.length) return say('BEST PLAYERS is empty: nothing to hide.');
+        mode = 'hide-place';
+        return say(`Type the PLACE NUMBER on BEST PLAYERS (1-${names.length}) of the nickname to hide, then ENTER. Now: ${names.join(' · ')}`);
+      }
       if (id === 'sound') { api.toggleSound(); return say(`Sound is now ${api.info().muted ? 'muted' : 'on'}.`); }
       if (id === 'stock') { mode = 'stock-in'; return say(`${stockList(api.info())}<br>Type the item number and the new count (for example "4 2"), then ENTER:`, true); }
       if (id === 'cash') { const on = await api.toggleCash(); return say(on === null ? CONFIG.text.cashGreyed : `€10 cash fallback is now ${on ? 'ON' : 'OFF'} (saved in the log).`); }
@@ -143,7 +148,7 @@ export function staffPanel(api) {
         mode = null;
         if (m === 'undo-confirm') { const r = await api.undo(); return say(r ? `Payment #${r.pid} is now marked UNDONE.` : 'Nothing to undo.'); }
         if (m === 'free-reason') { if (!val) { mode = m; return say('A reason is needed. Type it, then ENTER:'); } if (!(await api.freePlay(val))) return say('Finish the open payment first.'); return finish('free'); }
-        if (m === 'hide-pid') { const ok = await api.hide(Number(val)); return say(ok ? `Nickname of payment #${val} is hidden.` : `No payment #${val}.`); }
+        if (m === 'hide-place') { const r = await api.hidePlace(Number(val)); return say(r ? `Place ${r.place}: "${r.name}" is hidden. It now shows "${r.now}".` : `There is no place ${val} on BEST PLAYERS.`); }
         if (m === 'stock-in') { const [n, c] = val.split(/\s+/).map(Number); return say(await api.setStock(n, c)); }
         if (m === 'jackpot-in') return say(await api.fixJackpot(Number(val)));
         if (m === 'undodraw-reason') { if (!val) { mode = m; return say('A reason is needed:'); } return say(await api.undoDraw(val)); }
